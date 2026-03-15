@@ -1,0 +1,54 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Roboto", sans-serif;
+  --color-brand-pink: #F7246E;
+  --color-brand-pink-hover: #F8085A;
+  --color-brand-purple: #913CF0;
+  --color-brand-dark: #2F2F2F;
+  --color-brand-light: #FAFAFA;
+  --color-brand-accent1: #F73425;
+  --color-brand-accent2: #F75925;
+  --radius-card: 14px;
+  --shadow-pink-md: 0 4px 14px rgba(247, 36, 110, 0.35);
+  --shadow-pink-lg: 0 6px 20px rgba(247, 36, 110, 0.45);
+  --shadow-drawer: 8px 0 40px rgba(0, 0, 0, 0.12);
+}
+
+:root {
+  --background: #ffffff;
+  --foreground: #2F2F2F;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #2F2F2F;
+    --foreground: #FAFAFA;
+  }
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@utility animate-fadeIn {
+  animation: fadeIn 0.4s ease;
+}
+
+@layer utilities {
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .hide-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+}
