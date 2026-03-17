@@ -6,15 +6,19 @@ import { useRouter } from "next/navigation";
 const AuthContext = createContext({});
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => {
+    if (typeof window !== "undefined") {
+      const storedUser = localStorage.getItem("restyle_user");
+      return storedUser ? JSON.parse(storedUser) : null;
+    }
+    return null;
+  });
+
   const router = useRouter();
 
-  // Basic mock authentication
+  // No separate effect needed for initialization
   useEffect(() => {
-    const storedUser = localStorage.getItem("restyle_user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
+    // Optional: Synchronize tabs or handle side effects
   }, []);
 
   const login = (userData) => {
@@ -35,7 +39,7 @@ export function AuthProvider({ children }) {
         break;
       case "User":
       default:
-        router.push("/home");
+        router.push("/");
         break;
     }
   };

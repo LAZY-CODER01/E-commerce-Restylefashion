@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation";
 export default function SignupPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({ 
-    fullName: "", email: "", mobile: "", password: "", confirmPassword: "" 
+    fullName: "", email: "", mobile: "", password: "", confirmPassword: "", role: "User"
   });
   const [errors, setErrors] = useState({});
 
@@ -37,6 +37,13 @@ export default function SignupPage() {
     e.preventDefault();
     if (validate()) {
       // Mock registration success
+      const storedUsers = JSON.parse(localStorage.getItem("restyle_mock_users") || "{}");
+      storedUsers[formData.email] = {
+        name: formData.fullName,
+        role: formData.role
+      };
+      localStorage.setItem("restyle_mock_users", JSON.stringify(storedUsers));
+      
       router.push("/login?registered=true");
     }
   };
@@ -100,8 +107,22 @@ export default function SignupPage() {
             error={errors.confirmPassword}
           />
 
+          <div className="flex flex-col gap-2 p-3 bg-gray-50 rounded-xl mt-2 border border-brand-pink/20">
+            <p className="text-[12px] font-semibold text-brand-pink uppercase">Select Account Type</p>
+            <select 
+              className="w-full bg-white border border-gray-200 rounded-lg p-2 text-[14px] text-brand-dark outline-none focus:border-brand-pink"
+              value={formData.role}
+              onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+            >
+              <option value="User">User (Buyer)</option>
+              <option value="Seller">Seller</option>
+              <option value="Influencer">Influencer</option>
+              <option value="Admin">Admin</option>
+            </select>
+          </div>
+
           <Button type="submit" fullWidth className="mt-6">
-            Get Started
+            Sign Up
           </Button>
 
           <p className="text-center text-[14px] text-gray-500 mt-2">

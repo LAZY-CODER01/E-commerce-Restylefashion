@@ -48,10 +48,35 @@ export default function AuthPage() {
     e.preventDefault();
     if (!validate()) return;
 
-    // Simulate Auth API Success & Role based redirection
-    alert(`${isLogin ? "Logged in" : "Registered"} successfully as ${selectedRole}!`);
+    // Mock Persistence Logic
+    const storedUsers = JSON.parse(localStorage.getItem("restyle_mock_users") || "{}");
+    let currentRole = selectedRole;
+
+    if (isLogin) {
+      // For login, find the role associated with this email
+      if (storedUsers[formData.email]) {
+        currentRole = storedUsers[formData.email].role;
+      } else {
+        // Fallback for demo if user not found in mock store
+        currentRole = "User";
+      }
+      alert(`Logged in successfully as ${currentRole}!`);
+    } else {
+      // For registration, save the email and role
+      storedUsers[formData.email] = {
+        name: formData.name,
+        role: selectedRole
+      };
+      localStorage.setItem("restyle_mock_users", JSON.stringify(storedUsers));
+      alert(`Registered successfully as ${selectedRole}!`);
+      
+      // After signup, switch to login so user can log in with their fixed role
+      setIsLogin(true);
+      return; 
+    }
     
-    switch(selectedRole) {
+    // Role based redirection
+    switch(currentRole) {
       case "Admin":
         router.push("/admin/dashboard");
         break;
@@ -63,7 +88,7 @@ export default function AuthPage() {
         break;
       case "User":
       default:
-        router.push("/home");
+        router.push("/");
         break;
     }
   };
@@ -95,23 +120,25 @@ export default function AuthPage() {
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
           
-          {/* Role Selection Slider */}
-          <div className="flex bg-gray-100 p-1 rounded-xl mb-2 overflow-x-auto hide-scrollbar">
-            {ROLES.map((role) => (
-              <button
-                key={role}
-                type="button"
-                onClick={() => setSelectedRole(role)}
-                className={`flex-1 min-w-[80px] text-[13px] font-semibold py-2 px-3 rounded-lg transition-all duration-200 ${
-                  selectedRole === role 
-                    ? "bg-white text-brand-dark shadow-sm" 
-                    : "text-gray-500 hover:text-brand-dark"
-                }`}
-              >
-                {role}
-              </button>
-            ))}
-          </div>
+          {/* Role Selection Slider - ONLY SHOW ON SIGNUP */}
+          {!isLogin && (
+            <div className="flex bg-gray-100 p-1 rounded-xl mb-2 overflow-x-auto hide-scrollbar">
+              {ROLES.map((role) => (
+                <button
+                  key={role}
+                  type="button"
+                  onClick={() => setSelectedRole(role)}
+                  className={`flex-1 min-w-[80px] text-[13px] font-semibold py-2 px-3 rounded-lg transition-all duration-200 ${
+                    selectedRole === role 
+                      ? "bg-white text-brand-dark shadow-sm" 
+                      : "text-gray-500 hover:text-brand-dark"
+                  }`}
+                >
+                  {role}
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* Registration Fields */}
           {!isLogin && (

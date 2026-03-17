@@ -1,6 +1,7 @@
 import "./globals.css";
 import Navbar from "@/components/Navigastion";
 import { AuthProvider } from "@/context/AuthContext";
+import { SearchProvider } from "@/context/SearchContext";
 
 export const metadata = {
   title: "Restyle Fashion Marketplace",
@@ -12,8 +13,10 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className="antialiased">
         <AuthProvider>
-          <Navbar />
-          {children}
+          <SearchProvider>
+            <Navbar />
+            {children}
+          </SearchProvider>
         </AuthProvider>
       </body>
     </html>

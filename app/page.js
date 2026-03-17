@@ -1,8 +1,13 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Image from "next/image";
 import ProductCard from "@/components/ProductCard";
 import InfluencerCard from "@/components/InfluencerCard";
+import Button from "@/components/Button";
+import { useSearch } from "@/context/SearchContext";
+
+import { ALL_PRODUCTS, CATEGORIES } from "@/data/mockData";
 
 const HERO_SLIDES = [
   { id: 1, title: "Summer Collection", subtitle: "HOT DEALS", bg: "from-pink-100 to-pink-50" },
@@ -12,6 +17,8 @@ const HERO_SLIDES = [
 
 export default function HomePage() {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [activeCategory, setActiveCategory] = useState('all');
+  const { searchQuery } = useSearch();
 
   // Auto Carousel logic
   useEffect(() => {
@@ -21,11 +28,18 @@ export default function HomePage() {
     return () => clearInterval(timer);
   }, []);
 
+  const filteredProducts = ALL_PRODUCTS.filter(p => {
+    const matchesCategory = activeCategory === 'all' || p.category === activeCategory;
+    const matchesSearch = p.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          p.brand.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
+
   return (
     <div className="min-h-[100dvh] bg-brand-light pb-24">
       <main className="max-w-[1400px] mx-auto px-4 md:px-9 pt-4 flex flex-col gap-8">
         
-        {/* Hero Carousel / Image Slider */}
+        {/* Hero Carousel */}
         <section className="relative w-full aspect-[2/1] sm:aspect-[3/1] rounded-card overflow-hidden shadow-sm group">
           <div 
             className="flex transition-transform duration-700 ease-in-out h-full"
@@ -49,7 +63,6 @@ export default function HomePage() {
             ))}
           </div>
           
-          {/* Carousel dots */}
           <div className="absolute bottom-4 left-0 right-0 flex items-center justify-center gap-2 z-20">
             {HERO_SLIDES.map((_, idx) => (
               <button 
@@ -62,32 +75,76 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Categories Section (Category Slider) */}
+        {/* Categories Section */}
         <section className="flex flex-col gap-3 overflow-hidden">
           <h3 className="text-[18px] font-bold text-brand-dark tracking-tight">
             Categories
           </h3>
-          <div className="flex items-center gap-3 md:gap-4 overflow-x-auto hide-scrollbar pb-2 snap-x snap-mandatory">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} className="flex flex-col items-center gap-2 min-w-[72px] sm:min-w-[88px] snap-start">
-                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gray-200 flex-shrink-0 animate-pulse" />
-                <span className="text-[11px] font-medium text-brand-dark">Category {i}</span>
-              </div>
+          <div className="flex items-center gap-4 md:gap-6 overflow-x-auto hide-scrollbar pb-2 snap-x snap-mandatory">
+            {CATEGORIES.map((cat) => (
+              <button 
+                key={cat.id} 
+                onClick={() => setActiveCategory(cat.id)}
+                className={`flex flex-col items-center gap-2 min-w-[72px] sm:min-w-[84px] snap-start transition-all transform active:scale-95 group`}
+              >
+                <div className={`relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden border-2 transition-all ${
+                  activeCategory === cat.id ? "border-brand-pink shadow-pink-md scale-105" : "border-transparent group-hover:border-brand-pink/30"
+                }`}>
+                  <Image 
+                    src={cat.image} 
+                    alt={cat.name} 
+                    fill 
+                    className="object-cover transition-transform group-hover:scale-110"
+                  />
+                  {activeCategory === cat.id && (
+                    <div className="absolute inset-0 bg-brand-pink/10 flex items-center justify-center">
+                    </div>
+                  )}
+                </div>
+                <span className={`text-[12px] font-bold transition-colors ${
+                  activeCategory === cat.id ? "text-brand-pink" : "text-brand-dark opacity-70 group-hover:opacity-100"
+                }`}>
+                  {cat.name}
+                </span>
+              </button>
             ))}
           </div>
         </section>
 
-        {/* New Arrivals Section */}
-        <section className="flex flex-col gap-3">
-          <h3 className="text-[18px] font-bold text-brand-dark tracking-tight">
-            New Arrivals
-          </h3>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-6">
-            <ProductCard id="1" title="Vintage Denim" price="45" brand="Levi's" />
-            <ProductCard id="2" title="Oversized Blazer" price="85" originalPrice="150" brand="Zara" />
-            <ProductCard id="3" title="Silk Slip Dress" price="60" brand="Réalisation Par" />
-            <ProductCard id="4" title="Chunky Loafers" price="120" brand="Prada" />
+        {/* Dynamic Products Section */}
+        <section className="flex flex-col gap-5 min-h-[400px]">
+          <div className="flex items-end justify-between">
+            <h3 className="text-[20px] font-bold text-brand-dark tracking-tight">
+              {activeCategory === 'all' ? 'New Arrivals' : `${activeCategory.charAt(0).toUpperCase() + activeCategory.slice(1)} Collection`}
+            </h3>
+            {activeCategory !== 'all' && (
+              <button 
+                onClick={() => setActiveCategory('all')}
+                className="text-[13px] font-bold text-brand-pink hover:underline"
+              >
+                Clear Filters
+              </button>
+            )}
           </div>
+          
+          {filteredProducts.length > 0 ? (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-6 animate-fadeIn">
+              {filteredProducts.map((product) => (
+                <ProductCard key={product.id} {...product} />
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-20 bg-white rounded-card border border-dashed border-gray-200">
+               <p className="text-gray-400 font-medium italic">No items found in this category yet.</p>
+               <Button 
+                variant="ghost" 
+                className="mt-4 text-brand-pink underline"
+                onClick={() => setActiveCategory('all')}
+               >
+                 View All Products
+               </Button>
+            </div>
+          )}
         </section>
 
         {/* Top Influencers Section */}
@@ -102,18 +159,20 @@ export default function HomePage() {
         </section>
 
         {/* Pre-Loved Section */}
-        <section className="flex flex-col gap-3">
+        <section className="flex flex-col gap-5">
            <h3 className="text-[18px] font-bold text-brand-dark tracking-tight">
             Pre-Loved
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-6">
-            <ProductCard id="5" title="Ribbed Knit Top" price="25" brand="H&M" />
-            <ProductCard id="6" title="Graphic Tee" price="15" brand="Vintage" />
-            <ProductCard id="7" title="Leather Jacket" price="150" originalPrice="300" brand="AllSaints" />
-            <ProductCard id="8" title="Maxi Skirt" price="35" brand="Mango" />
+            <ProductCard id="5" title="Ribbed Knit Top" price="25" brand="H&M" imageUrl="https://images.unsplash.com/photo-1434389677669-e08b4cac3105?auto=format&fit=crop&w=800&q=80" />
+            <ProductCard id="6" title="Graphic Tee" price="15" brand="Vintage" imageUrl="https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=800&q=80" />
+            <ProductCard id="7" title="Leather Jacket" price="150" originalPrice="300" brand="AllSaints" imageUrl="https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?auto=format&fit=crop&w=800&q=80" />
+            <ProductCard id="8" title="Maxi Skirt" price="35" brand="Mango" imageUrl="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=800&q=80" />
           </div>
         </section>
+
       </main>
     </div>
   );
 }
+

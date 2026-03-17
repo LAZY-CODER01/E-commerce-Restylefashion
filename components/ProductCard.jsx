@@ -13,7 +13,9 @@ export default function ProductCard({
   size = "M",
 }) {
   return (
-    <div className="group flex flex-col gap-3 rounded-card transition-all duration-300 hover:-translate-y-1 hover:shadow-drawer bg-white p-3 cursor-pointer">
+    <div className="group relative flex flex-col gap-3 rounded-card transition-all duration-300 hover:-translate-y-1 hover:shadow-drawer bg-white p-3 cursor-pointer">
+      <Link href={`/product/${id}`} className="absolute inset-0 z-10" aria-label={`View ${title}`} />
+      
       {/* Image Container */}
       <div className="relative aspect-[3/4] w-full overflow-hidden rounded-lg bg-gray-100">
         <Image
@@ -26,19 +28,23 @@ export default function ProductCard({
         {/* Wishlist Button */}
         <button
           aria-label="Add to wishlist"
-          className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-white/80 text-brand-dark backdrop-blur-sm transition-colors hover:bg-brand-pink hover:text-white"
+          className="absolute right-3 top-3 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-white/80 text-brand-dark backdrop-blur-sm transition-colors hover:bg-brand-pink hover:text-white"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
         >
           <FavoriteBorderOutlinedIcon fontSize="small" />
         </button>
 
         {/* Size Badge */}
-        <div className="absolute bottom-3 left-3 rounded bg-white/90 px-2 py-1 text-[11px] font-bold text-brand-dark backdrop-blur-sm">
+        <div className="absolute bottom-3 left-3 z-20 rounded bg-white/90 px-2 py-1 text-[11px] font-bold text-brand-dark backdrop-blur-sm">
           {size}
         </div>
       </div>
 
       {/* Content */}
-      <Link href={`/product/${id}`} className="flex flex-col gap-1 px-1">
+      <div className="flex flex-col gap-1 px-1">
         <h3 className="text-[13px] font-semibold text-gray-500 uppercase tracking-wide">
           {brand}
         </h3>
@@ -54,7 +60,7 @@ export default function ProductCard({
             </span>
           )}
         </div>
-      </Link>
+      </div>
     </div>
   );
 }

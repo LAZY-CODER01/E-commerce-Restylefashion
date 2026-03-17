@@ -8,7 +8,7 @@ import { useAuth } from "@/context/AuthContext";
 
 export default function LoginPage() {
   const { login } = useAuth();
-  const [formData, setFormData] = useState({ email: "", password: "", role: "User" });
+  const [formData, setFormData] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState({});
 
   const validate = () => {
@@ -25,8 +25,11 @@ export default function LoginPage() {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (validate()) {
-      // Mock API call and redirect based on role selected
-      login({ email: formData.email, name: "Test User", role: formData.role });
+      // Mock API retrieval
+      const storedUsers = JSON.parse(localStorage.getItem("restyle_mock_users") || "{}");
+      const user = storedUsers[formData.email] || { name: "Test User", role: "User" };
+      
+      login({ ...user, email: formData.email });
     }
   };
 
@@ -65,21 +68,6 @@ export default function LoginPage() {
                 Forgot Password?
               </Link>
             </div>
-          </div>
-
-          {/* MOCK ROLE SELECTION FOR DEMO */}
-          <div className="flex flex-col gap-2 p-3 bg-gray-50 rounded-xl mt-2 border border-brand-pink/20">
-            <p className="text-[12px] font-semibold text-brand-pink uppercase">Demo Role Selection</p>
-            <select 
-              className="w-full bg-white border border-gray-200 rounded-lg p-2 text-[14px] text-brand-dark outline-none focus:border-brand-pink"
-              value={formData.role}
-              onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-            >
-              <option value="User">User (Buyer)</option>
-              <option value="Seller">Seller</option>
-              <option value="Influencer">Influencer</option>
-              <option value="Admin">Admin</option>
-            </select>
           </div>
 
           <Button type="submit" fullWidth className="mt-4">
