@@ -5,60 +5,77 @@ import Link from "next/link";
 import Input from "@/components/Input";
 import Button from "@/components/Button";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 
 export default function SignupPage() {
   const router = useRouter();
-  const [formData, setFormData] = useState({ 
+  const [formData, setFormData] = useState({
     fullName: "", email: "", mobile: "", password: "", confirmPassword: "", role: "User"
   });
   const [errors, setErrors] = useState({});
 
+  const { register } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [apiError, setApiError] = useState("");
+
   const validate = () => {
     let temp = {};
     if (!formData.fullName) temp.fullName = "Full Name is required.";
-    
+
     if (!formData.email) temp.email = "Email is required.";
     else if (!/\S+@\S+\.\S+/.test(formData.email)) temp.email = "Email is invalid.";
-    
+
     if (!formData.mobile) temp.mobile = "Mobile Number is required.";
-    
+
     if (!formData.password) temp.password = "Password is required.";
     else if (formData.password.length < 6) temp.password = "Minimum 6 characters.";
-    
+
     if (formData.password !== formData.confirmPassword) {
       temp.confirmPassword = "Passwords do not match.";
     }
-    
+
     setErrors(temp);
     return Object.keys(temp).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setApiError("");
+
     if (validate()) {
-      // Mock registration success
-      const storedUsers = JSON.parse(localStorage.getItem("restyle_mock_users") || "{}");
-      storedUsers[formData.email] = {
-        name: formData.fullName,
+      setLoading(true);
+      const result = await register({
+        fullName: formData.fullName,
+        email: formData.email,
+        mobile: formData.mobile,
+        password: formData.password,
         role: formData.role
-      };
-      localStorage.setItem("restyle_mock_users", JSON.stringify(storedUsers));
-      
-      router.push("/login?registered=true");
+      });
+
+      if (!result.success) {
+        setApiError(result.message);
+        setLoading(false);
+      }
     }
   };
 
   return (
     <div className="min-h-[calc(100dvh-70px)] bg-brand-light flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-white rounded-card shadow-sm p-6 sm:p-8 animate-fadeIn my-8">
-        
-        <div className="text-center mb-8">
+
+        <div className="text-center mb-6">
           <h1 className="text-[24px] font-bold text-brand-dark mb-2">Create Account</h1>
           <p className="text-[15px] text-gray-500">Join the Restyle community</p>
         </div>
 
+        {apiError && (
+          <div className="mb-4 p-3 bg-red-50 text-red-600 text-[14px] rounded-lg border border-red-100 text-center">
+            {apiError}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <Input 
+          <Input
             label="Full Name"
             id="fullName"
             placeholder="Enter your full name"
@@ -66,8 +83,8 @@ export default function SignupPage() {
             onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
             error={errors.fullName}
           />
-          
-          <Input 
+
+          <Input
             label="Email"
             id="email"
             type="email"
@@ -77,7 +94,7 @@ export default function SignupPage() {
             error={errors.email}
           />
 
-          <Input 
+          <Input
             label="Mobile Number"
             id="mobile"
             type="tel"
@@ -86,8 +103,8 @@ export default function SignupPage() {
             onChange={(e) => setFormData({ ...formData, mobile: e.target.value })}
             error={errors.mobile}
           />
-          
-          <Input 
+
+          <Input
             label="Password"
             id="password"
             type="password"
@@ -97,7 +114,7 @@ export default function SignupPage() {
             error={errors.password}
           />
 
-          <Input 
+          <Input
             label="Confirm Password"
             id="confirmPassword"
             type="password"
@@ -109,7 +126,7 @@ export default function SignupPage() {
 
           <div className="flex flex-col gap-2 p-3 bg-gray-50 rounded-xl mt-2 border border-brand-pink/20">
             <p className="text-[12px] font-semibold text-brand-pink uppercase">Select Account Type</p>
-            <select 
+            <select
               className="w-full bg-white border border-gray-200 rounded-lg p-2 text-[14px] text-brand-dark outline-none focus:border-brand-pink"
               value={formData.role}
               onChange={(e) => setFormData({ ...formData, role: e.target.value })}
@@ -121,8 +138,8 @@ export default function SignupPage() {
             </select>
           </div>
 
-          <Button type="submit" fullWidth className="mt-6">
-            Sign Up
+          <Button type="submit" fullWidth className="mt-6" disabled={loading}>
+            {loading ? "Creating Account..." : "Sign Up"}
           </Button>
 
           <p className="text-center text-[14px] text-gray-500 mt-2">

@@ -11,39 +11,52 @@ export default function LoginPage() {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState({});
 
+  const [loading, setLoading] = useState(false);
+  const [apiError, setApiError] = useState("");
+
   const validate = () => {
     let temp = {};
     if (!formData.email) temp.email = "Email is required.";
     else if (!/\S+@\S+\.\S+/.test(formData.email)) temp.email = "Email is invalid.";
-    
+
     if (!formData.password) temp.password = "Password is required.";
-    
+
     setErrors(temp);
     return Object.keys(temp).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setApiError("");
+
     if (validate()) {
-      // Mock API retrieval
-      const storedUsers = JSON.parse(localStorage.getItem("restyle_mock_users") || "{}");
-      const user = storedUsers[formData.email] || { name: "Test User", role: "User" };
-      
-      login({ ...user, email: formData.email });
+      setLoading(true);
+      const result = await login(formData.email, formData.password);
+
+      if (!result.success) {
+        setApiError(result.message);
+        setLoading(false);
+      }
     }
   };
 
   return (
     <div className="min-h-[calc(100dvh-70px)] bg-brand-light flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-white rounded-card shadow-sm p-6 sm:p-8 animate-fadeIn">
-        
-        <div className="text-center mb-8">
+
+        <div className="text-center mb-6">
           <h1 className="text-[24px] font-bold text-brand-dark mb-2">Welcome Back</h1>
           <p className="text-[15px] text-gray-500">Login to your account to continue</p>
         </div>
 
+        {apiError && (
+          <div className="mb-4 p-3 bg-red-50 text-red-600 text-[14px] rounded-lg border border-red-100 text-center">
+            {apiError}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-          <Input 
+          <Input
             label="Email"
             id="email"
             type="email"
@@ -52,9 +65,9 @@ export default function LoginPage() {
             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
             error={errors.email}
           />
-          
+
           <div className="flex flex-col gap-1.5">
-            <Input 
+            <Input
               label="Password"
               id="password"
               type="password"
@@ -70,8 +83,8 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <Button type="submit" fullWidth className="mt-4">
-            Login
+          <Button type="submit" fullWidth className="mt-4" disabled={loading}>
+            {loading ? "Logging in..." : "Login"}
           </Button>
 
           <p className="text-center text-[14px] text-gray-500 mt-2">
