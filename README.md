@@ -13,6 +13,11 @@ pnpm dev
 # or
 bun dev
 
+git add .
+git commit -m ""
+git push origin main
+
+
 rm -rf .next
 npm run dev
 ```

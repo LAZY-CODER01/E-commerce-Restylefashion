@@ -34,7 +34,7 @@ export default function ProductImageGallery({ images = [] }) {
       </div>
 
       {/* Main Image */}
-      <div className="relative flex-1 aspect-[4/5] w-full overflow-hidden rounded-card bg-white shadow-sm border border-gray-100">
+      <div className="relative flex-1 aspect-square w-full overflow-hidden rounded-card">
         <AnimatePresence mode="wait">
           <motion.div
             key={activeImage}
@@ -48,7 +48,7 @@ export default function ProductImageGallery({ images = [] }) {
               src={images[activeImage]}
               alt="Product Image"
               fill
-              className="object-contain p-4 md:p-8"
+              className="object-cover"
               priority
               sizes="(max-width: 768px) 100vw, 50vw"
             />

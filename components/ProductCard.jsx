@@ -2,6 +2,7 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import FavoriteBorderOutlinedIcon from "@mui/icons-material/FavoriteBorderOutlined";
+import StarIcon from "@mui/icons-material/Star";
 
 export default function ProductCard({
   id = "1",
@@ -11,9 +12,10 @@ export default function ProductCard({
   originalPrice = "90",
   imageUrl = "https://images.unsplash.com/photo-1576995853123-5a10305d93c0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
   size = "M",
+  rating = 4.5,
 }) {
   return (
-    <div className="group relative flex flex-col gap-3 rounded-card transition-all duration-300 hover:-translate-y-1 hover:shadow-drawer bg-white p-3 cursor-pointer">
+    <div className="group relative flex flex-col gap-3 transition-all duration-300 hover:-translate-y-1 p-0 cursor-pointer">
       <Link href={`/product/${id}`} className="absolute inset-0 z-10" aria-label={`View ${title}`} />
       
       {/* Image Container */}
@@ -52,11 +54,23 @@ export default function ProductCard({
           {title}
         </p>
 
+        {/* Rating Stars */}
+        <div className="flex items-center gap-1 text-brand-pink">
+          {[...Array(5)].map((_, i) => (
+            <StarIcon 
+              key={i} 
+              sx={{ fontSize: 14 }} 
+              className={i < Math.floor(rating) ? "text-brand-pink" : "text-gray-200"}
+            />
+          ))}
+          <span className="text-[11px] text-gray-400 ml-1">({rating})</span>
+        </div>
+
         <div className="mt-1 flex items-center gap-2">
-          <span className="text-[16px] font-bold text-brand-pink">${price}</span>
+          <span className="text-[16px] font-bold text-brand-pink">₹{price}</span>
           {originalPrice && (
             <span className="text-[13px] font-medium text-gray-400 line-through">
-              ${originalPrice}
+              ₹{originalPrice}
             </span>
           )}
         </div>

@@ -5,10 +5,10 @@ import ProductImageGallery from "@/components/pdp/ProductImageGallery";
 import SizeSelector from "@/components/pdp/SizeSelector";
 import ConditionTag from "@/components/pdp/ConditionTag";
 import ActionButtons from "@/components/pdp/ActionButtons";
-import SellerCard from "@/components/pdp/SellerCard";
 import Rating from "@/components/pdp/Rating";
 import QuantitySelector from "@/components/pdp/QuantitySelector";
-import SimilarProductsCarousel from "@/components/pdp/SimilarProductsCarousel";
+import RelatedProductsSection from "@/components/pdp/RelatedProductsSection";
+import ProductReviews from "@/components/pdp/ProductReviews";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 
@@ -17,55 +17,53 @@ import { ALL_PRODUCTS } from "@/data/mockData";
 // Mock Data Function
 const getProductData = (id) => {
   if (!id) return null;
-  // Dynamic lookup with loose string/number matching
   const foundProduct = ALL_PRODUCTS.find(p => String(p.id) === String(id));
   
-  if (foundProduct) {
-    return {
-      ...foundProduct,
-      price: foundProduct.price || 1299,
-      originalPrice: foundProduct.originalPrice || 3999,
-      discount: foundProduct.discount || 67,
-      rating: 4.5,
-      ratingCount: 128,
-      stockStatus: "In Stock",
-      condition: foundProduct.condition || "Gently Used",
-      sizes: foundProduct.sizes || ["XS", "S", "M", "L", "XL"],
-      images: foundProduct.images || [foundProduct.imageUrl],
-      description: foundProduct.description || "In excellent condition.",
-      details: foundProduct.details || {
-        fabric: "Cotton Mix",
-        fit: "Standard Fit",
-        care: "Handle with care",
-      },
-      seller: {
-        name: "Restyle Seller",
-        rating: 4.8,
-        location: "Mumbai",
-        avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80"
-      },
-      similarProducts: ALL_PRODUCTS.filter(p => String(p.id) !== String(id)).slice(0, 4)
-    };
-  }
+  if (!foundProduct) return null;
 
-  // Final fallback for IDs not in mockData (e.g. 7, 8)
+  // Logic for Similar Products
+  const similarProducts = ALL_PRODUCTS.filter(p => {
+    if (String(p.id) === String(id)) return false;
+    
+    // Same category
+    if (p.category === foundProduct.category) return true;
+    
+    // Matching tags
+    const commonTags = p.tags?.filter(tag => foundProduct.tags?.includes(tag));
+    return commonTags && commonTags.length > 0;
+  }).slice(0, 6);
+
+  // Logic for Best Sellers
+  const bestSellers = ALL_PRODUCTS
+    .filter(p => p.category === foundProduct.category)
+    .sort((a, b) => (b.totalSales || 0) - (a.totalSales || 0))
+    .slice(0, 6);
+
   return {
-    id: String(id),
-    brand: "Zara",
-    title: "Essential Wardrobe Piece",
-    price: 1299,
-    originalPrice: 3999,
-    discount: 67,
-    rating: 4.2,
-    ratingCount: 56,
+    ...foundProduct,
+    price: foundProduct.price || 1299,
+    originalPrice: foundProduct.originalPrice || 3999,
+    discount: foundProduct.discount || 67,
+    rating: foundProduct.rating || 4.5,
+    ratingCount: foundProduct.ratingCount || 128,
     stockStatus: "In Stock",
-    condition: "Gently Used",
-    sizes: ["XS", "S", "M", "L", "XL"],
-    images: ["https://images.unsplash.com/photo-1542272604-787c3835535d?auto=format&fit=crop&w=800&q=80"],
-    description: "Classic essential piece for your collection.",
-    details: { fabric: "High Quality", fit: "Standard", care: "Wash cold" },
-    seller: { name: "ThriftStore", rating: 4.5, location: "Delhi", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80" },
-    similarProducts: ALL_PRODUCTS.slice(0, 4)
+    condition: foundProduct.condition || "Gently Used",
+    sizes: foundProduct.sizes || ["XS", "S", "M", "L", "XL"],
+    images: foundProduct.images || [foundProduct.imageUrl],
+    description: foundProduct.description || "In excellent condition.",
+    details: foundProduct.details || {
+      fabric: "Cotton Mix",
+      fit: "Standard Fit",
+      care: "Handle with care",
+    },
+    seller: {
+      name: "Restyle Seller",
+      rating: 4.8,
+      location: "Mumbai",
+      avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80"
+    },
+    similarProducts: similarProducts,
+    bestSellers: bestSellers
   };
 };
 
@@ -165,10 +163,7 @@ export default function ProductDetailsPage({ params }) {
                 </div>
               ))}
             </div>
-
-            <SellerCard seller={product.seller} />
           </div>
-
           {/* 3. Right Column: Checkout Card (Amazon Style) */}
           <div className="w-full lg:w-[320px]">
             <article className="sticky top-32 bg-white border border-[#EEEEEE] rounded-[24px] p-9 shadow-sm flex flex-col gap-6">
@@ -204,10 +199,20 @@ export default function ProductDetailsPage({ params }) {
 
         </div>
 
-        {/* Recommended Products */}
-        <div className="mt-16 border-t border-[#F0F0F0] pt-12">
-          <SimilarProductsCarousel products={product.similarProducts} />
+        {/* Dynamic Related Sections */}
+        <div className="flex flex-col gap-4">
+          <RelatedProductsSection 
+            title="Similar Products" 
+            products={product.similarProducts} 
+          />
+          <RelatedProductsSection 
+            title="Best Sellers in this Category" 
+            products={product.bestSellers} 
+          />
         </div>
+
+        {/* Dynamic Reviews Section */}
+        <ProductReviews />
       </main>
     </div>
   );
