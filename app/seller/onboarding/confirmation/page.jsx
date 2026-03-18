@@ -18,9 +18,9 @@ export default function SellerConfirmationPage() {
         </div>
 
         <div className="flex flex-col gap-3">
-          <h1 className="text-[28px] font-bold text-brand-dark">Await Confirmation</h1>
+          <h1 className="text-[28px] font-bold text-brand-dark">Verify Your Email</h1>
           <p className="text-[15px] text-gray-500 font-medium leading-relaxed max-w-[320px] mx-auto">
-            Your onboarding application has been submitted successfully. Our team is verifying your details.
+            We have sent a verification link to your registered email. Please verify your account to start selling.
           </p>
         </div>
 
@@ -44,12 +44,18 @@ export default function SellerConfirmationPage() {
         </p>
 
         <Button 
-          onClick={() => router.push("/")}
+          onClick={() => router.push("/seller/verify-email")}
           fullWidth 
-          className="h-[54px] rounded-full font-bold text-[16px] mt-4"
+          className="h-[54px] rounded-full font-bold text-[16px] mt-4 shadow-lg shadow-brand-pink/20"
+        >
+          Resend Verification Email
+        </Button>
+        <button 
+          onClick={() => router.push("/")}
+          className="text-[14px] font-bold text-gray-400 hover:text-brand-pink transition-colors underline decoration-brand-pink/30"
         >
           Back to Home
-        </Button>
+        </button>
       </div>
     </div>
   );

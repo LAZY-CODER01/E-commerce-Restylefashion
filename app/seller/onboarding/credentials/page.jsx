@@ -64,7 +64,17 @@ export default function SellerCredentialsPage() {
   const handleCreateAccount = (e) => {
     e.preventDefault();
     if (isOtpMatched) {
-      router.push("/seller/onboarding/details");
+      // Save to mock database (localStorage)
+      const registeredSellers = JSON.parse(localStorage.getItem("registered_sellers") || "[]");
+      const newSeller = { email: formData.email, password: formData.password };
+      
+      // Prevent duplicates
+      if (!registeredSellers.find(s => s.email === formData.email)) {
+        localStorage.setItem("registered_sellers", JSON.stringify([...registeredSellers, newSeller]));
+      }
+      
+      alert("Account created successfully! Please login to continue.");
+      router.push("/seller/login");
     }
   };
 

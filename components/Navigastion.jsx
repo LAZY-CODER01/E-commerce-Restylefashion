@@ -94,9 +94,9 @@ export default function Navigation() {
             ) : (
               <>
                 {/* Sell Button */}
-                <div className="hidden sm:block">
+                <Link href="/seller/login" className="hidden sm:block">
                   <Button className="py-2 px-5 text-[14px]">Sell</Button>
-                </div>
+                </Link>
 
                 {/* Account */}
                 <Link

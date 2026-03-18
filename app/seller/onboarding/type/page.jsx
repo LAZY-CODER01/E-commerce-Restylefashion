@@ -19,7 +19,9 @@ export default function SellerTypePage() {
 
   const handleStartSelling = () => {
     if (selectedType) {
-      router.push("/seller/onboarding/credentials");
+      // Logic: If they are coming from a login that followed a signup, 
+      // they should now complete their business/payment details.
+      router.push("/seller/onboarding/details");
     }
   };
 
@@ -29,6 +31,15 @@ export default function SellerTypePage() {
         
         <div className="flex flex-col gap-10">
           <div>
+            <div className="flex items-center gap-4 mb-4 -ml-2">
+               <button 
+                 onClick={() => router.back()}
+                 className="w-10 h-10 rounded-full hover:bg-gray-50 flex items-center justify-center text-brand-dark transition-all"
+               >
+                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+               </button>
+               <span className="text-[12px] font-bold text-brand-pink uppercase tracking-widest">Step 1 of 3</span>
+            </div>
             <h2 className="text-[28px] font-extrabold text-brand-dark leading-tight">Seller Type</h2>
             <p className="text-[14px] text-gray-500 font-medium">Select your category to customize your profile</p>
           </div>

@@ -10,6 +10,7 @@ import HelpOutlineOutlinedIcon from '@mui/icons-material/HelpOutlineOutlined';
 import CloseOutlinedIcon from '@mui/icons-material/CloseOutlined';
 import { useAuth } from "@/context/AuthContext";
 import { usePathname } from "next/navigation";
+import StorefrontOutlinedIcon from '@mui/icons-material/StorefrontOutlined';
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import Inventory2Icon from "@mui/icons-material/Inventory2";
@@ -188,6 +189,18 @@ export default function DrawerMenu({ open, onClose, drawerRef }) {
                   Login / Sign Up
                 </Link>
               )}
+
+              {/* Start Selling Link for Mobile */}
+              <Link
+                href="/seller/login"
+                onClick={onClose}
+                className="flex items-center gap-4 text-[17px] font-medium text-brand-purple hover:text-brand-pink transition-colors mt-2"
+              >
+                <span className="text-brand-purple">
+                  <StorefrontOutlinedIcon />
+                </span>
+                Start Selling
+              </Link>
             </div>
           </div>
 

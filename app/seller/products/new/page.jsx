@@ -32,6 +32,18 @@ export default function NewProductPage() {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (isFilled) {
+      // Save product to localStorage to simulate DB
+      const newProduct = {
+        id: Date.now(),
+        title: formData.name,
+        detail: formData.category,
+        price: `₹${formData.sellingPrice}`,
+        image: images[0] || "https://images.unsplash.com/photo-1542272604-787c3835535d?auto=format&fit=crop&w=100&q=80"
+      };
+
+      const existingProducts = JSON.parse(localStorage.getItem("seller_products") || "[]");
+      localStorage.setItem("seller_products", JSON.stringify([newProduct, ...existingProducts]));
+      
       router.push("/seller/dashboard");
     }
   };

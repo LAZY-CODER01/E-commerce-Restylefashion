@@ -16,8 +16,17 @@ export default function SellerLoginPage() {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (isFormValid) {
-      // Mock login - redir to dashboard
-      router.push("/seller/dashboard");
+      // Check mock DB
+      const registeredSellers = JSON.parse(localStorage.getItem("registered_sellers") || "[]");
+      const seller = registeredSellers.find(s => s.email === formData.email && s.password === formData.password);
+      
+      if (seller) {
+        // Redir to the next step of onboarding
+        router.push("/seller/onboarding/type");
+      } else {
+        setErrors({ general: "Invalid email or password. Please sign up first." });
+        alert("Account not found. Please sign up first!");
+      }
     }
   };
 
@@ -60,7 +69,7 @@ export default function SellerLoginPage() {
           </div>
 
           <p className="text-center text-[14px] font-medium text-gray-500 mt-2">
-            New Seller? <Link href="/seller/onboarding/type" className="text-brand-pink font-bold underline">Sign-up</Link>
+            New Seller? <Link href="/seller/onboarding/credentials" className="text-brand-pink font-bold underline">Sign-up</Link>
           </p>
 
           <Button 

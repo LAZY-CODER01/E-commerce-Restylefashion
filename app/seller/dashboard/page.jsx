@@ -12,7 +12,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
-import EarningsChart from "@/components/seller/EarningsChart";
+import EarningsChart from "../EarningsChart";
 
 const SUMMARY_CARDS = [
   { label: "Total Earnings", value: "₹1,12,880", icon: <TrendingUpIcon />, color: "bg-brand-pink/5 text-brand-pink" },
@@ -31,6 +31,12 @@ const MOST_SELLING = [
 
 export default function SellerDashboard() {
   const [activeTab, setActiveTab] = useState("dashboard");
+  const [listings, setListings] = useState([]);
+
+  React.useEffect(() => {
+    const saved = JSON.parse(localStorage.getItem("seller_products") || "[]");
+    setListings([...saved, ...MOST_SELLING.slice(0, 5 - Math.min(saved.length, 5))]);
+  }, []);
 
   return (
     <div className="min-h-screen bg-brand-light pb-24 font-roboto">
@@ -94,11 +100,11 @@ export default function SellerDashboard() {
            <div className="lg:col-span-4 flex flex-col gap-6">
               <div className="bg-white border border-gray-100 rounded-[32px] p-8 flex flex-col gap-8 shadow-sm h-full">
                  <h3 className="text-[18px] font-bold text-brand-dark border-l-4 border-brand-pink pl-4 leading-none">Most Selling Products</h3>
-                 <div className="flex flex-col gap-8 scroll-m-2">
-                    {MOST_SELLING.map((item) => (
-                       <div key={item.id} className="flex items-center gap-5 hover:bg-gray-50 p-3 rounded-2xl transition-all cursor-pointer border border-transparent hover:border-gray-100">
+                  <div className="flex flex-col gap-8 scroll-m-2">
+                    {listings.map((item) => (
+                       <div key={item.id} className="flex items-center gap-5 hover:bg-gray-50 p-3 rounded-2xl transition-all cursor-pointer border border-transparent hover:border-gray-100 group">
                           <div className="relative w-14 h-14 rounded-2xl overflow-hidden border border-gray-100 flex-shrink-0">
-                             <Image src={item.image} alt={item.title} fill className="object-cover" />
+                             <img src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                           </div>
                           <div className="flex flex-col flex-1">
                              <h4 className="text-[15px] font-bold text-brand-dark leading-tight">{item.title}</h4>
@@ -107,7 +113,7 @@ export default function SellerDashboard() {
                           <span className="text-[15px] font-bold text-brand-pink">{item.price}</span>
                        </div>
                     ))}
-                 </div>
+                  </div>
                  <button className="w-full py-4 text-[13px] font-bold text-gray-400 uppercase tracking-widest hover:text-brand-pink transition-colors">
                     View All Activity
                  </button>
