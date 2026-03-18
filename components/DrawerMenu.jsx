@@ -9,6 +9,11 @@ import MailOutlineOutlinedIcon from '@mui/icons-material/MailOutlineOutlined';
 import HelpOutlineOutlinedIcon from '@mui/icons-material/HelpOutlineOutlined';
 import CloseOutlinedIcon from '@mui/icons-material/CloseOutlined';
 import { useAuth } from "@/context/AuthContext";
+import { usePathname } from "next/navigation";
+import DashboardIcon from "@mui/icons-material/Dashboard";
+import LocalShippingIcon from "@mui/icons-material/LocalShipping";
+import Inventory2Icon from "@mui/icons-material/Inventory2";
+import PeopleIcon from "@mui/icons-material/People";
 
 const CATEGORY_ITEMS = [
   "Tops",
@@ -43,8 +48,17 @@ const SECONDARY_ITEMS = [
   },
 ];
 
+const ADMIN_ITEMS = [
+  { title: "Dashboard", path: "/admin/dashboard", icon: <DashboardIcon sx={{ fontSize: 22 }} /> },
+  { title: "Orders", path: "/admin/orders", icon: <LocalShippingIcon sx={{ fontSize: 22 }} /> },
+  { title: "Inventory", path: "/admin/inventory", icon: <Inventory2Icon sx={{ fontSize: 22 }} /> },
+  { title: "Sellers", path: "/admin/sellers", icon: <PeopleIcon sx={{ fontSize: 22 }} /> },
+];
+
 export default function DrawerMenu({ open, onClose, drawerRef }) {
   const { user, logout } = useAuth();
+  const pathname = usePathname();
+  const isAdminRoute = pathname.startsWith("/admin");
   return (
     <>
       {/* Overlay */}
@@ -87,23 +101,46 @@ export default function DrawerMenu({ open, onClose, drawerRef }) {
         {/* Scrollable Nav */}
         <nav className="flex-1 overflow-y-auto pb-8">
 
-          {/* Categories Section */}
+          {/* Categories/Admin Section */}
           <div className="px-6 py-6 border-b border-gray-100">
             <h3 className="text-[14px] font-bold text-gray-400 tracking-wider mb-6">
-              CATEGORIES
+              {isAdminRoute ? "ADMIN PANEL" : "CATEGORIES"}
             </h3>
             <div className="flex flex-col gap-6">
-              {CATEGORY_ITEMS.map((item) => (
-                <Link
-                  key={item}
-                  href="#"
-                  onClick={onClose}
-                  className="group flex items-center justify-between text-[17px] font-semibold text-brand-dark hover:text-brand-pink transition-colors"
-                >
-                  {item}
-                  <KeyboardArrowRightOutlinedIcon className="text-gray-300 transition-colors group-hover:text-brand-pink" />
-                </Link>
-              ))}
+              {isAdminRoute ? (
+                ADMIN_ITEMS.map((item) => {
+                  const isActive = pathname === item.path;
+                  return (
+                    <Link
+                      key={item.title}
+                      href={item.path}
+                      onClick={onClose}
+                      className={`group flex items-center gap-4 px-6 py-4 rounded-[20px] text-[17px] font-semibold transition-all duration-200 border border-transparent ${
+                        isActive 
+                        ? "bg-brand-pink text-white shadow-lg shadow-brand-pink/20" 
+                        : "text-brand-dark bg-transparent hover:bg-white hover:text-brand-pink hover:shadow-md hover:border-gray-100"
+                      }`}
+                    >
+                      <span className={`${isActive ? "text-white" : "text-gray-400 group-hover:text-brand-pink"} transition-colors`}>
+                        {item.icon}
+                      </span>
+                      {item.title}
+                    </Link>
+                  )
+                })
+              ) : (
+                CATEGORY_ITEMS.map((item) => (
+                  <Link
+                    key={item}
+                    href="#"
+                    onClick={onClose}
+                    className="group flex items-center justify-between text-[17px] font-semibold text-brand-dark hover:text-brand-pink transition-colors"
+                  >
+                    {item}
+                    <KeyboardArrowRightOutlinedIcon className="text-gray-300 transition-colors group-hover:text-brand-pink" />
+                  </Link>
+                ))
+              )}
             </div>
           </div>
 

@@ -76,31 +76,49 @@ export default function Navigation() {
 
           {/* Right Actions */}
           <div className="flex items-center gap-4 sm:gap-6">
+            {pathname.startsWith("/admin") ? (
+              <button className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 transition rounded-full pl-2 pr-4 py-1.5 shadow-sm">
+                 <div className="w-7 h-7 bg-brand-pink text-white rounded-full flex items-center justify-center">
+                    <PersonOutlineOutlinedIcon sx={{ fontSize: 18 }} />
+                 </div>
+                 <span className="text-[13px] font-bold text-gray-800 tracking-wide hidden sm:block">Admin 1</span>
+              </button>
+            ) : pathname.startsWith("/seller") ? (
+              <Link
+                href="/seller/dashboard"
+                aria-label="Account"
+                className="relative flex items-center justify-center text-brand-dark hover:text-brand-pink transition"
+              >
+                <PersonOutlineOutlinedIcon />
+              </Link>
+            ) : (
+              <>
+                {/* Sell Button */}
+                <div className="hidden sm:block">
+                  <Button className="py-2 px-5 text-[14px]">Sell</Button>
+                </div>
 
-            {/* Sell Button */}
-            <div className="hidden sm:block">
-              <Button className="py-2 px-5 text-[14px]">Sell</Button>
-            </div>
+                {/* Account */}
+                <Link
+                  href="/profile"
+                  aria-label="Account"
+                  className="relative flex items-center justify-center text-brand-dark hover:text-brand-pink transition"
+                >
+                  <PersonOutlineOutlinedIcon />
+                  <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-brand-pink border-[1.5px] border-white rounded-full"></span>
+                </Link>
 
-            {/* Account */}
-            <Link
-              href="/auth"
-              aria-label="Account"
-              className="relative flex items-center justify-center text-brand-dark hover:text-brand-pink transition"
-            >
-              <PersonOutlineOutlinedIcon />
-              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-brand-pink border-[1.5px] border-white rounded-full"></span>
-            </Link>
+                {/* Wishlist */}
+                <button aria-label="Wishlist" className="flex items-center justify-center text-brand-dark hover:text-brand-pink transition">
+                  <FavoriteBorderOutlinedIcon />
+                </button>
 
-            {/* Wishlist */}
-            <button aria-label="Wishlist" className="flex items-center justify-center text-brand-dark hover:text-brand-pink transition">
-              <FavoriteBorderOutlinedIcon />
-            </button>
-
-            {/* Bag */}
-            <button aria-label="Bag" className="flex items-center justify-center text-brand-dark hover:text-brand-pink transition">
-              <ShoppingBagOutlinedIcon />
-            </button>
+                {/* Bag */}
+                <button aria-label="Bag" className="flex items-center justify-center text-brand-dark hover:text-brand-pink transition">
+                  <ShoppingBagOutlinedIcon />
+                </button>
+              </>
+            )}
           </div>
         </div>
 
