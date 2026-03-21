@@ -11,10 +11,13 @@ import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined
 import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlined';
 import ShoppingBagOutlinedIcon from '@mui/icons-material/ShoppingBagOutlined';
 import MenuOutlinedIcon from '@mui/icons-material/MenuOutlined';
+import Image from "next/image";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Navigation() {
   const pathname = usePathname();
   const router = useRouter();
+  const { user } = useAuth();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const drawerRef = useRef(null);
   const { searchQuery, setSearchQuery } = useSearch();
@@ -98,14 +101,37 @@ export default function Navigation() {
                   <Button className="py-2 px-5 text-[14px]">Sell</Button>
                 </Link>
 
-                {/* Account */}
+                {/* Account / Profile */}
                 <Link
                   href="/profile"
                   aria-label="Account"
-                  className="relative flex items-center justify-center text-brand-dark hover:text-brand-pink transition"
+                  className="group relative flex items-center justify-center transition-all duration-300"
                 >
-                  <PersonOutlineOutlinedIcon />
-                  <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-brand-pink border-[1.5px] border-white rounded-full"></span>
+                  {user ? (
+                    <div className="relative w-9 h-9 md:w-10 md:h-10 rounded-full border-2 border-white shadow-sm overflow-hidden group-hover:shadow-md group-hover:scale-105 transition-all bg-gray-100">
+                      {user.profileImage ? (
+                        <Image 
+                          src={user.profileImage} 
+                          alt="Profile" 
+                          fill 
+                          className="object-cover"
+                          onError={(e) => {
+                             // Fallback handling
+                             e.target.style.display = 'none';
+                          }}
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-brand-pink/5 text-brand-pink text-[14px] font-bold">
+                          {user.name?.charAt(0) || <PersonOutlineOutlinedIcon />}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="relative flex items-center justify-center text-brand-dark hover:text-brand-pink transition">
+                      <PersonOutlineOutlinedIcon />
+                      <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-brand-pink border-[1.5px] border-white rounded-full"></span>
+                    </div>
+                  )}
                 </Link>
 
                 {/* Wishlist */}

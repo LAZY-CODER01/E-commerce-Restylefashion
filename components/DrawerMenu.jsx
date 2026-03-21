@@ -9,43 +9,50 @@ import MailOutlineOutlinedIcon from '@mui/icons-material/MailOutlineOutlined';
 import HelpOutlineOutlinedIcon from '@mui/icons-material/HelpOutlineOutlined';
 import CloseOutlinedIcon from '@mui/icons-material/CloseOutlined';
 import { useAuth } from "@/context/AuthContext";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import StorefrontOutlinedIcon from '@mui/icons-material/StorefrontOutlined';
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import Inventory2Icon from "@mui/icons-material/Inventory2";
 import PeopleIcon from "@mui/icons-material/People";
+import { useSearch } from "@/context/SearchContext";
 
 const CATEGORY_ITEMS = [
-  "Tops",
-  "Bottoms",
-  "Dresses",
-  "Co-ords",
-  "Outerwear",
-  "Shop by Influencers"
+  { name: "All", id: "all" },
+  { name: "Tops", id: "tops" },
+  { name: "Bottoms", id: "bottoms" },
+  { name: "Dresses", id: "dresses" },
+  { name: "Co-ords", id: "co-ords" },
+  { name: "Outerwear", id: "outerwear" },
+  { name: "Shop by Influencers", id: "influencers" }
 ];
 
 const SECONDARY_ITEMS = [
   {
     name: "Account",
     icon: <PersonOutlineOutlinedIcon />,
+    link: "/profile"
   },
   {
     name: "Wishlist",
     icon: <FavoriteBorderOutlinedIcon />,
+    link: "#"
   },
   {
     name: "Orders",
     icon: <LocalMallOutlinedIcon />,
+    link: "/seller/orders" // seller orders or orders page? Point to seller for now or current if it's there
   },
   {
     name: "Contact Us",
     icon: <MailOutlineOutlinedIcon />,
+    link: "#"
   },
   {
     name: "FAQs",
     highlight: true,
     icon: <HelpOutlineOutlinedIcon />,
+    link: "#"
   },
 ];
 
@@ -59,7 +66,30 @@ const ADMIN_ITEMS = [
 export default function DrawerMenu({ open, onClose, drawerRef }) {
   const { user, logout } = useAuth();
   const pathname = usePathname();
+  const router = useRouter();
+  const { activeCategory, setActiveCategory } = useSearch();
   const isAdminRoute = pathname.startsWith("/admin");
+
+  const handleCategoryClick = (id) => {
+    if (id === "influencers") {
+      onClose();
+      // Scroll to influencers section
+      if (pathname === "/") {
+        const element = document.getElementById("influencers");
+        element?.scrollIntoView({ behavior: "smooth" });
+      } else {
+        router.push("/#influencers");
+      }
+      return;
+    }
+
+    setActiveCategory(id);
+    onClose();
+    if (pathname !== "/") {
+      router.push("/");
+    }
+  };
+
   return (
     <>
       {/* Overlay */}
@@ -131,15 +161,18 @@ export default function DrawerMenu({ open, onClose, drawerRef }) {
                 })
               ) : (
                 CATEGORY_ITEMS.map((item) => (
-                  <Link
-                    key={item}
-                    href="#"
-                    onClick={onClose}
-                    className="group flex items-center justify-between text-[17px] font-semibold text-brand-dark hover:text-brand-pink transition-colors"
+                  <button
+                    key={item.id}
+                    onClick={() => handleCategoryClick(item.id)}
+                    className={`group flex items-center justify-between text-[17px] font-semibold transition-colors ${
+                      activeCategory === item.id ? "text-brand-pink" : "text-brand-dark hover:text-brand-pink"
+                    }`}
                   >
-                    {item}
-                    <KeyboardArrowRightOutlinedIcon className="text-gray-300 transition-colors group-hover:text-brand-pink" />
-                  </Link>
+                    {item.name}
+                    <KeyboardArrowRightOutlinedIcon className={`${
+                      activeCategory === item.id ? "text-brand-pink" : "text-gray-300"
+                    } transition-colors group-hover:text-brand-pink`} />
+                  </button>
                 ))
               )}
             </div>
@@ -151,7 +184,7 @@ export default function DrawerMenu({ open, onClose, drawerRef }) {
               {SECONDARY_ITEMS.map((item) => (
                 <Link
                   key={item.name}
-                  href="#"
+                  href={item.link}
                   onClick={onClose}
                   className={`flex items-center gap-4 text-[17px] font-medium transition-colors hover:text-brand-pink ${item.highlight ? "text-brand-pink" : "text-brand-dark"
                     }`}

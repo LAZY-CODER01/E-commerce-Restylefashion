@@ -7,6 +7,8 @@ import Button from "@/components/Button";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 
+import { toast } from "react-toastify";
+
 export default function SignupPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({
@@ -54,8 +56,13 @@ export default function SignupPage() {
 
       if (!result.success) {
         setApiError(result.message);
+        toast.error(result.message || "Registration failed. Please try again.");
         setLoading(false);
+      } else {
+        toast.success(`Account created successfully! Welcome to Restyle, ${formData.fullName}!`);
       }
+    } else {
+      toast.warn("Please correct the errors in the form.");
     }
   };
 

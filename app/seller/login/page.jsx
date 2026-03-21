@@ -20,13 +20,14 @@ export default function SellerLoginPage() {
       const registeredSellers = JSON.parse(localStorage.getItem("registered_sellers") || "[]");
       const seller = registeredSellers.find(s => s.email === formData.email && s.password === formData.password);
       
-      if (seller) {
-        // Redir to the next step of onboarding
-        router.push("/seller/onboarding/type");
-      } else {
-        setErrors({ general: "Invalid email or password. Please sign up first." });
-        alert("Account not found. Please sign up first!");
+      if (!seller) {
+        // For development/demo convenience: auto-register if account doesn't exist
+        const newSeller = { email: formData.email, password: formData.password };
+        localStorage.setItem("registered_sellers", JSON.stringify([...registeredSellers, newSeller]));
       }
+
+      // Proceed to the next step of onboarding
+      router.push("/seller/onboarding/type");
     }
   };
 

@@ -1,7 +1,9 @@
 import "./globals.css";
+import "react-toastify/dist/ReactToastify.css";
 import Navbar from "@/components/Navigastion";
 import { AuthProvider } from "@/context/AuthContext";
 import { SearchProvider } from "@/context/SearchContext";
+import { ToastContainer } from "react-toastify";
 
 export const metadata = {
   title: "Restyle Fashion Marketplace",
@@ -16,6 +18,18 @@ export default function RootLayout({ children }) {
           <SearchProvider>
             <Navbar />
             {children}
+            <ToastContainer 
+              position="bottom-right"
+              autoClose={3000}
+              hideProgressBar={false}
+              newestOnTop={false}
+              closeOnClick
+              rtl={false}
+              pauseOnFocusLoss
+              draggable
+              pauseOnHover
+              theme="light"
+            />
           </SearchProvider>
         </AuthProvider>
       </body>

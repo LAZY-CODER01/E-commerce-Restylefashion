@@ -54,18 +54,6 @@ export default function ProductCard({
           {title}
         </p>
 
-        {/* Rating Stars */}
-        <div className="flex items-center gap-1 text-brand-pink">
-          {[...Array(5)].map((_, i) => (
-            <StarIcon 
-              key={i} 
-              sx={{ fontSize: 14 }} 
-              className={i < Math.floor(rating) ? "text-brand-pink" : "text-gray-200"}
-            />
-          ))}
-          <span className="text-[11px] text-gray-400 ml-1">({rating})</span>
-        </div>
-
         <div className="mt-1 flex items-center gap-2">
           <span className="text-[16px] font-bold text-brand-pink">₹{price}</span>
           {originalPrice && (

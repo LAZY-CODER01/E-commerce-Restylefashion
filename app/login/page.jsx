@@ -6,6 +6,8 @@ import Input from "@/components/Input";
 import Button from "@/components/Button";
 import { useAuth } from "@/context/AuthContext";
 
+import { toast } from "react-toastify";
+
 export default function LoginPage() {
   const { login } = useAuth();
   const [formData, setFormData] = useState({ email: "", password: "" });
@@ -35,8 +37,13 @@ export default function LoginPage() {
 
       if (!result.success) {
         setApiError(result.message);
+        toast.error(result.message || "Invalid credentials");
         setLoading(false);
+      } else {
+        toast.success("Welcome back! Loading your profile...");
       }
+    } else {
+      toast.warn("Please check the form for errors.");
     }
   };
 

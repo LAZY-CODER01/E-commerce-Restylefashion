@@ -71,30 +71,12 @@ export default function SellerDashboard() {
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
            
-           {/* 2. Earnings Graph & Rating Card */}
+           {/* 2. Earnings Graph */}
            <div className="lg:col-span-8 flex flex-col gap-8">
               
               {/* Revenue Graph Card */}
               <EarningsChart />
-
-              {/* Average Rating Card */}
-              <div className="bg-white border border-gray-100 rounded-[32px] p-10 flex items-center justify-between shadow-sm">
-                 <div className="flex items-center gap-6">
-                    <div className="flex flex-col text-left">
-                       <h3 className="text-[18px] font-bold text-brand-dark">Average Product Rating</h3>
-                       <div className="flex items-center gap-2 mt-1">
-                          <StarIcon sx={{ color: '#F7246E', fontSize: 20 }} />
-                          <span className="text-[15px] font-bold text-brand-dark">4.5</span>
-                          <span className="text-[13px] font-medium text-gray-400">(152 reviews)</span>
-                       </div>
-                    </div>
-                 </div>
-                 <div className="w-16 h-16 rounded-full bg-brand-pink/5 flex flex-col items-center justify-center gap-0 border border-brand-pink/10">
-                    <span className="text-[18px] font-bold text-brand-pink leading-none">4.5</span>
-                    <span className="text-[10px] uppercase font-extrabold text-brand-pink/60">Rating</span>
-                 </div>
-              </div>
-           </div>
+            </div>
 
            {/* 3. Most Selling Products */}
            <div className="lg:col-span-4 flex flex-col gap-6">

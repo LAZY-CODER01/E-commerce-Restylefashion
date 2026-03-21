@@ -17,8 +17,7 @@ const HERO_SLIDES = [
 
 export default function HomePage() {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [activeCategory, setActiveCategory] = useState('all');
-  const { searchQuery } = useSearch();
+  const { searchQuery, activeCategory, setActiveCategory } = useSearch();
 
   // Auto Carousel logic
   useEffect(() => {
@@ -76,33 +75,41 @@ export default function HomePage() {
         </section>
 
         {/* Categories Section */}
-        <section className="flex flex-col gap-3 overflow-hidden">
+        <section id="categories" className="flex flex-col gap-4 overflow-hidden">
           <h3 className="text-[18px] font-bold text-brand-dark tracking-tight">
             Categories
           </h3>
-          <div className="flex items-center gap-4 md:gap-6 overflow-x-auto hide-scrollbar pb-2 snap-x snap-mandatory">
+          <div className="flex items-center gap-5 md:gap-7 overflow-x-auto hide-scrollbar pb-3 snap-x snap-mandatory px-0.5">
             {CATEGORIES.map((cat) => (
               <button 
                 key={cat.id} 
-                onClick={() => setActiveCategory(cat.id)}
-                className={`flex flex-col items-center gap-2 min-w-[72px] sm:min-w-[84px] snap-start transition-all transform active:scale-95 group`}
+                onClick={() => {
+                  if (cat.id === "influencers") {
+                    const element = document.getElementById("influencers");
+                    element?.scrollIntoView({ behavior: "smooth" });
+                    return;
+                  }
+                  setActiveCategory(cat.id);
+                }}
+                className="flex flex-col items-center gap-3 snap-start transition-all transform active:scale-95 group min-w-[70px]"
               >
-                <div className={`relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden border-2 transition-all ${
-                  activeCategory === cat.id ? "border-brand-pink shadow-pink-md scale-105" : "border-transparent group-hover:border-brand-pink/30"
+                <div className={`relative w-[68px] h-[68px] sm:w-[80px] sm:h-[80px] rounded-[18px] overflow-hidden border-[2.5px] transition-all duration-300 ${
+                  activeCategory === cat.id 
+                    ? "border-brand-pink shadow-[0_8px_20px_-6px_rgba(247,36,110,0.5)] scale-105" 
+                    : "border-gray-50 bg-gray-50 group-hover:border-brand-pink/20"
                 }`}>
                   <Image 
                     src={cat.image} 
                     alt={cat.name} 
                     fill 
-                    className="object-cover transition-transform group-hover:scale-110"
+                    className="object-cover transition-transform duration-500 group-hover:scale-110"
                   />
                   {activeCategory === cat.id && (
-                    <div className="absolute inset-0 bg-brand-pink/10 flex items-center justify-center">
-                    </div>
+                    <div className="absolute inset-0 bg-brand-pink/5" />
                   )}
                 </div>
-                <span className={`text-[12px] font-bold transition-colors ${
-                  activeCategory === cat.id ? "text-brand-pink" : "text-brand-dark opacity-70 group-hover:opacity-100"
+                <span className={`text-[12px] font-bold transition-all duration-300 ${
+                  activeCategory === cat.id ? "text-brand-pink scale-105" : "text-brand-dark opacity-70 group-hover:opacity-100"
                 }`}>
                   {cat.name}
                 </span>
@@ -148,7 +155,7 @@ export default function HomePage() {
         </section>
 
         {/* Top Influencers Section */}
-        <section className="flex flex-col gap-3">
+        <section id="influencers" className="flex flex-col gap-3">
           <h3 className="text-[18px] font-bold text-brand-dark tracking-tight">
             Our Top Influencers
           </h3>

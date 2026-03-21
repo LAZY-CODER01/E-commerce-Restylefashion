@@ -23,11 +23,7 @@ export default function SellerCard({ seller }) {
           <div className="flex flex-col gap-1">
             <h5 className="text-[16px] font-bold text-brand-dark">{seller.name}</h5>
             <div className="flex items-center gap-3">
-              <div className="flex items-center text-brand-pink">
-                <StarIcon sx={{ fontSize: 16 }} />
-                <span className="text-[13px] font-bold ml-1">{seller.rating} Rating</span>
-              </div>
-              <span className="text-[12px] font-medium text-gray-400">• {seller.location}</span>
+              <span className="text-[12px] font-medium text-gray-400">{seller.location}</span>
             </div>
           </div>
         </div>

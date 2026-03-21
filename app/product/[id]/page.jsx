@@ -5,10 +5,8 @@ import ProductImageGallery from "@/components/pdp/ProductImageGallery";
 import SizeSelector from "@/components/pdp/SizeSelector";
 import ConditionTag from "@/components/pdp/ConditionTag";
 import ActionButtons from "@/components/pdp/ActionButtons";
-import Rating from "@/components/pdp/Rating";
 import QuantitySelector from "@/components/pdp/QuantitySelector";
 import RelatedProductsSection from "@/components/pdp/RelatedProductsSection";
-import ProductReviews from "@/components/pdp/ProductReviews";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 
@@ -67,6 +65,8 @@ const getProductData = (id) => {
   };
 };
 
+import { toast } from "react-toastify";
+
 export default function ProductDetailsPage({ params }) {
   // Direct use of the params promise for Next.js 15+
   const { id } = use(params);
@@ -77,6 +77,32 @@ export default function ProductDetailsPage({ params }) {
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [isDescExpanded, setIsDescExpanded] = useState(true);
   
+  const handleWishlistToggle = () => {
+    const newState = !isWishlisted;
+    setIsWishlisted(newState);
+    if (newState) {
+      toast.info(`${product.title} added to wishlist!`);
+    } else {
+      toast.info(`${product.title} removed from wishlist.`);
+    }
+  };
+
+  const handleAddToCart = () => {
+    if (!selectedSize) {
+      toast.warn("Please select a size first.");
+      return;
+    }
+    toast.success(`${quantity} ${product.title} (${selectedSize}) added to bag!`);
+  };
+
+  const handleBuyNow = () => {
+    if (!selectedSize) {
+      toast.warn("Please select a size before buying.");
+      return;
+    }
+    toast.info("Redirecting to checkout...");
+  };
+
   if (!product) return (
     <div className="min-h-screen flex items-center justify-center bg-brand-light">
       <div className="bg-white p-8 rounded-2xl shadow-sm text-center">
@@ -105,9 +131,7 @@ export default function ProductDetailsPage({ params }) {
               <h1 className="text-[26px] md:text-[32px] font-bold text-brand-dark leading-tight tracking-tight">
                 {product.title}
               </h1>
-              
-              <Rating rating={product.rating} count={product.ratingCount} />
-              
+
               <hr className="my-6 border-[#F0F0F0]" />
 
               <div className="flex flex-col gap-2">
@@ -186,9 +210,9 @@ export default function ProductDetailsPage({ params }) {
 
               <ActionButtons 
                 isWishlisted={isWishlisted}
-                onWishlistToggle={() => setIsWishlisted(!isWishlisted)}
-                onBuyNow={() => console.log("Buy Now", { productId, quantity, selectedSize })}
-                onAddToCart={() => console.log("Add to Cart", { productId, quantity, selectedSize })}
+                onWishlistToggle={handleWishlistToggle}
+                onBuyNow={handleBuyNow}
+                onAddToCart={handleAddToCart}
               />
               
               <p className="text-[11px] text-gray-400 text-center font-medium opacity-80">
@@ -210,9 +234,6 @@ export default function ProductDetailsPage({ params }) {
             products={product.bestSellers} 
           />
         </div>
-
-        {/* Dynamic Reviews Section */}
-        <ProductReviews />
       </main>
     </div>
   );
