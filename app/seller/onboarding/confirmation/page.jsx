@@ -3,6 +3,7 @@
 import React from "react";
 import Button from "@/components/Button";
 import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import SecurityIcon from "@mui/icons-material/Security";
 
@@ -44,7 +45,10 @@ export default function SellerConfirmationPage() {
         </p>
 
         <Button 
-          onClick={() => router.push("/seller/verify-email")}
+          onClick={() => {
+            toast.info("Verification email sent to your inbox!", { theme: "colored" });
+            router.push("/seller/verify-email");
+          }}
           fullWidth 
           className="h-[54px] rounded-full font-bold text-[16px] mt-4 shadow-lg shadow-brand-pink/20"
         >

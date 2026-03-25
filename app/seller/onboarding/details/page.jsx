@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Input from "@/components/Input";
 import Button from "@/components/Button";
 import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 export default function SellerDetailsPage() {
@@ -32,8 +33,10 @@ export default function SellerDetailsPage() {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (step === 1 && isStep1Filled) {
+      toast.success("Enterprise info saved!", { position: "top-right", autoClose: 1500 });
       setStep(2);
     } else if (step === 2 && isStep2Filled) {
+      toast.success("Payment details updated!", { position: "top-right" });
       router.push("/seller/onboarding/confirmation");
     }
   };

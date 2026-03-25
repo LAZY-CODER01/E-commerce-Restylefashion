@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import Button from "@/components/Button";
 
@@ -13,6 +14,7 @@ export default function VerifyEmailPage() {
     // Simulate verification delay
     const timer = setTimeout(() => {
       setVerifying(false);
+      toast.success("Account verified successfully! 🌸", { icon: "✅" });
     }, 2000);
     return () => clearTimeout(timer);
   }, []);

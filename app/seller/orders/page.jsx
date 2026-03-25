@@ -55,6 +55,12 @@ export default function SellerOrdersPage() {
       
       <main className="max-w-[1400px] mx-auto px-6 pt-8 flex flex-col gap-8 animate-fadeIn">
          
+         {/* Heading */}
+         <div className="flex flex-col">
+            <h2 className="text-[32px] font-bold text-brand-dark leading-tight tracking-tight">Orders</h2>
+            <p className="text-[13px] font-bold text-gray-400 uppercase tracking-widest mt-1">Transaction History & Status</p>
+         </div>
+
          {/* Search Bar */}
          <div className="flex items-center gap-4">
             <div className="flex-1 max-w-xl flex items-center gap-3 bg-white border border-gray-200 rounded-full px-5 py-3.5 focus-within:border-brand-pink focus-within:shadow-[0_0_0_3px_rgba(247,36,110,0.07)] shadow-sm transition-all duration-200">

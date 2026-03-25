@@ -11,7 +11,7 @@ export default function ProductCard({
   price = "45",
   originalPrice = "90",
   imageUrl = "https://images.unsplash.com/photo-1576995853123-5a10305d93c0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-  size = "M",
+  // size = "",
   rating = 4.5,
 }) {
   return (
@@ -40,9 +40,9 @@ export default function ProductCard({
         </button>
 
         {/* Size Badge */}
-        <div className="absolute bottom-3 left-3 z-20 rounded bg-white/90 px-2 py-1 text-[11px] font-bold text-brand-dark backdrop-blur-sm">
-          {size}
-        </div>
+        {/* <div className="absolute bottom-3 left-3 z-20 rounded bg-white/90 px-2 py-1 text-[11px] font-bold text-brand-dark backdrop-blur-sm"> */}
+          {/* {size} */}
+        {/* </div> */}
       </div>
 
       {/* Content */}

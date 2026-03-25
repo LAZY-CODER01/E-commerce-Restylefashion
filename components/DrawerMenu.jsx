@@ -224,7 +224,7 @@ export default function DrawerMenu({ open, onClose, drawerRef }) {
               )}
 
               {/* Start Selling Link for Mobile */}
-              <Link
+              {/* <Link
                 href="/seller/login"
                 onClick={onClose}
                 className="flex items-center gap-4 text-[17px] font-medium text-brand-purple hover:text-brand-pink transition-colors mt-2"
@@ -233,7 +233,7 @@ export default function DrawerMenu({ open, onClose, drawerRef }) {
                   <StorefrontOutlinedIcon />
                 </span>
                 Start Selling
-              </Link>
+              </Link> */}
             </div>
           </div>
 

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Input from "@/components/Input";
 import Button from "@/components/Button";
 import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
 import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
 
@@ -47,7 +48,7 @@ export default function SellerCredentialsPage() {
     setTimeout(() => {
       setShowOtp(true);
       setLoading(false);
-      alert("OTP sent to " + formData.email + " (Use 123456)");
+      toast.info("OTP sent! (Use 123456)", { position: "top-center" });
     }, 1500);
   };
 
@@ -73,7 +74,7 @@ export default function SellerCredentialsPage() {
         localStorage.setItem("registered_sellers", JSON.stringify([...registeredSellers, newSeller]));
       }
       
-      alert("Account created successfully! Please login to continue.");
+      toast.success("Account created! Please login to continue.");
       router.push("/seller/login");
     }
   };

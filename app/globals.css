@@ -10,6 +10,8 @@
   --color-brand-light: #FAFAFA;
   --color-brand-accent1: #F73425;
   --color-brand-accent2: #F75925;
+  --color-primary: #F7246E;
+  --color-muted-foreground: #6B7280;
   --radius-card: 14px;
   --shadow-pink-md: 0 4px 14px rgba(247, 36, 110, 0.35);
   --shadow-pink-lg: 0 6px 20px rgba(247, 36, 110, 0.45);

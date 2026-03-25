@@ -5,6 +5,7 @@ import Input from "@/components/Input";
 import Button from "@/components/Button";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
 
 export default function SellerLoginPage() {
   const router = useRouter();
@@ -27,6 +28,7 @@ export default function SellerLoginPage() {
       }
 
       // Proceed to the next step of onboarding
+      toast.success("Welcome, Seller! Let's complete your profile.");
       router.push("/seller/onboarding/type");
     }
   };

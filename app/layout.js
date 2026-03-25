@@ -1,6 +1,7 @@
 import "./globals.css";
 import "react-toastify/dist/ReactToastify.css";
 import Navbar from "@/components/Navigastion";
+import { Footer7 } from "@/components/ui/footer-7";
 import { AuthProvider } from "@/context/AuthContext";
 import { SearchProvider } from "@/context/SearchContext";
 import { ToastContainer } from "react-toastify";
@@ -18,6 +19,7 @@ export default function RootLayout({ children }) {
           <SearchProvider>
             <Navbar />
             {children}
+            <Footer7 />
             <ToastContainer 
               position="bottom-right"
               autoClose={3000}
