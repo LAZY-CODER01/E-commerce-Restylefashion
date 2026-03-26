@@ -42,3 +42,31 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+# Sellar workflow
+```tree
+
+Sell Button
+   ↓
+Choose Category (Influencer | Thrift | Individual)
+   ↓
+Enter Seller Info
+   ↓
+Add Product Details
+   ↓
+Login / Signup / Guest
+   ↓
+Product Under Review
+   ↓
+Product Live
+   ↓
+Product Sold
+   ↓
+Fill Seller Details (if not filled)
+   ↓
+Pickup → Verification
+   ↓
+Payout
+
+```
+
