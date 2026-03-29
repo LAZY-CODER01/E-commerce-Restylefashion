@@ -47,9 +47,9 @@ export default function NewProductPage() {
    const handleImageUpload = (e) => {
       if (e.target.files) {
          const newFiles = Array.from(e.target.files);
-         setImageFiles(prev => [...prev, ...newFiles].slice(0, 4));
+         setImageFiles(prev => [...prev, ...newFiles].slice(0, 5));
          const newPreviews = newFiles.map(f => URL.createObjectURL(f));
-         setImagePreviews(prev => [...prev, ...newPreviews].slice(0, 4));
+         setImagePreviews(prev => [...prev, ...newPreviews].slice(0, 5));
       }
    };
 
@@ -131,7 +131,7 @@ export default function NewProductPage() {
                {/* Section 1: Photos */}
                <div className="flex flex-col gap-4">
                   <h3 className="text-[14px] font-bold text-brand-dark uppercase tracking-widest pl-3 border-l-4 border-brand-pink">Visuals</h3>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-3 md:grid-cols-5 gap-4">
                      {/* Uploaded Images */}
                      {imagePreviews.map((img, index) => (
                         <div key={index} className="aspect-square bg-gray-50 rounded-[24px] border border-gray-100 relative overflow-hidden group">
@@ -147,10 +147,10 @@ export default function NewProductPage() {
                      ))}
 
                      {/* Upload Button visible if slots left */}
-                     {imagePreviews.length < 4 && (
+                     {imagePreviews.length < 5 && (
                         <label className="aspect-square bg-white border-2 border-dashed border-gray-300 rounded-[24px] flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-brand-pink hover:bg-brand-pink/5 transition-all text-gray-400 hover:text-brand-pink relative overflow-hidden">
                            <AddPhotoAlternateIcon sx={{ fontSize: 28 }} />
-                           <span className="text-[11px] font-bold uppercase tracking-tight text-center px-2 z-10">Add Photos<br />(Max 4)</span>
+                           <span className="text-[11px] font-bold uppercase tracking-tight text-center px-2 z-10">Add Photos<br />(Max 5)</span>
                            <input
                               type="file"
                               multiple
@@ -163,7 +163,7 @@ export default function NewProductPage() {
                      )}
 
                      {/* Empty State placeholders */}
-                     {[...Array(Math.max(0, 3 - imagePreviews.length))].map((_, i) => (
+                     {[...Array(Math.max(0, 4 - imagePreviews.length))].map((_, i) => (
                         <div key={`empty-${i}`} className="aspect-square bg-gray-50 rounded-[24px] border border-gray-100 opacity-50 flex items-center justify-center text-gray-300">
                            <AddPhotoAlternateIcon sx={{ fontSize: 20 }} />
                         </div>

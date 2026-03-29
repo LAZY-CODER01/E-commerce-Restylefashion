@@ -174,6 +174,46 @@ router.get("/seller/me", protect, authorize("Seller", "Admin"), async (req, res)
     }
 });
 
+// @route   GET /api/products/admin/pending
+// @desc    Get all products pending admin approval
+// @access  Private (Admin only)
+router.get("/admin/pending", protect, authorize("Admin"), async (req, res) => {
+    try {
+        const { status = "pending" } = req.query;
+        const products = await Product.find({ status })
+            .populate("seller", "fullName email businessName sellerType avatar")
+            .sort({ createdAt: -1 });
+        res.json(products);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// @route   PATCH /api/products/admin/:id/status
+// @desc    Approve or reject a product listing
+// @access  Private (Admin only)
+router.patch("/admin/:id/status", protect, authorize("Admin"), async (req, res) => {
+    try {
+        const { status } = req.body; // "approved" | "rejected"
+        if (!["approved", "rejected"].includes(status)) {
+            return res.status(400).json({ message: "Invalid status value" });
+        }
+        const product = await Product.findByIdAndUpdate(
+            req.params.id,
+            { status },
+            { new: true }
+        ).populate("seller", "fullName email");
+
+        if (!product) {
+            return res.status(404).json({ message: "Product not found" });
+        }
+        res.json({ message: `Product ${status} successfully`, product });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+
 // @route   GET /api/products/:id
 // @desc    Get single product by ID
 // @access  Public
@@ -208,6 +248,7 @@ router.post(
     protect,
     authorize("Seller", "Admin"),
     upload.array("images", 5),
+
     async (req, res) => {
         try {
             const {

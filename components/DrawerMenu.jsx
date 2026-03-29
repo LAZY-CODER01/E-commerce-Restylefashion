@@ -58,8 +58,8 @@ const SECONDARY_ITEMS = [
 
 const ADMIN_ITEMS = [
   { title: "Dashboard", path: "/admin/dashboard", icon: <DashboardIcon sx={{ fontSize: 22 }} /> },
+  { title: "Listings", path: "/admin/listings", icon: <Inventory2Icon sx={{ fontSize: 22 }} /> },
   { title: "Orders", path: "/admin/orders", icon: <LocalShippingIcon sx={{ fontSize: 22 }} /> },
-  { title: "Inventory", path: "/admin/inventory", icon: <Inventory2Icon sx={{ fontSize: 22 }} /> },
   { title: "Sellers", path: "/admin/sellers", icon: <PeopleIcon sx={{ fontSize: 22 }} /> },
 ];
 
