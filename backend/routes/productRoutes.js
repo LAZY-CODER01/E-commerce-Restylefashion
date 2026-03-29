@@ -248,9 +248,9 @@ router.post(
                         });
                         imageUrls.push(secureUrl);
                     } catch (uploadErr) {
-                        console.error("Cloudinary Upload Error:", uploadErr);
-                        // Still continue or fail? Let's fail for data integrity
-                        throw new Error("Failed to upload images to Cloudinary");
+                        console.error("Cloudinary Upload Error Details:", uploadErr);
+                        const errMsg = uploadErr.message || uploadErr.error?.message || "Unknown Cloudinary Error";
+                        throw new Error(`Cloudinary upload failed: ${errMsg}`);
                     }
                 }
             }

@@ -1,5 +1,6 @@
 const cloudinary = require("cloudinary").v2;
 const multer = require("multer");
+require("dotenv").config(); // Force load env variables to prevent missing credentials
 
 // Configure Cloudinary
 cloudinary.config({
