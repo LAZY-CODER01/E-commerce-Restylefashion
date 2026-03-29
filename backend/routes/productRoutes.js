@@ -229,19 +229,24 @@ router.post(
                 sizes,
             } = req.body;
 
-            // Upload files to Cloudinary manually
+            // Upload files to Cloudinary manually from memory buffer
             if (uploadedFiles.length > 0) {
                 for (const file of uploadedFiles) {
                     try {
-                        const result = await cloudinary.uploader.upload(file.path, {
-                            folder: "restyle-products",
-                            transformation: [{ width: 800, height: 800, crop: "limit", quality: "auto" }],
+                        const secureUrl = await new Promise((resolve, reject) => {
+                            const uploadStream = cloudinary.uploader.upload_stream(
+                                {
+                                    folder: "restyle-products",
+                                    transformation: [{ width: 800, height: 800, crop: "limit", quality: "auto" }],
+                                },
+                                (error, result) => {
+                                    if (error) return reject(error);
+                                    resolve(result.secure_url);
+                                }
+                            );
+                            uploadStream.end(file.buffer);
                         });
-                        imageUrls.push(result.secure_url);
-                        // Clean up: delete local file
-                        if (fs.existsSync(file.path)) {
-                            fs.unlinkSync(file.path);
-                        }
+                        imageUrls.push(secureUrl);
                     } catch (uploadErr) {
                         console.error("Cloudinary Upload Error:", uploadErr);
                         // Still continue or fail? Let's fail for data integrity
@@ -269,12 +274,6 @@ router.post(
 
             res.status(201).json(product);
         } catch (error) {
-            // Clean up any remaining files if something failed
-            uploadedFiles.forEach((file) => {
-                if (fs.existsSync(file.path)) {
-                    fs.unlinkSync(file.path);
-                }
-            });
             res.status(500).json({ message: error.message });
         }
     }
