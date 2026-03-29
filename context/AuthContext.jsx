@@ -68,10 +68,8 @@ export function AuthProvider({ children }) {
         router.push("/admin/dashboard");
         break;
       case "Seller":
-        router.push("/seller/dashboard");
-        break;
       case "Influencer":
-        router.push("/influencer/profile");
+        router.push("/");
         break;
       case "User":
       default:
