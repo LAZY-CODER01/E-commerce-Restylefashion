@@ -257,8 +257,8 @@ export default function AdminDashboardPage() {
       <aside className="hidden lg:flex w-[240px] bg-brand-light flex-col border-r border-gray-200/50 h-[calc(100vh-80px)] shrink-0 py-8 pr-4 overflow-y-auto">
         <nav className="flex flex-col font-bold text-[14px] gap-2">
           {[{ title: "Dashboard", path: "/admin/dashboard", icon: <DashboardIcon sx={{ fontSize: 22 }} /> },
+            { title: "Listings", path: "/admin/listings", icon: <Inventory2Icon sx={{ fontSize: 22 }} /> },
             { title: "Orders", path: "/admin/orders", icon: <LocalShippingIcon sx={{ fontSize: 22 }} /> },
-            { title: "Inventory", path: "/admin/inventory", icon: <Inventory2Icon sx={{ fontSize: 22 }} /> },
             { title: "Sellers", path: "/admin/sellers", icon: <PeopleIcon sx={{ fontSize: 22 }} /> },
           ].map((item) => {
             const isActive = pathname === item.path;
