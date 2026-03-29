@@ -123,7 +123,7 @@ router.post("/seed", async (req, res) => {
 router.get("/", async (req, res) => {
     try {
         const { category, search, page = 1, limit = 20 } = req.query;
-        const query = {};
+        const query = { status: "approved" };
 
         // Category filter
         if (category && category !== "all") {
@@ -242,6 +242,7 @@ router.post(
                 imageUrl: imageUrls[0] || "",
                 sizes: sizes ? (typeof sizes === "string" ? JSON.parse(sizes) : sizes) : undefined,
                 seller: req.user._id,
+                status: "pending",
             });
 
             res.status(201).json(product);

@@ -73,6 +73,11 @@ const productSchema = new mongoose.Schema(
             enum: ["In Stock", "Out of Stock", "Limited"],
             default: "In Stock",
         },
+        status: {
+            type: String,
+            enum: ["pending", "approved", "rejected"],
+            default: "pending",
+        },
     },
     { timestamps: true }
 );

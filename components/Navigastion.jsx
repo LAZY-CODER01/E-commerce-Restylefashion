@@ -97,9 +97,12 @@ export default function Navigation() {
             ) : (
               <>
                 {/* Sell Button */}
-                <Link href="/seller/login" className="hidden sm:block">
+                <button
+                  onClick={() => router.push(user ? "/seller/onboarding/type" : "/login")}
+                  className="hidden sm:block"
+                >
                   <Button className="py-2 px-5 text-[14px]">Sell</Button>
-                </Link>
+                </button>
 
                 {/* Account / Profile */}
                 <Link

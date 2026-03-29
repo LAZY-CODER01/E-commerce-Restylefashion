@@ -1,29 +1,49 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Button from "@/components/Button";
 import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
+import { useAuth } from "@/context/AuthContext";
+import api from "@/lib/api";
+import { toast } from "react-toastify";
 
 const SELLER_TYPES = [
-  { id: "thrifters", label: "Thrifters" },
+  { id: "thrifter", label: "Thrifter" },
   { id: "influencer", label: "Influencer" },
-  { id: "individual", label: "Individual Seller" }
+  { id: "individual", label: "Individual Seller" },
 ];
 
 export default function SellerTypePage() {
   const router = useRouter();
+  const { user, loading } = useAuth();
   const [selectedType, setSelectedType] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  // Auth guard — redirect to login if not authenticated
+  useEffect(() => {
+    if (!loading && !user) {
+      router.replace("/login");
+    }
+  }, [user, loading, router]);
 
   const isSelected = (id) => selectedType === id;
 
-  const handleStartSelling = () => {
-    if (selectedType) {
-      // Logic: Store selected type for later steps
+  const handleStartSelling = async () => {
+    if (!selectedType) return;
+    setSubmitting(true);
+    try {
+      // Persist seller type to backend
+      await api.put("/auth/seller-profile", { sellerType: selectedType });
       localStorage.setItem("seller_type", selectedType);
       router.push("/seller/onboarding/details");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Something went wrong");
+    } finally {
+      setSubmitting(false);
     }
   };
+
+  if (loading || !user) return null;
 
   return (
     <div className="min-h-screen bg-brand-light flex items-end justify-center sm:items-center p-0 sm:p-4 font-roboto">
@@ -62,11 +82,11 @@ export default function SellerTypePage() {
 
           <Button 
             onClick={handleStartSelling} 
-            disabled={!selectedType}
+            disabled={!selectedType || submitting}
             fullWidth 
             className="h-[54px] rounded-full font-bold text-[16px] mt-4"
           >
-            Start Selling
+            {submitting ? "Saving..." : "Start Selling"}
           </Button>
         </div>
       </div>

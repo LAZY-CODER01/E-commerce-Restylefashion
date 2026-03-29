@@ -104,4 +104,49 @@ router.get("/profile", protect, async (req, res) => {
     }
 });
 
+// @route   PUT /api/auth/seller-profile
+// @desc    Save seller onboarding profile and upgrade role to Seller
+// @access  Private
+router.put("/seller-profile", protect, async (req, res) => {
+    try {
+        const { sellerType, businessName, instagramId, pincode } = req.body;
+
+        const updateFields = {};
+        if (sellerType !== undefined) updateFields.sellerType = sellerType;
+        if (businessName !== undefined) updateFields.businessName = businessName;
+        if (instagramId !== undefined) updateFields.instagramId = instagramId;
+        if (pincode !== undefined) updateFields.pincode = pincode;
+
+        // Upgrade role to Seller when details are provided
+        if (businessName || pincode) {
+            updateFields.role = "Seller";
+        }
+
+        const user = await User.findByIdAndUpdate(
+            req.user._id,
+            { $set: updateFields },
+            { new: true, runValidators: true }
+        );
+
+        res.json({
+            _id: user._id,
+            fullName: user.fullName,
+            email: user.email,
+            mobile: user.mobile,
+            role: user.role,
+            avatar: user.avatar,
+            sellerType: user.sellerType,
+            businessName: user.businessName,
+            instagramId: user.instagramId,
+            pincode: user.pincode,
+            sellerStatus: user.sellerStatus,
+            isSellerVerified: user.isSellerVerified,
+            token: generateToken(user._id),
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
 module.exports = router;
+

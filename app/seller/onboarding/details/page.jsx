@@ -6,33 +6,80 @@ import Button from "@/components/Button";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import { useAuth } from "@/context/AuthContext";
+import api from "@/lib/api";
 
 export default function SellerDetailsPage() {
   const router = useRouter();
+  const { user, loading, setUser } = useAuth();
   const [sellerType, setSellerType] = useState("");
-  const [formData, setFormData] = useState({ 
-    fullName: "", businessName: "", socialLink: ""
+  const [formData, setFormData] = useState({
+    fullName: "",
+    businessName: "",
+    instagramId: "",
+    pincode: "",
   });
+  const [submitting, setSubmitting] = useState(false);
+
+  // Auth guard
+  useEffect(() => {
+    if (!loading && !user) {
+      router.replace("/login");
+    }
+  }, [user, loading, router]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
       const type = localStorage.getItem("seller_type") || "";
       setSellerType(type);
+      // Pre-fill name from logged-in user
+      if (user?.fullName) {
+        setFormData((prev) => ({ ...prev, fullName: user.fullName }));
+      }
     }
-  }, []);
+  }, [user]);
 
-  const isFilled = formData.fullName && formData.businessName && 
-                   (sellerType === "individual" ? true : formData.socialLink);
+  const showSocialField = sellerType === "thrifter" || sellerType === "influencer";
 
-  const handleSubmit = (e) => {
+  const isFilled =
+    formData.fullName.trim() !== "" &&
+    formData.businessName.trim() !== "" &&
+    formData.pincode.trim() !== "" &&
+    (showSocialField ? formData.instagramId.trim() !== "" : true);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (isFilled) {
-      toast.success("Profile details saved!");
-      // Save for later (optional)
+    if (!isFilled) return;
+
+    setSubmitting(true);
+    try {
+      // Save full profile to backend — this also upgrades role to Seller
+      const { data } = await api.put("/auth/seller-profile", {
+        sellerType,
+        businessName: formData.businessName,
+        instagramId: formData.instagramId,
+        pincode: formData.pincode,
+      });
+
+      // Update stored token with the newly issued one (role is now Seller)
+      if (data.token) {
+        localStorage.setItem("restyle_token", data.token);
+        setUser(data); // sync in-memory user state (role is now Seller)
+      }
+
+      // Also cache profile for multi-step reference
       localStorage.setItem("seller_profile", JSON.stringify(formData));
+
+      toast.success("Profile saved!");
       router.push("/seller/products/new");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to save profile");
+    } finally {
+      setSubmitting(false);
     }
   };
+
+  if (loading || !user) return null;
 
   return (
     <div className="min-h-screen bg-brand-light flex items-center justify-center p-4 font-roboto">
@@ -78,24 +125,30 @@ export default function SellerDetailsPage() {
                     value={formData.businessName}
                     onChange={(e) => setFormData({ ...formData, businessName: e.target.value })}
                   />
-                  {sellerType !== "individual" && (
+                  {showSocialField && (
                     <Input 
-                      label="Social Media Link"
-                      placeholder="Instagram/Facebook/Portfolio URL"
-                      value={formData.socialLink}
-                      onChange={(e) => setFormData({ ...formData, socialLink: e.target.value })}
+                      label="Instagram Handle"
+                      placeholder="@yourusername"
+                      value={formData.instagramId}
+                      onChange={(e) => setFormData({ ...formData, instagramId: e.target.value })}
                     />
                   )}
+                  <Input 
+                    label="Pincode"
+                    placeholder="e.g. 400001"
+                    value={formData.pincode}
+                    onChange={(e) => setFormData({ ...formData, pincode: e.target.value })}
+                  />
                </div>
             </div>
 
             <Button 
               type="submit" 
               fullWidth 
-              disabled={!isFilled}
+              disabled={!isFilled || submitting}
               className="h-[54px] rounded-full font-bold text-[16px] mt-8 mb-4 shadow-lg shadow-brand-pink/20"
             >
-              Continue to Product Listing
+              {submitting ? "Saving..." : "Continue to Product Listing"}
             </Button>
          </form>
       </div>

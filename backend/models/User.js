@@ -35,6 +35,33 @@ const userSchema = new mongoose.Schema(
             type: String,
             default: "",
         },
+        // Seller profile fields
+        sellerType: {
+            type: String,
+            enum: ["thrifter", "influencer", "individual", null],
+            default: null,
+        },
+        businessName: {
+            type: String,
+            default: "",
+        },
+        instagramId: {
+            type: String,
+            default: "",
+        },
+        pincode: {
+            type: String,
+            default: "",
+        },
+        sellerStatus: {
+            type: String,
+            enum: ["pending", "approved", "rejected"],
+            default: "pending",
+        },
+        isSellerVerified: {
+            type: Boolean,
+            default: false,
+        },
     },
     { timestamps: true }
 );

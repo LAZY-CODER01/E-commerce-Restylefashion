@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Input from "@/components/Input";
 import Button from "@/components/Button";
 import { useRouter } from "next/navigation";
@@ -8,18 +8,33 @@ import { toast } from "react-toastify";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import InfoIcon from "@mui/icons-material/Info";
 import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
+import { useAuth } from "@/context/AuthContext";
+import api from "@/lib/api";
 
 export default function NewProductPage() {
    const sizes = ["XS", "S", "M", "L", "XL"];
    const router = useRouter();
+   const { user, loading } = useAuth();
+   const fileInputRef = useRef(null);
+
    const [formData, setFormData] = useState({
       sizes: [],
       name: "", brand: "", category: "", description: "",
       condition: "", retailPrice: "", sellingPrice: ""
    });
-   const [images, setImages] = useState([]);
+   // Store actual File objects for upload, and preview URLs for display
+   const [imageFiles, setImageFiles] = useState([]);
+   const [imagePreviews, setImagePreviews] = useState([]);
+   const [submitting, setSubmitting] = useState(false);
 
-   const isFilled = 
+   // Auth guard
+   useEffect(() => {
+      if (!loading && !user) {
+         router.replace("/login");
+      }
+   }, [user, loading, router]);
+
+   const isFilled =
       formData.name.trim() !== "" &&
       formData.category !== "" &&
       formData.condition !== "" &&
@@ -27,12 +42,14 @@ export default function NewProductPage() {
       formData.retailPrice.trim() !== "" &&
       formData.sellingPrice.trim() !== "" &&
       formData.sizes.length > 0 &&
-      images.length > 0;
+      imageFiles.length > 0;
 
    const handleImageUpload = (e) => {
       if (e.target.files) {
-         const uploadedFiles = Array.from(e.target.files).map(file => URL.createObjectURL(file));
-         setImages(prev => [...prev, ...uploadedFiles].slice(0, 4));
+         const newFiles = Array.from(e.target.files);
+         setImageFiles(prev => [...prev, ...newFiles].slice(0, 4));
+         const newPreviews = newFiles.map(f => URL.createObjectURL(f));
+         setImagePreviews(prev => [...prev, ...newPreviews].slice(0, 4));
       }
    };
 
@@ -46,44 +63,43 @@ export default function NewProductPage() {
    };
 
    const handleRemoveImage = (index) => {
-      setImages(prev => prev.filter((_, i) => i !== index));
+      setImageFiles(prev => prev.filter((_, i) => i !== index));
+      setImagePreviews(prev => prev.filter((_, i) => i !== index));
    };
 
-   const handleSubmit = (e) => {
+   const handleSubmit = async (e) => {
       e.preventDefault();
-      
-      if (!isFilled) return;
+      if (!isFilled || submitting) return;
 
+      setSubmitting(true);
       try {
-         // Save product to localStorage to simulate DB
-         const newProduct = {
-            id: Date.now(),
-            title: formData.name,
-            brand: formData.brand,
-            category: formData.category,
-            description: formData.description,
-            condition: formData.condition,
-            sizes: formData.sizes,
-            retailPrice: formData.retailPrice,
-            sellingPrice: formData.sellingPrice,
-            detail: formData.category,
-            price: `₹${formData.sellingPrice}`,
-            image: images[0] || "https://images.unsplash.com/photo-1542272604-787c3835535d?auto=format&fit=crop&w=100&q=80"
-         };
+         const fd = new FormData();
+         fd.append("title", formData.name);
+         fd.append("brand", formData.brand || "Unknown");
+         fd.append("category", formData.category);
+         fd.append("condition", formData.condition);
+         fd.append("description", formData.description);
+         fd.append("price", formData.sellingPrice);
+         fd.append("originalPrice", formData.retailPrice);
+         fd.append("sizes", JSON.stringify(formData.sizes));
+         imageFiles.forEach(file => fd.append("images", file));
 
-         const existingProducts = JSON.parse(localStorage.getItem("seller_products") || "[]");
-         localStorage.setItem("seller_products", JSON.stringify([newProduct, ...existingProducts]));
-
-         toast.success("Product listed successfully!", {
-            icon: "🚀",
-            style: { borderRadius: "16px" }
+         await api.post("/products", fd, {
+            headers: { "Content-Type": "multipart/form-data" },
          });
 
-         router.push("/seller/verify-email");
-      } catch (error) {
-         console.error("Failed to save product:", error);
+         toast.success("Product listed! Awaiting admin review 🚀", {
+            style: { borderRadius: "16px" },
+         });
+         router.push("/seller/onboarding/confirmation");
+      } catch (err) {
+         toast.error(err.response?.data?.message || "Failed to list product");
+      } finally {
+         setSubmitting(false);
       }
    };
+
+   if (loading || !user) return null;
 
    return (
       <div className="min-h-screen bg-brand-light flex items-center justify-center p-4 font-roboto">
@@ -94,7 +110,7 @@ export default function NewProductPage() {
                <div className="flex items-center gap-4">
                   <button
                      onClick={() => router.back()}
-                     className="w-10 h-10 rounded-full hover:bg-gray-50 flex items-center justify-center text-brand-dark transition-all underline decoration-brand-pink decoration-2"
+                     className="w-10 h-10 rounded-full hover:bg-gray-50 flex items-center justify-center text-brand-dark transition-all"
                   >
                      <ArrowBackIcon sx={{ fontSize: 20 }} />
                   </button>
@@ -117,7 +133,7 @@ export default function NewProductPage() {
                   <h3 className="text-[14px] font-bold text-brand-dark uppercase tracking-widest pl-3 border-l-4 border-brand-pink">Visuals</h3>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                      {/* Uploaded Images */}
-                     {images.map((img, index) => (
+                     {imagePreviews.map((img, index) => (
                         <div key={index} className="aspect-square bg-gray-50 rounded-[24px] border border-gray-100 relative overflow-hidden group">
                            <img src={img} alt={`Preview ${index}`} className="w-full h-full object-cover" />
                            <button
@@ -131,16 +147,23 @@ export default function NewProductPage() {
                      ))}
 
                      {/* Upload Button visible if slots left */}
-                     {images.length < 4 && (
+                     {imagePreviews.length < 4 && (
                         <label className="aspect-square bg-white border-2 border-dashed border-gray-300 rounded-[24px] flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-brand-pink hover:bg-brand-pink/5 transition-all text-gray-400 hover:text-brand-pink relative overflow-hidden">
                            <AddPhotoAlternateIcon sx={{ fontSize: 28 }} />
                            <span className="text-[11px] font-bold uppercase tracking-tight text-center px-2 z-10">Add Photos<br />(Max 4)</span>
-                           <input type="file" multiple accept="image/*" onChange={handleImageUpload} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+                           <input
+                              type="file"
+                              multiple
+                              accept="image/*"
+                              ref={fileInputRef}
+                              onChange={handleImageUpload}
+                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                           />
                         </label>
                      )}
 
-                     {/* Empty State placehholders */}
-                     {[...Array(Math.max(0, 3 - images.length))].map((_, i) => (
+                     {/* Empty State placeholders */}
+                     {[...Array(Math.max(0, 3 - imagePreviews.length))].map((_, i) => (
                         <div key={`empty-${i}`} className="aspect-square bg-gray-50 rounded-[24px] border border-gray-100 opacity-50 flex items-center justify-center text-gray-300">
                            <AddPhotoAlternateIcon sx={{ fontSize: 20 }} />
                         </div>
@@ -166,6 +189,9 @@ export default function NewProductPage() {
                            <option value="vintage">Vintage</option>
                            <option value="formals">Formals</option>
                            <option value="streetwear">Streetwear</option>
+                           <option value="ethnic">Ethnic</option>
+                           <option value="accessories">Accessories</option>
+                           <option value="footwear">Footwear</option>
                         </select>
                      </div>
 
@@ -174,31 +200,21 @@ export default function NewProductPage() {
                         <select value={formData.condition} onChange={(e) => setFormData({ ...formData, condition: e.target.value })} className="h-[54px] px-6 border border-gray-200 rounded-full bg-gray-50/50 text-[14px] text-brand-dark font-bold cursor-pointer outline-none focus:border-brand-pink focus:bg-white transition-all">
                            <option value="">Select Condition</option>
                            <option value="New">Brand New</option>
-                           <option value="Used">Gently Used</option>
+                           <option value="New without tags">New without Tags</option>
+                           <option value="Excellent">Excellent</option>
+                           <option value="Gently Used">Gently Used</option>
+                           <option value="Good">Good</option>
                            <option value="Vintage">Vintage</option>
                         </select>
                      </div>
 
                      <div className="flex flex-col gap-1.5 md:col-span-2">
                         <label className="text-[12px] font-bold text-brand-dark uppercase tracking-widest pl-1">Description</label>
-                        <textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} placeholder="Shared your story about this product..." className="min-h-[120px] p-6 border border-gray-200 rounded-[28px] bg-gray-50/50 text-[14px] text-brand-dark font-medium outline-none focus:border-brand-pink focus:bg-white transition-all resize-none" />
+                        <textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} placeholder="Share your story about this product..." className="min-h-[120px] p-6 border border-gray-200 rounded-[28px] bg-gray-50/50 text-[14px] text-brand-dark font-medium outline-none focus:border-brand-pink focus:bg-white transition-all resize-none" />
                      </div>
 
-                     {/* <div className="flex flex-col gap-1.5">
-                    <label className="text-[12px] font-bold text-brand-dark uppercase tracking-widest pl-1">Available Sizes</label>
-                    <select value={formData.size} onChange={(e) => setFormData({...formData, size: e.target.value})} className="h-[54px] px-6 border border-gray-200 rounded-full bg-gray-50/50 text-[14px] text-brand-dark font-bold cursor-pointer outline-none focus:border-brand-pink focus:bg-white transition-all">
-                       <option value="">Select Size</option>
-                       <option value="S">Small</option>
-                       <option value="M">Medium</option>
-                       <option value="L">Large</option>
-                    </select>
-                 </div> */}
-                     <div className="flex flex-col gap-2">
-
-                        {/* Label */}
-                        <label className="text-[12px] font-bold text-brand-dark uppercase tracking-widest pl-1">
-                           Select Size
-                        </label>
+                     <div className="flex flex-col gap-2 md:col-span-2">
+                        <label className="text-[12px] font-bold text-brand-dark uppercase tracking-widest pl-1">Select Size</label>
                         <div className="flex gap-3 flex-wrap cursor-pointer">
                            {sizes.map((size) => (
                               <button
@@ -215,25 +231,25 @@ export default function NewProductPage() {
                               </button>
                            ))}
                         </div>
-                        </div>
+                     </div>
 
-                        <div className="grid grid-cols-2 gap-4">
-                           <Input label="Retail Price" placeholder="MRP" value={formData.retailPrice} onChange={(e) => setFormData({ ...formData, retailPrice: e.target.value })} />
-                           <Input label="Selling Price" placeholder="Offer Price" value={formData.sellingPrice} onChange={(e) => setFormData({ ...formData, sellingPrice: e.target.value })} />
-                        </div>
+                     <div className="grid grid-cols-2 gap-4 md:col-span-2">
+                        <Input label="Retail Price (MRP)" placeholder="e.g. 2999" value={formData.retailPrice} onChange={(e) => setFormData({ ...formData, retailPrice: e.target.value })} />
+                        <Input label="Selling Price" placeholder="Your offer price" value={formData.sellingPrice} onChange={(e) => setFormData({ ...formData, sellingPrice: e.target.value })} />
                      </div>
                   </div>
 
                   <Button
                      type="submit"
                      fullWidth
-                     disabled={!isFilled}
+                     disabled={!isFilled || submitting}
                      className={`h-[54px] rounded-full font-bold text-[16px] mt-8 shadow-xl shadow-brand-pink/20 transition-all ${
-                        isFilled ? "cursor-pointer opacity-100" : "cursor-not-allowed opacity-50"
+                        isFilled && !submitting ? "cursor-pointer opacity-100" : "cursor-not-allowed opacity-50"
                      }`}
                   >
-                     Sell Product
+                     {submitting ? "Listing product..." : "Sell Product"}
                   </Button>
+               </div>
             </form>
          </div>
       </div>
