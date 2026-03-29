@@ -78,7 +78,7 @@ export default function AuthPage() {
     // Role based redirection
     switch(currentRole) {
       case "Admin":
-        router.push("/admin/dashboard");
+        router.push("#");
         break;
       case "Seller":
         router.push("/seller/dashboard");
