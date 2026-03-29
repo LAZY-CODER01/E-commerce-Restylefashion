@@ -44,23 +44,8 @@ export default function SellerTypePage() {
   if (loading || !user) return null;
 
   return (
-    <div
-      className="
-        min-h-screen bg-brand-light flex justify-center font-roboto
-        items-end sm:items-center
-        px-0 sm:px-4
-        pt-0 sm:pt-6
-      "
-    >
-      <div
-        className="
-          w-full max-w-md bg-white 
-          rounded-t-[40px] sm:rounded-[40px] 
-          shadow-2xl overflow-hidden 
-          p-6 sm:p-10
-          animate-slideUp
-        "
-      >
+    <div className="min-h-[calc(100dvh-80px)] bg-brand-light flex items-center justify-center p-4 font-roboto">
+      <div className="w-full max-w-md bg-white rounded-3xl shadow-lg border border-gray-100 overflow-hidden p-6 sm:p-8 animate-slideUp">
         <div className="flex flex-col gap-8 sm:gap-10">
           
           {/* Header */}
