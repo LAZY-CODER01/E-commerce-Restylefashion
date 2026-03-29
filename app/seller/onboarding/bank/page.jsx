@@ -1,36 +1,27 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Input from "@/components/Input";
 import Button from "@/components/Button";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
-export default function SellerDetailsPage() {
+export default function BankDetailsPage() {
   const router = useRouter();
-  const [sellerType, setSellerType] = useState("");
   const [formData, setFormData] = useState({ 
-    fullName: "", businessName: "", socialLink: ""
+    bankName: "", accountHolder: "", accountNumber: "", ifscCode: ""
   });
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const type = localStorage.getItem("seller_type") || "";
-      setSellerType(type);
-    }
-  }, []);
-
-  const isFilled = formData.fullName && formData.businessName && 
-                   (sellerType === "individual" ? true : formData.socialLink);
+  const isFilled = formData.bankName && formData.accountHolder && 
+                   formData.accountNumber && formData.ifscCode;
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (isFilled) {
-      toast.success("Profile details saved!");
-      // Save for later (optional)
-      localStorage.setItem("seller_profile", JSON.stringify(formData));
-      router.push("/seller/products/new");
+      toast.success("Payment details updated!");
+      localStorage.setItem("seller_bank", JSON.stringify(formData));
+      router.push("/seller/onboarding/confirmation");
     }
   };
 
@@ -46,46 +37,50 @@ export default function SellerDetailsPage() {
                >
                  <ArrowBackIcon sx={{ fontSize: 20 }} />
                </button>
-               <h2 className="text-[20px] font-bold text-brand-dark">Seller Profile</h2>
+               <h2 className="text-[20px] font-bold text-brand-dark">Bank Details</h2>
             </div>
  
             <div className="flex flex-col gap-2">
                <div className="flex justify-between items-end mb-1">
                   <span className="text-[12px] font-bold text-brand-pink uppercase tracking-widest">
-                    Enterprise Info
+                    Payment Info
                   </span>
-                  <span className="text-[11px] font-bold text-gray-400">Step 2 of 6</span>
+                  <span className="text-[11px] font-bold text-gray-400">Step 6 of 6</span>
                </div>
                <div className="w-full h-2 bg-brand-light rounded-full overflow-hidden">
-                  <div className="h-full bg-brand-pink rounded-full transition-all duration-500 w-1/3" />
+                  <div className="h-full bg-brand-pink rounded-full transition-all duration-500 w-full" />
                </div>
             </div>
          </div>
 
          <form onSubmit={handleSubmit} className="p-10 flex flex-col gap-6">
             <div className="flex flex-col gap-3">
-               <h3 className="text-[14px] font-bold text-brand-dark uppercase tracking-widest border-l-4 border-brand-pink pl-3">Business Info</h3>
+               <h3 className="text-[14px] font-bold text-brand-dark uppercase tracking-widest border-l-4 border-brand-pink pl-3">Payment Info</h3>
                <div className="grid grid-cols-1 gap-6">
                   <Input 
-                    label="Full Name"
-                    placeholder="Enter your full name"
-                    value={formData.fullName}
-                    onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                    label="Bank Name"
+                    placeholder="e.g. HDFC Bank"
+                    value={formData.bankName}
+                    onChange={(e) => setFormData({ ...formData, bankName: e.target.value })}
                   />
                   <Input 
-                    label="Business Name"
-                    placeholder="e.g. Vintage Vault"
-                    value={formData.businessName}
-                    onChange={(e) => setFormData({ ...formData, businessName: e.target.value })}
+                    label="Account Holder Name"
+                    placeholder="Name as per bank records"
+                    value={formData.accountHolder}
+                    onChange={(e) => setFormData({ ...formData, accountHolder: e.target.value })}
                   />
-                  {sellerType !== "individual" && (
-                    <Input 
-                      label="Social Media Link"
-                      placeholder="Instagram/Facebook/Portfolio URL"
-                      value={formData.socialLink}
-                      onChange={(e) => setFormData({ ...formData, socialLink: e.target.value })}
-                    />
-                  )}
+                  <Input 
+                    label="Account Number"
+                    placeholder="Enter your account number"
+                    value={formData.accountNumber}
+                    onChange={(e) => setFormData({ ...formData, accountNumber: e.target.value })}
+                  />
+                  <Input 
+                    label="IFSC Code"
+                    placeholder="11 character IFSC code"
+                    value={formData.ifscCode}
+                    onChange={(e) => setFormData({ ...formData, ifscCode: e.target.value })}
+                  />
                </div>
             </div>
 
@@ -95,7 +90,7 @@ export default function SellerDetailsPage() {
               disabled={!isFilled}
               className="h-[54px] rounded-full font-bold text-[16px] mt-8 mb-4 shadow-lg shadow-brand-pink/20"
             >
-              Continue to Product Listing
+              Finish Setup
             </Button>
          </form>
       </div>

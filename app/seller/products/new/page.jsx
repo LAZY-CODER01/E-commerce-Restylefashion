@@ -79,7 +79,7 @@ export default function NewProductPage() {
             style: { borderRadius: "16px" }
          });
 
-         router.push("/seller/dashboard");
+         router.push("/seller/verify-email");
       } catch (error) {
          console.error("Failed to save product:", error);
       }
@@ -103,9 +103,11 @@ export default function NewProductPage() {
                      <p className="text-[12px] font-bold text-gray-400 uppercase tracking-widest">Create New Submission</p>
                   </div>
                </div>
-               <div className="p-2.5 px-3 bg-brand-pink/5 rounded-full flex items-center gap-2 text-brand-pink">
-                  <InfoIcon sx={{ fontSize: 18 }} />
-                  <span className="text-[11px] font-bold uppercase tracking-tight">Active Step: Basics</span>
+               <div className="flex items-center gap-4">
+                  <div className="p-2.5 px-3 bg-brand-pink/5 rounded-full flex items-center gap-2 text-brand-pink">
+                    <InfoIcon sx={{ fontSize: 18 }} />
+                    <span className="text-[11px] font-bold uppercase tracking-tight">Step 3 of 6: Product</span>
+                  </div>
                </div>
             </div>
 

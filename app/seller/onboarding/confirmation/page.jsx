@@ -19,9 +19,9 @@ export default function SellerConfirmationPage() {
         </div>
 
         <div className="flex flex-col gap-3">
-          <h1 className="text-[28px] font-bold text-brand-dark">Verify Your Email</h1>
+          <h1 className="text-[28px] font-bold text-brand-dark">Account Under Review</h1>
           <p className="text-[15px] text-gray-500 font-medium leading-relaxed max-w-[320px] mx-auto">
-            We have sent a verification link to your registered email. Please verify your account to start selling.
+            Your application is being processed. We will notify you once your account is ready to start selling.
           </p>
         </div>
 
@@ -41,18 +41,18 @@ export default function SellerConfirmationPage() {
         </div>
 
         <p className="text-[13px] text-gray-400 font-medium italic mt-4 opacity-70">
-          We will notify you via email (sarah@style.com) once approved. Expected time: 24-48 hours.
+          Our team is reviewing your profile. Expected time: 24-48 hours.
         </p>
 
         <Button 
           onClick={() => {
-            toast.info("Verification email sent to your inbox!", { theme: "colored" });
-            router.push("/seller/verify-email");
+            toast.info("Your application status will be updated soon!", { theme: "colored" });
+            router.push("/seller/dashboard");
           }}
           fullWidth 
           className="h-[54px] rounded-full font-bold text-[16px] mt-4 shadow-lg shadow-brand-pink/20"
         >
-          Resend Verification Email
+          Check My Status
         </Button>
         <button 
           onClick={() => router.push("/")}

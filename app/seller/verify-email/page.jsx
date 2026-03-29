@@ -20,7 +20,7 @@ export default function VerifyEmailPage() {
   }, []);
 
   const handleStartListing = () => {
-    router.push("/seller/products/new");
+    router.push("/seller/onboarding/pickup");
   };
 
   return (
@@ -29,6 +29,9 @@ export default function VerifyEmailPage() {
         
         {verifying ? (
           <>
+            <div className="flex flex-col gap-2 -mt-4 mb-4">
+               <span className="text-[12px] font-bold text-brand-pink uppercase tracking-widest">Step 4 of 6</span>
+            </div>
             <div className="w-24 h-24 bg-brand-pink/10 rounded-full flex items-center justify-center text-brand-pink relative overflow-hidden">
                <div className="absolute inset-0 border-[6px] border-brand-pink/20 rounded-full" />
                <div className="absolute inset-0 border-[6px] border-brand-pink border-t-transparent rounded-full animate-spin" />
@@ -56,7 +59,7 @@ export default function VerifyEmailPage() {
               fullWidth 
               className="h-[54px] rounded-full font-bold text-[16px] mt-4 shadow-lg shadow-brand-pink/20"
             >
-              List Your First Product
+              Pickup Details
             </Button>
           </>
         )}

@@ -19,8 +19,8 @@ export default function SellerTypePage() {
 
   const handleStartSelling = () => {
     if (selectedType) {
-      // Logic: If they are coming from a login that followed a signup, 
-      // they should now complete their business/payment details.
+      // Logic: Store selected type for later steps
+      localStorage.setItem("seller_type", selectedType);
       router.push("/seller/onboarding/details");
     }
   };
@@ -38,7 +38,7 @@ export default function SellerTypePage() {
                >
                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
                </button>
-               <span className="text-[12px] font-bold text-brand-pink uppercase tracking-widest">Step 1 of 3</span>
+               <span className="text-[12px] font-bold text-brand-pink uppercase tracking-widest">Step 1 of 6</span>
             </div>
             <h2 className="text-[28px] font-extrabold text-brand-dark leading-tight">Seller Type</h2>
             <p className="text-[14px] text-gray-500 font-medium">Select your category to customize your profile</p>
