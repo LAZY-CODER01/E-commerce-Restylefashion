@@ -58,27 +58,28 @@ export default function Navigation() {
     <>
       <header className="sticky top-0 z-40 bg-brand-light border-b border-gray-200 pb-4 pt-3 w-full">
         {/* Row 1: Navigation & Actions */}
-        <div className="flex items-center justify-between h-14 max-w-[1400px] mx-auto px-4 md:px-9 mb-3 relative">
+        <div className="flex items-center justify-between h-14 max-w-[1400px] mx-auto px-4 md:px-9 mb-3">
 
-          {/* Left - Hamburger */}
-          <button
-            aria-label="Open Menu"
-            onClick={() => setDrawerOpen(true)}
-            className="flex items-center justify-center -ml-2 p-2 rounded-xl hover:bg-gray-200 transition text-brand-dark"
-          >
-            <MenuOutlinedIcon />
-          </button>
+          {/* Left Side: Hamburger & Logo */}
+          <div className="flex items-center gap-2 sm:gap-4">
+            <button
+              aria-label="Open Menu"
+              onClick={() => setDrawerOpen(true)}
+              className="flex items-center justify-center -ml-2 p-2 rounded-xl hover:bg-gray-200 transition text-brand-dark"
+            >
+              <MenuOutlinedIcon />
+            </button>
 
-          {/* Center Logo */}
-          <Link
-            href="/"
-            className="absolute left-1/2 -translate-x-1/2 md:left-24 md:translate-x-0 font-extrabold text-[28px] tracking-tight bg-gradient-to-r from-brand-pink to-brand-purple bg-clip-text text-transparent"
-          >
-            Restyle
-          </Link>
+            <Link
+              href="/"
+              className="absolute left-1/2 -translate-x-1/2 md:static md:translate-x-0  font-extrabold text-[26px] sm:text-[28px] tracking-tight bg-gradient-to-r from-brand-pink to-brand-purple bg-clip-text text-transparent"
+            >
+              Restyle
+            </Link>
+          </div>
 
           {/* Right Actions */}
-          <div className="flex items-center gap-4 sm:gap-6">
+          <div className="flex items-center gap-2.5 sm:gap-6">
             {pathname.startsWith("/admin") ? (
               <button className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 transition rounded-full pl-2 pr-4 py-1.5 shadow-sm">
                  <div className="w-7 h-7 bg-brand-pink text-white rounded-full flex items-center justify-center">
