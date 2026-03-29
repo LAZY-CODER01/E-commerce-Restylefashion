@@ -117,11 +117,7 @@ export default function DrawerMenu({ open, onClose, drawerRef }) {
       >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-6 pt-8 border-b border-gray-100">
-          <Link
-            href="/"
-            onClick={onClose}
-            className="font-extrabold text-[28px] tracking-tight bg-gradient-to-r from-brand-pink to-brand-purple bg-clip-text text-transparent"
-          >
+          <Link href="/" onClick={onClose} className="inline-block font-extrabold text-[28px] tracking-tight bg-gradient-to-b from-black to-[#F7246E] bg-clip-text text-transparent">
             Restyle
           </Link>
           <button

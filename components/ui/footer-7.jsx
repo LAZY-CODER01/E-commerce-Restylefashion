@@ -66,7 +66,7 @@ export const Footer7 = ({
             <div className="flex items-center lg:justify-start">
               <a 
                 href={logo.url} 
-                className="font-extrabold text-[28px] tracking-tight bg-gradient-to-r from-brand-pink to-brand-purple bg-clip-text text-transparent hover:opacity-90 transition-opacity"
+                className="inline-block font-extrabold text-[32px] tracking-tight bg-gradient-to-b from-black to-[#F7246E] bg-clip-text text-transparent mb-2 hover:opacity-90 transition-opacity"
               >
                 {logo.title}
               </a>

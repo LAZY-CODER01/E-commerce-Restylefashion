@@ -105,7 +105,7 @@ export default function AuthPage() {
         
         {/* Header */}
         <div className="text-center mb-8">
-          <Link href="/" className="inline-block font-extrabold text-[32px] tracking-tight bg-gradient-to-r from-brand-pink to-brand-purple bg-clip-text text-transparent mb-2">
+          <Link href="/" className="inline-block font-extrabold text-[32px] tracking-tight bg-gradient-to-b from-black to-[#F7246E] bg-clip-text text-transparent mb-2">
             Restyle
           </Link>
           <h1 className="text-2xl font-bold text-brand-dark">

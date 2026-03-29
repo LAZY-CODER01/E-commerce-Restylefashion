@@ -72,7 +72,7 @@ export default function Navigation() {
 
             <Link
               href="/"
-              className="absolute left-1/2 -translate-x-1/2 md:static md:translate-x-0  font-extrabold text-[26px] sm:text-[28px] tracking-tight bg-gradient-to-r from-brand-pink to-brand-purple bg-clip-text text-transparent"
+              className="absolute left-[47%] -translate-x-1/2 md:static md:translate-x-0 font-extrabold text-[26px] sm:text-[28px] tracking-tight bg-gradient-to-b from-black to-[#F7246E] bg-clip-text text-transparent"
             >
               Restyle
             </Link>
