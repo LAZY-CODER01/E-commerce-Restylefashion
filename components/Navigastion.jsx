@@ -78,7 +78,7 @@ export default function Navigation() {
           </Link>
 
           {/* Right Actions */}
-          <div className="flex items-center gap-3 sm:gap-6">
+          <div className="flex items-center gap-4 sm:gap-6">
             {pathname.startsWith("/admin") ? (
               <button className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 transition rounded-full pl-2 pr-4 py-1.5 shadow-sm">
                  <div className="w-7 h-7 bg-brand-pink text-white rounded-full flex items-center justify-center">
@@ -99,7 +99,7 @@ export default function Navigation() {
                 {/* Sell Button */}
                 <button
                   onClick={() => router.push(user ? "/seller/onboarding/type" : "/login")}
-                  className="bg-[#F7246E] hover:bg-magenta-300 text-white font-semibold text-[13px] sm:text-[14px] px-3.5 py-1.5 sm:py-2 sm:px-5 rounded-full transition-colors cursor-pointer "
+                  className="bg-[#F7246E] hover:bg-magenta-300 text-white font-bold py-1.5 px-3 sm:px-5 rounded-full text-[13px] sm:text-[14px] transition-colors shadow-sm"
                 >
                   Sell
                 </button>
