@@ -81,10 +81,8 @@ export default function AuthPage() {
         router.push("#");
         break;
       case "Seller":
-        router.push("/seller/dashboard");
-        break;
       case "Influencer":
-        router.push("/influencer/profile");
+        router.push("/");
         break;
       case "User":
       default:

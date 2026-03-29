@@ -15,6 +15,20 @@ const HERO_SLIDES = [
   { id: 3, title: "Y2K Fashion", subtitle: "TRENDING", bg: "from-orange-100 to-orange-50" },
 ];
 
+const HOME_CATEGORIES = [
+  { id: 'all', name: 'All', image: 'https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?auto=format&fit=crop&w=200&q=80' },
+  { id: 'tops', name: 'Tops', image: 'https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?auto=format&fit=crop&w=200&q=80' },
+  { id: 'bottoms', name: 'Bottoms', image: 'https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&w=200&q=80' },
+  { id: 'dresses', name: 'Dresses', image: 'https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&w=200&q=80' },
+  { id: 'co-ords', name: 'Co-ords', image: 'https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?auto=format&fit=crop&w=200&q=80' },
+  { id: 'outerwear', name: 'Outerwear', image: 'https://images.unsplash.com/photo-1542272604-787c3835535d?auto=format&fit=crop&w=200&q=80' },
+  { id: 'jumpsuits', name: 'Dresses | Jumpsuits', image: 'https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?auto=format&fit=crop&w=200&q=80' },
+  { id: 'coats', name: 'Coats | Jackets', image: 'https://images.unsplash.com/photo-1539533018447-63fcce2678e3?auto=format&fit=crop&w=200&q=80' },
+  { id: 'desi', name: 'Desi x GenZ', image: 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&w=200&q=80' },
+  { id: 'hot', name: 'Hot Picks', image: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=200&q=80' },
+  { id: 'influencers', name: 'Shop by Influencers', image: 'https://images.unsplash.com/photo-1520333789090-1afc82db536a?auto=format&fit=crop&w=200&q=80' },
+];
+
 export default function HomePage() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const { searchQuery, activeCategory, setActiveCategory } = useSearch();
@@ -39,7 +53,7 @@ export default function HomePage() {
       <main className="max-w-[1400px] mx-auto px-4 md:px-9 pt-4 flex flex-col gap-8">
         
         {/* Hero Carousel */}
-        <section className="relative w-full aspect-[2/1] sm:aspect-[3/1] rounded-card overflow-hidden shadow-sm group">
+        <section className="relative w-full aspect-[21/9] sm:aspect-[3/1] rounded-card overflow-hidden shadow-sm group">
           <div 
             className="flex transition-transform duration-700 ease-in-out h-full"
             style={{ transform: `translateX(-${currentSlide * 100}%)` }}
@@ -74,42 +88,52 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Categories Section */}
-        <section id="categories" className="flex flex-col gap-4 overflow-hidden">
-          <h3 className="text-[18px] font-bold text-brand-dark tracking-tight">
-            Categories
-          </h3>
-          <div className="flex items-center gap-5 md:gap-7 overflow-x-auto hide-scrollbar pb-3 snap-x snap-mandatory px-0.5">
-            {CATEGORIES.map((cat) => (
+        {/* Categories Section - Redesigned */}
+        <section id="categories" className="flex flex-col gap-5 overflow-hidden py-4">
+          <div className="flex items-center justify-between px-1">
+             <h3 className="text-[20px] font-bold text-brand-dark tracking-tight">
+               Shop by Category
+             </h3>
+             <span className="text-[12px] font-bold text-gray-400 uppercase tracking-widest hidden sm:block">Scroll to explore</span>
+          </div>
+          
+          <div className="flex items-center gap-4 md:gap-6 overflow-x-auto hide-scrollbar pb-6 snap-x snap-mandatory px-1">
+            {HOME_CATEGORIES.map((cat) => (
               <button 
                 key={cat.id} 
                 onClick={() => {
                   if (cat.id === "influencers") {
                     const element = document.getElementById("influencers");
-                    element?.scrollIntoView({ behavior: "smooth" });
+                    element?.scrollIntoView({ behavior: "smooth", block: "center" });
                     return;
                   }
                   setActiveCategory(cat.id);
                 }}
-                className="flex flex-col items-center gap-3 snap-start transition-all transform active:scale-95 group min-w-[70px]"
+                className="flex flex-col items-center gap-3 snap-start transition-all transform active:scale-95 group focus:outline-none"
               >
-                <div className={`relative w-[68px] h-[68px] sm:w-[80px] sm:h-[80px] rounded-[18px] overflow-hidden border-[2.5px] transition-all duration-300 ${
+                {/* Image Card Container */}
+                <div className={`relative w-[90px] h-[90px] md:w-[110px] md:h-[110px] rounded-[16px] md:rounded-[20px] overflow-hidden border-2 transition-all duration-500 shadow-sm ${
                   activeCategory === cat.id 
-                    ? "border-brand-pink shadow-[0_8px_20px_-6px_rgba(247,36,110,0.5)] scale-105" 
-                    : "border-gray-50 bg-gray-50 group-hover:border-brand-pink/20"
+                    ? "border-brand-pink shadow-[0_10px_25px_-5px_rgba(247,36,110,0.3)] ring-4 ring-brand-pink/10 scale-105" 
+                    : "border-white bg-white group-hover:border-brand-pink/30 group-hover:shadow-md"
                 }`}>
                   <Image 
                     src={cat.image} 
                     alt={cat.name} 
                     fill 
-                    className="object-cover transition-transform duration-500 group-hover:scale-110"
+                    className={`object-cover transition-transform duration-700 ${
+                      activeCategory === cat.id ? "scale-110" : "group-hover:scale-110"
+                    }`}
                   />
-                  {activeCategory === cat.id && (
-                    <div className="absolute inset-0 bg-brand-pink/5" />
-                  )}
+                  {/* Subtle Gradient Overlay */}
+                  <div className={`absolute inset-0 bg-gradient-to-b from-transparent to-black/5 transition-opacity duration-300 ${
+                    activeCategory === cat.id ? "opacity-20" : "opacity-0 group-hover:opacity-10"
+                  }`} />
                 </div>
-                <span className={`text-[12px] font-bold transition-all duration-300 ${
-                  activeCategory === cat.id ? "text-brand-pink scale-105" : "text-brand-dark opacity-70 group-hover:opacity-100"
+                
+                {/* Category Text */}
+                <span className={`text-[12px] md:text-[13px] font-bold leading-tight text-center max-w-[90px] md:max-w-[110px] transition-all duration-300 truncate-2-lines ${
+                  activeCategory === cat.id ? "text-brand-pink scale-105" : "text-brand-dark/80 group-hover:text-brand-dark"
                 }`}>
                   {cat.name}
                 </span>

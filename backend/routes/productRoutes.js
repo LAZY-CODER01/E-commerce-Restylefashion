@@ -1,7 +1,8 @@
 const express = require("express");
 const Product = require("../models/Product");
 const { protect, authorize } = require("../middleware/auth");
-const { upload } = require("../config/cloudinary");
+const fs = require("fs");
+const { cloudinary, upload } = require("../config/cloudinary");
 
 const router = express.Router();
 
@@ -250,6 +251,9 @@ router.post(
     upload.array("images", 5),
 
     async (req, res) => {
+        const uploadedFiles = req.files || [];
+        const imageUrls = [];
+
         try {
             const {
                 title,
@@ -266,8 +270,31 @@ router.post(
                 sizes,
             } = req.body;
 
-            // Get Cloudinary URLs from uploaded files
-            const imageUrls = req.files ? req.files.map((file) => file.path) : [];
+            // Upload files to Cloudinary manually from memory buffer
+            if (uploadedFiles.length > 0) {
+                for (const file of uploadedFiles) {
+                    try {
+                        const secureUrl = await new Promise((resolve, reject) => {
+                            const uploadStream = cloudinary.uploader.upload_stream(
+                                {
+                                    folder: "restyle-products",
+                                    transformation: [{ width: 800, height: 800, crop: "limit", quality: "auto" }],
+                                },
+                                (error, result) => {
+                                    if (error) return reject(error);
+                                    resolve(result.secure_url);
+                                }
+                            );
+                            uploadStream.end(file.buffer);
+                        });
+                        imageUrls.push(secureUrl);
+                    } catch (uploadErr) {
+                        console.error("Cloudinary Upload Error Details:", uploadErr);
+                        const errMsg = uploadErr.message || uploadErr.error?.message || "Unknown Cloudinary Error";
+                        throw new Error(`Cloudinary upload failed: ${errMsg}`);
+                    }
+                }
+            }
 
             const product = await Product.create({
                 title,

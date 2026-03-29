@@ -18,13 +18,17 @@ import PeopleIcon from "@mui/icons-material/People";
 import { useSearch } from "@/context/SearchContext";
 
 const CATEGORY_ITEMS = [
-  { name: "All", id: "all" },
-  { name: "Tops", id: "tops" },
-  { name: "Bottoms", id: "bottoms" },
-  { name: "Dresses", id: "dresses" },
-  { name: "Co-ords", id: "co-ords" },
-  { name: "Outerwear", id: "outerwear" },
-  { name: "Shop by Influencers", id: "influencers" }
+  { id: "all", label: "All" },
+  { id: "tops", label: "Tops" },
+  { id: "bottoms", label: "Bottoms" },
+  { id: "dresses", label: "Dresses" },
+  { id: "co-ords", label: "Co-ords" },
+  { id: "outerwear", label: "Outerwear" },
+  { id: "jumpsuits", label: "Dresses | Jumpsuits" },
+  { id: "coats", label: "Coats | Jackets" },
+  { id: "desi", label: "Desi x GenZ" },
+  { id: "hot", label: "Hot Picks" },
+  { id: "influencers", label: "Shop by Influencers" }
 ];
 
 const SECONDARY_ITEMS = [
@@ -168,7 +172,7 @@ export default function DrawerMenu({ open, onClose, drawerRef }) {
                       activeCategory === item.id ? "text-brand-pink" : "text-brand-dark hover:text-brand-pink"
                     }`}
                   >
-                    {item.name}
+                    {item.label}
                     <KeyboardArrowRightOutlinedIcon className={`${
                       activeCategory === item.id ? "text-brand-pink" : "text-gray-300"
                     } transition-colors group-hover:text-brand-pink`} />
