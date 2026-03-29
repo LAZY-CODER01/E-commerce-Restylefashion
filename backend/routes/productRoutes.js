@@ -1,7 +1,8 @@
 const express = require("express");
 const Product = require("../models/Product");
 const { protect, authorize } = require("../middleware/auth");
-const { upload } = require("../config/cloudinary");
+const fs = require("fs");
+const { cloudinary, upload } = require("../config/cloudinary");
 
 const router = express.Router();
 
@@ -209,6 +210,9 @@ router.post(
     authorize("Seller", "Admin"),
     upload.array("images", 5),
     async (req, res) => {
+        const uploadedFiles = req.files || [];
+        const imageUrls = [];
+
         try {
             const {
                 title,
@@ -225,8 +229,26 @@ router.post(
                 sizes,
             } = req.body;
 
-            // Get Cloudinary URLs from uploaded files
-            const imageUrls = req.files ? req.files.map((file) => file.path) : [];
+            // Upload files to Cloudinary manually
+            if (uploadedFiles.length > 0) {
+                for (const file of uploadedFiles) {
+                    try {
+                        const result = await cloudinary.uploader.upload(file.path, {
+                            folder: "restyle-products",
+                            transformation: [{ width: 800, height: 800, crop: "limit", quality: "auto" }],
+                        });
+                        imageUrls.push(result.secure_url);
+                        // Clean up: delete local file
+                        if (fs.existsSync(file.path)) {
+                            fs.unlinkSync(file.path);
+                        }
+                    } catch (uploadErr) {
+                        console.error("Cloudinary Upload Error:", uploadErr);
+                        // Still continue or fail? Let's fail for data integrity
+                        throw new Error("Failed to upload images to Cloudinary");
+                    }
+                }
+            }
 
             const product = await Product.create({
                 title,
@@ -247,6 +269,12 @@ router.post(
 
             res.status(201).json(product);
         } catch (error) {
+            // Clean up any remaining files if something failed
+            uploadedFiles.forEach((file) => {
+                if (fs.existsSync(file.path)) {
+                    fs.unlinkSync(file.path);
+                }
+            });
             res.status(500).json({ message: error.message });
         }
     }
