@@ -2,7 +2,9 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import FavoriteBorderOutlinedIcon from "@mui/icons-material/FavoriteBorderOutlined";
+import FavoriteIcon from "@mui/icons-material/Favorite";
 import StarIcon from "@mui/icons-material/Star";
+import { useCart } from "@/context/CartContext";
 
 export default function ProductCard({
   id = "1",
@@ -14,6 +16,9 @@ export default function ProductCard({
   // size = "",
   rating = 4.5,
 }) {
+  const { wishlist, toggleWishlist } = useCart();
+  const isWishlisted = wishlist.some((w) => String(w?.id ?? w?._id ?? w?.sku ?? w?.slug ?? w?.productId) === String(id));
+
   return (
     <div className="group relative flex flex-col gap-3 transition-all duration-300 hover:-translate-y-1 p-0 cursor-pointer">
       <Link href={`/product/${id}`} className="absolute inset-0 z-10" aria-label={`View ${title}`} />
@@ -29,14 +34,26 @@ export default function ProductCard({
         />
         {/* Wishlist Button */}
         <button
-          aria-label="Add to wishlist"
+          aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
           className="absolute right-3 top-3 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-white/80 text-brand-dark backdrop-blur-sm transition-colors hover:bg-brand-pink hover:text-white"
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
+            toggleWishlist({
+              id,
+              title,
+              brand,
+              price,
+              originalPrice,
+              imageUrl,
+            });
           }}
         >
-          <FavoriteBorderOutlinedIcon fontSize="small" />
+          {isWishlisted ? (
+            <FavoriteIcon fontSize="small" className="text-brand-pink group-hover:text-white" />
+          ) : (
+            <FavoriteBorderOutlinedIcon fontSize="small" />
+          )}
         </button>
 
         {/* Size Badge */}

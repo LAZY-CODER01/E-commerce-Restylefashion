@@ -11,6 +11,7 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 
 import { ALL_PRODUCTS } from "@/data/mockData";
+import { useCart } from "@/context/CartContext";
 
 // Mock Data Function
 const getProductData = (id) => {
@@ -74,17 +75,20 @@ export default function ProductDetailsPage({ params }) {
 
   const [selectedSize, setSelectedSize] = useState("");
   const [quantity, setQuantity] = useState(1);
-  const [isWishlisted, setIsWishlisted] = useState(false);
   const [isDescExpanded, setIsDescExpanded] = useState(true);
+  const { wishlist, toggleWishlist, addToBag } = useCart();
+  const isWishlisted = wishlist.some((w) => String(w?.id ?? w?._id ?? w?.sku ?? w?.slug ?? w?.productId) === String(product?.id));
   
   const handleWishlistToggle = () => {
-    const newState = !isWishlisted;
-    setIsWishlisted(newState);
-    if (newState) {
-      toast.info(`${product.title} added to wishlist!`);
-    } else {
-      toast.info(`${product.title} removed from wishlist.`);
-    }
+    toggleWishlist({
+      id: product.id,
+      title: product.title,
+      brand: product.brand,
+      price: product.price,
+      originalPrice: product.originalPrice,
+      imageUrl: product.imageUrl,
+    });
+    toast.info(isWishlisted ? `${product.title} removed from wishlist.` : `${product.title} added to wishlist!`);
   };
 
   const handleAddToCart = () => {
@@ -92,6 +96,16 @@ export default function ProductDetailsPage({ params }) {
       toast.warn("Please select a size first.");
       return;
     }
+    addToBag({
+      id: product.id,
+      title: product.title,
+      brand: product.brand,
+      price: product.price,
+      originalPrice: product.originalPrice,
+      imageUrl: product.imageUrl,
+      selectedSize,
+      qty: quantity,
+    });
     toast.success(`${quantity} ${product.title} (${selectedSize}) added to bag!`);
   };
 

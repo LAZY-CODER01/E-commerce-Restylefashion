@@ -16,6 +16,7 @@ import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import Inventory2Icon from "@mui/icons-material/Inventory2";
 import PeopleIcon from "@mui/icons-material/People";
 import { useSearch } from "@/context/SearchContext";
+import { useCart } from "@/context/CartContext";
 
 const CATEGORY_ITEMS = [
   { id: "all", label: "All" },
@@ -40,12 +41,12 @@ const SECONDARY_ITEMS = [
   {
     name: "Wishlist",
     icon: <FavoriteBorderOutlinedIcon />,
-    link: "#"
+    link: "/wishlist"
   },
   {
     name: "Orders",
     icon: <LocalMallOutlinedIcon />,
-    link: "/seller/orders" // seller orders or orders page? Point to seller for now or current if it's there
+    link: "/orders"
   },
   {
     name: "Contact Us",
@@ -72,6 +73,7 @@ export default function DrawerMenu({ open, onClose, drawerRef }) {
   const pathname = usePathname();
   const router = useRouter();
   const { activeCategory, setActiveCategory } = useSearch();
+  const { cartCount, wishlistCount } = useCart();
   const isAdminRoute = pathname.startsWith("/admin");
 
   const handleCategoryClick = (id) => {
@@ -192,7 +194,13 @@ export default function DrawerMenu({ open, onClose, drawerRef }) {
                   <span className={item.highlight ? "text-brand-pink" : "text-gray-400"}>
                     {item.icon}
                   </span>
-                  {item.name}
+                  <span className="flex-1">{item.name}</span>
+                  {item.name === "Wishlist" ? (
+                    <span className="text-[13px] font-bold text-brand-pink">{wishlistCount}</span>
+                  ) : null}
+                  {item.name === "Orders" ? (
+                    <span className="text-[13px] font-bold text-brand-pink">{cartCount}</span>
+                  ) : null}
                 </Link>
               ))}
 

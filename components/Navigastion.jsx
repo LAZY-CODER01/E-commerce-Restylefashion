@@ -13,11 +13,13 @@ import ShoppingBagOutlinedIcon from '@mui/icons-material/ShoppingBagOutlined';
 import MenuOutlinedIcon from '@mui/icons-material/MenuOutlined';
 import Image from "next/image";
 import { useAuth } from "@/context/AuthContext";
+import { useCart } from "@/context/CartContext";
 
 export default function Navigation() {
   const pathname = usePathname();
   const router = useRouter();
   const { user } = useAuth();
+  const { cartCount, wishlistCount } = useCart();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const drawerRef = useRef(null);
   const { searchQuery, setSearchQuery } = useSearch();
@@ -139,14 +141,32 @@ export default function Navigation() {
                 </Link>
 
                 {/* Wishlist */}
-                <button aria-label="Wishlist" className="hidden sm:flex items-center justify-center text-brand-dark hover:text-brand-pink transition">
+                <Link
+                  href="/wishlist"
+                  aria-label="Wishlist"
+                  className="hidden sm:flex relative items-center justify-center text-brand-dark hover:text-brand-pink transition"
+                >
                   <FavoriteBorderOutlinedIcon />
-                </button>
+                  {!!wishlistCount && (
+                    <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-[#F7246E] text-white text-[11px] font-bold flex items-center justify-center">
+                      {wishlistCount > 99 ? "99+" : wishlistCount}
+                    </span>
+                  )}
+                </Link>
 
                 {/* Bag */}
-                <button aria-label="Bag" className="flex items-center justify-center text-brand-dark hover:text-brand-pink transition">
+                <Link
+                  href="/orders"
+                  aria-label="Orders Bag"
+                  className="relative flex items-center justify-center text-brand-dark hover:text-brand-pink transition"
+                >
                   <ShoppingBagOutlinedIcon />
-                </button>
+                  {!!cartCount && (
+                    <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-[#F7246E] text-white text-[11px] font-bold flex items-center justify-center">
+                      {cartCount > 99 ? "99+" : cartCount}
+                    </span>
+                  )}
+                </Link>
               </>
             )}
           </div>
