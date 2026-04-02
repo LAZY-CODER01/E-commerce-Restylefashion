@@ -87,7 +87,7 @@ export const Footer7 = () => {
               <div className="flex flex-col gap-3">
                 <div className="flex items-center gap-2.5">
                   <FaMapMarkerAlt className="text-[#F7246E] text-[14px] shrink-0" aria-hidden="true" />
-                  <span className="text-[14px] text-[#2F2F2F]/70">Gurugram 122009</span>
+                  <span className="text-[14px] text-[#2F2F2F]/70">A-1064, 2nd Floor, DLF Phase 1, Gurugram 122009</span>
                 </div>
                 <div className="flex items-center gap-2.5">
                   <FaPhoneAlt className="text-[#F7246E] text-[13px] shrink-0" aria-hidden="true" />
@@ -95,7 +95,7 @@ export const Footer7 = () => {
                     href="tel:+8882888832"
                     className="text-[14px] text-[#2F2F2F]/70 hover:text-[#F7246E] transition-colors"
                   >
-                    +8882 8888 32
+                    +91 8882888832
                   </a>
                 </div>
                 <div className="flex items-center gap-2.5">
