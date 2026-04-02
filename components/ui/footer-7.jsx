@@ -50,7 +50,7 @@ const linkColumns = [
 
 export const Footer7 = () => {
   return (
-    <footer className="w-full flex flex-col font-['Roboto'] border-t border-black/60">
+    <footer className="w-full flex flex-col font-['Roboto'] border-t border-gray-200">
       {/* SECTION 1: Links & Contact (Off-White) */}
       <div className="bg-[#FAFAFA] px-4 md:px-9 py-10 md:py-16">
         <div className="max-w-7xl mx-auto">
@@ -125,14 +125,7 @@ export const Footer7 = () => {
               aria-label="Restyle Home"
             >
               <span
-                className="hidden md:inline-block font-extrabold bg-gradient-to-b from-black to-[#F7246E] bg-clip-text text-transparent tracking-tight leading-none"
-                style={{ width: 180, height: 50, fontSize: 40, lineHeight: "50px" }}
-              >
-                Restyle
-              </span>
-              <span
-                className="md:hidden inline-block font-extrabold bg-gradient-to-b from-black to-[#F7246E] bg-clip-text text-transparent tracking-tight leading-none"
-                style={{ width: 72, height: 20, fontSize: 18, lineHeight: "20px" }}
+                className="inline-block font-extrabold bg-gradient-to-b from-black to-[#F7246E] bg-clip-text text-transparent tracking-tight leading-none text-[28px]"
               >
                 Restyle
               </span>
@@ -182,7 +175,7 @@ export const Footer7 = () => {
           </p>
 
           {/* Payment Icons */}
-          <div className="flex items-center gap-3 flex-wrap justify-center md:justify-end">
+          <div className="flex items-center gap-2 flex-wrap justify-center md:justify-end">
             {paymentItems.map((item) => (
               <Link
                 key={item.name}
@@ -190,14 +183,14 @@ export const Footer7 = () => {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={item.name}
-                className="flex items-center justify-center w-[80px] h-[50px] bg-white rounded-xl border border-black/10 hover:-translate-y-1 hover:shadow-lg transition-all duration-300 overflow-hidden"
+                className="flex items-center justify-center w-[52px] h-[34px] bg-white rounded-md border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all duration-200 overflow-hidden"
               >
                 <Image
                   src={item.icon}
                   alt={item.name}
-                  width={160}
-                  height={100}
-                  className="w-full h-full object-contain"
+                  width={40}
+                  height={26}
+                  className="object-contain p-[3px]"
                 />
               </Link>
             ))}
