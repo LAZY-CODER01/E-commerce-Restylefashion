@@ -1,116 +1,207 @@
 import React from "react";
-import { FaFacebook, FaInstagram, FaLinkedin, FaTwitter } from "react-icons/fa";
-import { Sparkles } from "lucide-react";
+import Link from "next/link";
+import Image from "next/image";
+import { FaFacebook, FaInstagram, FaYoutube, FaMapMarkerAlt, FaPhoneAlt, FaEnvelope } from "react-icons/fa";
 
-const defaultSections = [
+const paymentItems = [
   {
-    title: "Product",
-    links: [
-      { name: "Overview", href: "#" },
-      { name: "Pricing", href: "#" },
-      { name: "Marketplace", href: "#" },
-      { name: "Features", href: "#" },
-    ],
+    name: "Google Pay",
+    icon: "/gpayy.png",
+    href: "#",
   },
   {
-    title: "Company",
-    links: [
-      { name: "About", href: "#" },
-      { name: "Team", href: "#" },
-      { name: "Blog", href: "#" },
-      { name: "Careers", href: "#" },
-    ],
+    name: "VISA",
+    icon: "/vissa.png",
+    href: "#",
   },
   {
-    title: "Resources",
-    links: [
-      { name: "Help", href: "#" },
-      { name: "Sales", href: "#" },
-      { name: "Advertise", href: "#" },
-      { name: "Privacy", href: "#" },
-    ],
+    name: "UPI",
+    icon: "/upi.png",
+    href: "#",
+  },
+  {
+    name: "Paytm",
+    icon: "/paytm.png",
+    href: "#",
+  },
+  {
+    name: "Delhivery",
+    icon: "/delivery.png",
+    href: "#",
   },
 ];
 
-const defaultSocialLinks = [
-  { icon: <FaInstagram className="size-5" />, href: "#", label: "Instagram" },
-  { icon: <FaFacebook className="size-5" />, href: "#", label: "Facebook" },
-  { icon: <FaTwitter className="size-5" />, href: "#", label: "Twitter" },
-  { icon: <FaLinkedin className="size-5" />, href: "#", label: "LinkedIn" },
-];
-
-const defaultLegalLinks = [
-  { name: "Terms and Conditions", href: "#" },
-  { name: "Privacy Policy", href: "#" },
-];
-
-export const Footer7 = ({
-  logo = {
-    url: "/",
-    src: "https://images.unsplash.com/photo-1542272604-787c3835535d?auto=format&fit=crop&w=100&q=80",
-    alt: "Restyle Logo",
-    title: "Restyle",
+const linkColumns = [
+  {
+    title: "Collection",
+    links: [
+      "New Arrivals",
+      "Hot Picks",
+      "Return & Refund Policy",
+    ],
   },
-  sections = defaultSections,
-  description = "A community-driven marketplace for thrift fashion, bringing vintage style and sustainable choices to every wardrobe.",
-  socialLinks = defaultSocialLinks,
-  copyright = "© 2026 Restyle. All rights reserved.",
-  legalLinks = defaultLegalLinks,
-}) => {
+  {
+    title: "Vendors",
+    links: ["How to sell", "Terms & Conditions", "Shipping"],
+  },
+  { title: "Company", links: ["About Us"] },
+  { title: "Support", links: ["Privacy Policies", "FAQs"] },
+];
+
+export const Footer7 = () => {
   return (
-    <footer className="py-32 bg-brand-light border-t border-gray-100">
-      <div className="container mx-auto px-6">
-        <div className="flex w-full flex-col justify-between gap-10 lg:flex-row lg:items-start lg:text-left">
-          <div className="flex w-full flex-col justify-between gap-6 lg:items-start">
-            {/* Logo */}
-            <div className="flex items-center lg:justify-start">
-              <a 
-                href={logo.url} 
-                className="inline-block font-extrabold text-[32px] tracking-tight bg-gradient-to-b from-black to-[#F7246E] bg-clip-text text-transparent mb-2 hover:opacity-90 transition-opacity"
-              >
-                {logo.title}
-              </a>
-            </div>
-            <p className="max-w-[80%] text-[14px] font-medium text-gray-500 leading-relaxed">
-              {description}
-            </p>
-            <ul className="flex items-center space-x-6 text-gray-400">
-              {socialLinks.map((social, idx) => (
-                <li key={idx} className="font-medium hover:text-brand-pink transition-colors">
-                  <a href={social.href} aria-label={social.label}>
-                    {social.icon}
-                  </a>
-                </li>
+    <footer className="w-full flex flex-col font-['Roboto'] border-t border-black/60">
+      {/* SECTION 1: Links & Contact (Off-White) */}
+      <div className="bg-[#FAFAFA] px-4 md:px-9 py-10 md:py-16">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col md:flex-row md:justify-between gap-10 md:gap-8">
+
+            {/* Link Columns Wrapper */}
+            <div className="flex flex-wrap gap-8 md:gap-12 flex-1">
+              {linkColumns.map((col) => (
+                <div key={col.title} className="min-w-[120px]">
+                  <h4 className="text-[11px] font-bold tracking-[0.1em] uppercase text-[#2F2F2F] mb-3">
+                    {col.title}
+                  </h4>
+                  <ul className="flex flex-col gap-2">
+                    {col.links.map((name) => (
+                      <li key={name}>
+                        <Link
+                          href="#"
+                          className="text-[14px] leading-6 text-[#2F2F2F]/70 hover:text-[#F7246E] transition-colors duration-300"
+                        >
+                          {name}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               ))}
-            </ul>
-          </div>
-          <div className="grid w-full gap-6 md:grid-cols-3 lg:gap-20">
-            {sections.map((section, sectionIdx) => (
-              <div key={sectionIdx}>
-                <h3 className="mb-4 text-[14px] font-bold text-brand-dark uppercase tracking-widest">{section.title}</h3>
-                <ul className="space-y-3 text-[14px] text-gray-500">
-                  {section.links.map((link, linkIdx) => (
-                    <li
-                      key={linkIdx}
-                      className="font-medium hover:text-brand-pink transition-colors"
-                    >
-                      <a href={link.href}>{link.name}</a>
-                    </li>
-                  ))}
-                </ul>
+            </div>
+
+            {/* Contact Us */}
+            <div className="flex flex-col shrink-0">
+              <h4 className="text-[11px] font-bold tracking-[0.1em] uppercase text-[#2F2F2F] mb-3">
+                Contact Us
+              </h4>
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center gap-2.5">
+                  <FaMapMarkerAlt className="text-[#F7246E] text-[14px] shrink-0" aria-hidden="true" />
+                  <span className="text-[14px] text-[#2F2F2F]/70">Gurugram 122009</span>
+                </div>
+                <div className="flex items-center gap-2.5">
+                  <FaPhoneAlt className="text-[#F7246E] text-[13px] shrink-0" aria-hidden="true" />
+                  <a
+                    href="tel:+8882888832"
+                    className="text-[14px] text-[#2F2F2F]/70 hover:text-[#F7246E] transition-colors"
+                  >
+                    +8882 8888 32
+                  </a>
+                </div>
+                <div className="flex items-center gap-2.5">
+                  <FaEnvelope className="text-[#F7246E] text-[13px] shrink-0" aria-hidden="true" />
+                  <a
+                    href="mailto:Restylefashion2026@gmail.com"
+                    className="text-[14px] text-[#2F2F2F]/70 hover:text-[#F7246E] transition-colors break-all md:break-normal"
+                  >
+                    Restylefashion2026@gmail.com
+                  </a>
+                </div>
               </div>
-            ))}
+            </div>
+
           </div>
         </div>
-        <div className="mt-16 flex flex-col justify-between gap-4 border-t border-gray-100 pt-8 text-[12px] font-bold text-gray-400 md:flex-row md:items-center md:text-left uppercase tracking-widest">
-          <p className="order-2 lg:order-1">{copyright}</p>
-          <ul className="order-1 flex flex-col gap-2 md:order-2 md:flex-row md:gap-8">
-            {legalLinks.map((link, idx) => (
-              <li key={idx} className="hover:text-brand-pink transition-colors cursor-pointer">
-                <a href={link.href}> {link.name}</a>
-              </li>
+      </div>
+
+      {/* SECTION 2: Identity & Social */}
+      <div className="bg-white px-4 md:px-9 py-10 md:py-16 border-t border-black/5">
+        <div className="max-w-7xl mx-auto flex flex-col items-center text-center gap-8">
+          {/* Logo */}
+          <div className="flex flex-col items-center gap-2">
+            <Link
+              href="/"
+              className="inline-flex items-center justify-center rounded-lg px-2 py-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-pink-hover focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+              aria-label="Restyle Home"
+            >
+              <span
+                className="hidden md:inline-block font-extrabold bg-gradient-to-b from-black to-[#F7246E] bg-clip-text text-transparent tracking-tight leading-none"
+                style={{ width: 180, height: 50, fontSize: 40, lineHeight: "50px" }}
+              >
+                Restyle
+              </span>
+              <span
+                className="md:hidden inline-block font-extrabold bg-gradient-to-b from-black to-[#F7246E] bg-clip-text text-transparent tracking-tight leading-none"
+                style={{ width: 72, height: 20, fontSize: 18, lineHeight: "20px" }}
+              >
+                Restyle
+              </span>
+            </Link>
+            <p className="text-[#2F2F2F]/60 font-light text-sm">
+              Curating the Future of Thrift
+            </p>
+          </div>
+
+          {/* Follow Us */}
+          <div className="flex flex-col items-center gap-4">
+            <div className="text-[11px] font-bold tracking-[0.2em] text-[#2F2F2F]/50 uppercase">
+              Follow Us On:
+            </div>
+            <div className="flex gap-6 flex-wrap justify-center">
+              <Link
+                href="#"
+                aria-label="Facebook"
+                className="inline-flex items-center justify-center text-[#2F2F2F]/70 transition-colors hover:text-[#F7246E] focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-pink-hover focus-visible:ring-offset-2 focus-visible:ring-offset-white rounded-full p-2"
+              >
+                <FaFacebook className="text-[22px]" aria-hidden="true" />
+              </Link>
+              <Link
+                href="#"
+                aria-label="Instagram"
+                className="inline-flex items-center justify-center text-[#2F2F2F]/70 transition-colors hover:text-[#F7246E] focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-pink-hover focus-visible:ring-offset-2 focus-visible:ring-offset-white rounded-full p-2"
+              >
+                <FaInstagram className="text-[22px]" aria-hidden="true" />
+              </Link>
+              <Link
+                href="#"
+                aria-label="YouTube"
+                className="inline-flex items-center justify-center text-[#2F2F2F]/70 transition-colors hover:text-[#F7246E] focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-pink-hover focus-visible:ring-offset-2 focus-visible:ring-offset-white rounded-full p-2"
+              >
+                <FaYoutube className="text-[22px]" aria-hidden="true" />
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* SECTION 3: Copyright & Payments */}
+      <div className="bg-white px-4 md:px-14 py-8 border-t border-black/10">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+          <p className="text-[#2F2F2F] text-sm font-light">
+            © Restyle 2025 | All rights reserved
+          </p>
+
+          {/* Payment Icons */}
+          <div className="flex items-center gap-3 flex-wrap justify-center md:justify-end">
+            {paymentItems.map((item) => (
+              <Link
+                key={item.name}
+                href={item.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={item.name}
+                className="flex items-center justify-center w-[80px] h-[50px] bg-white rounded-xl border border-black/10 hover:-translate-y-1 hover:shadow-lg transition-all duration-300 overflow-hidden"
+              >
+                <Image
+                  src={item.icon}
+                  alt={item.name}
+                  width={160}
+                  height={100}
+                  className="w-full h-full object-contain"
+                />
+              </Link>
             ))}
-          </ul>
+          </div>
         </div>
       </div>
     </footer>
