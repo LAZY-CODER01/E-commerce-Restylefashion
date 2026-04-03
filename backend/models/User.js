@@ -38,7 +38,8 @@ const userSchema = new mongoose.Schema(
         // Seller profile fields
         sellerType: {
             type: String,
-            enum: ["thrifter", "influencer", "individual", null],
+            // Keep in sync with app/seller/onboarding/type/page.jsx and authRoutes seller-profile validation
+            enum: ["thrifter", "influencer", "individual", "designer"],
             default: null,
         },
         businessName: {

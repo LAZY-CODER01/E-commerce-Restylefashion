@@ -39,7 +39,11 @@ export default function SellerDetailsPage() {
     }
   }, [user]);
 
-  const showSocialField = sellerType === "thrifter" || sellerType === "influencer";
+  // Same UX as Thrifter & Influencer: show Instagram for Designer too
+  const showSocialField =
+    sellerType === "thrifter" ||
+    sellerType === "influencer" ||
+    sellerType === "designer";
 
   const isFilled =
     formData.fullName.trim() !== "" &&

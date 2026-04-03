@@ -8,9 +8,11 @@ import api from "@/lib/api";
 import { toast } from "react-toastify";
 
 const SELLER_TYPES = [
-  { id: "thrifter", label: "Thrifter" },
-  { id: "influencer", label: "Influencer" },
   { id: "individual", label: "Individual Seller" },
+  { id: "influencer", label: "Influencer" },
+  { id: "thrifter", label: "Thrifter" },
+  { id: "designer", label: "Designer" },
+
 ];
 
 export default function SellerTypePage() {
