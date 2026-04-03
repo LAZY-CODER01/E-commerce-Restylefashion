@@ -48,7 +48,7 @@ export default function SellerDetailsPage() {
   const isFilled =
     formData.fullName.trim() !== "" &&
     formData.businessName.trim() !== "" &&
-    formData.pincode.trim() !== "" &&
+    // formData.pincode.trim() !== "" &&
     (showSocialField ? formData.instagramId.trim() !== "" : true);
 
   const handleSubmit = async (e) => {
@@ -62,7 +62,7 @@ export default function SellerDetailsPage() {
         sellerType,
         businessName: formData.businessName,
         instagramId: formData.instagramId,
-        pincode: formData.pincode,
+        // pincode: formData.pincode,
       });
 
       // Update stored token with the newly issued one (role is now Seller)
@@ -137,12 +137,12 @@ export default function SellerDetailsPage() {
                       onChange={(e) => setFormData({ ...formData, instagramId: e.target.value })}
                     />
                   )}
-                  <Input 
+                  {/* <Input 
                     label="Pincode"
                     placeholder="e.g. 400001"
                     value={formData.pincode}
                     onChange={(e) => setFormData({ ...formData, pincode: e.target.value })}
-                  />
+                  /> */}
                </div>
             </div>
 
