@@ -1,9 +1,14 @@
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { FaFacebook, FaInstagram, FaYoutube, FaMapMarkerAlt, FaPhoneAlt, FaEnvelope } from "react-icons/fa";
+import { FaMapMarkerAlt, FaPhoneAlt, FaEnvelope } from "react-icons/fa";
 
 const paymentItems = [
+  {
+    name: "security",
+    icon: "/logooo.png",
+    href: "#",
+  },
   {
     name: "Google Pay",
     icon: "/gpayy.png",
@@ -31,6 +36,14 @@ const paymentItems = [
   },
 ];
 
+const socialLinks = [
+  { label: "Facebook", src: "/social/facebook.png", href: "#" },
+  { label: "Instagram", src: "/social/instagram.png", href: "#" },
+  { label: "X", src: "/social/x.png", href: "#" },
+  { label: "YouTube", src: "/social/youtube.png", href: "#" },
+  // { label: "Secure shopping", src: "/social/trust.png", href: "#" },
+];
+
 const linkColumns = [
   {
     title: "Collection",
@@ -56,32 +69,56 @@ export const Footer7 = () => {
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row md:justify-between gap-10 md:gap-8 md:items-start">
 
-            {/* Link Columns — mobile: single column, left-aligned; md+: original flex-wrap row */}
-            <div className="flex flex-col gap-8 flex-1 text-left md:flex-row md:flex-wrap md:gap-12">
-              {linkColumns.map((col) => (
-                <div key={col.title} className="min-w-[120px] flex flex-col items-start">
-                  <h4 className="text-[11px] font-bold tracking-[0.1em] uppercase text-[#2F2F2F] mb-3">
-                    {col.title}
-                  </h4>
-                  <ul className="flex flex-col gap-2 items-start">
+            {/* Links: mobile = 4 cols + light vertical rules; md+ = section titles + list */}
+            <div className="flex flex-col flex-1 text-left w-full min-w-0">
+              <div
+                className="grid grid-cols-4 md:hidden w-full gap-0 items-start"
+                aria-label="Footer links"
+              >
+                {linkColumns.map((col, colIndex) => (
+                  <div
+                    key={col.title}
+                    className={`flex flex-col gap-2 min-w-0 py-0.5 pr-1 ${colIndex > 0 ? "border-l border-gray-300/80 pl-2" : "pl-0"}`}
+                  >
                     {col.links.map((name) => (
-                      <li key={name}>
-                        <Link
-                          href="#"
-                          className="text-[14px] leading-6 text-[#2F2F2F]/70 hover:text-[#F7246E] transition-colors duration-300"
-                        >
-                          {name}
-                        </Link>
-                      </li>
+                      <Link
+                        key={name}
+                        href="#"
+                        className="text-[13px] font-normal text-[#2F2F2F]/70 leading-snug hover:text-[#F7246E] transition-colors"
+                      >
+                        {name}
+                      </Link>
                     ))}
-                  </ul>
-                </div>
-              ))}
+                  </div>
+                ))}
+              </div>
+
+              <div className="hidden md:flex flex-row flex-wrap gap-12 flex-1">
+                {linkColumns.map((col) => (
+                  <div key={col.title} className="min-w-[120px] flex flex-col items-start">
+                    <h4 className="text-[11px] font-bold tracking-[0.1em] uppercase text-[#2F2F2F] mb-3">
+                      {col.title}
+                    </h4>
+                    <ul className="flex flex-col gap-2 items-start">
+                      {col.links.map((name) => (
+                        <li key={name}>
+                          <Link
+                            href="#"
+                            className="text-[14px] leading-6 text-[#2F2F2F]/70 hover:text-[#F7246E] transition-colors duration-300"
+                          >
+                            {name}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* Contact Us — after link blocks on mobile, full-width centered */}
             <div className="flex flex-col shrink-0 w-full md:w-auto max-md:pt-8 max-md:border-t max-md:border-gray-200/90 max-md:items-center max-md:text-center md:items-start md:text-left md:border-t-0 md:pt-0">
-              <h4 className="text-[11px] font-bold tracking-[0.1em] uppercase text-[#2F2F2F] mb-3">
+              <h4 className="text-sm md:text-[11px] font-bold tracking-[0.08em] md:tracking-[0.1em] uppercase text-[#2F2F2F] mb-3">
                 Contact Us
               </h4>
               <div className="flex flex-col gap-3 w-full max-w-md mx-auto md:mx-0 md:max-w-none">
@@ -142,28 +179,29 @@ export const Footer7 = () => {
             <div className="text-[11px] font-bold tracking-[0.2em] text-[#2F2F2F]/50 uppercase">
               Follow Us On:
             </div>
-            <div className="flex gap-6 flex-wrap justify-center">
-              <Link
-                href="#"
-                aria-label="Facebook"
-                className="inline-flex items-center justify-center text-[#2F2F2F]/70 transition-colors hover:text-[#F7246E] focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-pink-hover focus-visible:ring-offset-2 focus-visible:ring-offset-white rounded-full p-2"
-              >
-                <FaFacebook className="text-[22px]" aria-hidden="true" />
-              </Link>
-              <Link
-                href="#"
-                aria-label="Instagram"
-                className="inline-flex items-center justify-center text-[#2F2F2F]/70 transition-colors hover:text-[#F7246E] focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-pink-hover focus-visible:ring-offset-2 focus-visible:ring-offset-white rounded-full p-2"
-              >
-                <FaInstagram className="text-[22px]" aria-hidden="true" />
-              </Link>
-              <Link
-                href="#"
-                aria-label="YouTube"
-                className="inline-flex items-center justify-center text-[#2F2F2F]/70 transition-colors hover:text-[#F7246E] focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-pink-hover focus-visible:ring-offset-2 focus-visible:ring-offset-white rounded-full p-2"
-              >
-                <FaYoutube className="text-[22px]" aria-hidden="true" />
-              </Link>
+            <div className="flex gap-3 sm:gap-4 flex-wrap justify-center items-center">
+              {socialLinks.map((item) => {
+                const external = item.href.startsWith("http");
+                return (
+                  <Link
+                    key={item.label}
+                    href={item.href}
+                    aria-label={item.label}
+                    {...(external
+                      ? { target: "_blank", rel: "noopener noreferrer" }
+                      : {})}
+                    className="inline-flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white shadow-sm ring-1 ring-gray-200/80 transition-transform hover:scale-105 hover:ring-brand-pink/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-pink-hover focus-visible:ring-offset-2 sm:size-9"
+                  >
+                    <Image
+                      src={item.src}
+                      alt=""
+                      width={32}
+                      height={32}
+                      className="size-8 object-contain sm:size-9"
+                    />
+                  </Link>
+                );
+              })}
             </div>
           </div>
         </div>
