@@ -1,6 +1,8 @@
 const express = require("express");
 const Product = require("../models/Product");
+const User = require("../models/User");
 const { protect, authorize } = require("../middleware/auth");
+const { buildUserPayload } = require("../utils/userPayload");
 const fs = require("fs");
 const { cloudinary, upload } = require("../config/cloudinary");
 
@@ -10,6 +12,7 @@ const router = express.Router();
 const SEED_PRODUCTS = [
     {
         title: "Vintage Denim Jacket",
+        status: "active",
         price: 1299,
         originalPrice: 3999,
         discount: 67,
@@ -29,6 +32,7 @@ const SEED_PRODUCTS = [
     },
     {
         title: "Oversized Formal Blazer",
+        status: "active",
         price: 850,
         originalPrice: 1500,
         discount: 43,
@@ -47,6 +51,7 @@ const SEED_PRODUCTS = [
     },
     {
         title: "Silk Slip Dress",
+        status: "active",
         price: 600,
         brand: "Réalisation Par",
         category: "streetwear",
@@ -60,6 +65,7 @@ const SEED_PRODUCTS = [
     },
     {
         title: "Chunky Loafers",
+        status: "active",
         price: 1200,
         brand: "Prada",
         category: "footwear",
@@ -73,6 +79,7 @@ const SEED_PRODUCTS = [
     },
     {
         title: "Ribbed Knit Top",
+        status: "active",
         price: 250,
         brand: "H&M",
         category: "streetwear",
@@ -86,6 +93,7 @@ const SEED_PRODUCTS = [
     },
     {
         title: "Graphic Tee",
+        status: "active",
         price: 150,
         brand: "Vintage",
         category: "vintage",
@@ -124,7 +132,7 @@ router.post("/seed", async (req, res) => {
 router.get("/", async (req, res) => {
     try {
         const { category, search, page = 1, limit = 20 } = req.query;
-        const query = { status: "approved" };
+        const query = { status: { $in: ["active", "approved"] } };
 
         // Category filter
         if (category && category !== "all") {
@@ -175,13 +183,31 @@ router.get("/seller/me", protect, authorize("Seller", "Admin"), async (req, res)
     }
 });
 
+// @route   GET /api/products/my-listings
+// @desc    All listings for the authenticated seller (dashboard)
+// @access  Private (any logged-in user — filtered by seller id)
+router.get("/my-listings", protect, async (req, res) => {
+    try {
+        const products = await Product.find({ seller: req.user._id }).sort({
+            createdAt: -1,
+        });
+        res.json(products);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
 // @route   GET /api/products/admin/pending
 // @desc    Get all products pending admin approval
 // @access  Private (Admin only)
 router.get("/admin/pending", protect, authorize("Admin"), async (req, res) => {
     try {
         const { status = "pending" } = req.query;
-        const products = await Product.find({ status })
+        const filter =
+            status === "active"
+                ? { status: { $in: ["active", "approved"] } }
+                : { status };
+        const products = await Product.find(filter)
             .populate("seller", "fullName email businessName sellerType avatar")
             .sort({ createdAt: -1 });
         res.json(products);
@@ -195,8 +221,9 @@ router.get("/admin/pending", protect, authorize("Admin"), async (req, res) => {
 // @access  Private (Admin only)
 router.patch("/admin/:id/status", protect, authorize("Admin"), async (req, res) => {
     try {
-        const { status } = req.body; // "approved" | "rejected"
-        if (!["approved", "rejected"].includes(status)) {
+        let { status } = req.body;
+        if (status === "approved") status = "active";
+        if (!["active", "rejected"].includes(status)) {
             return res.status(400).json({ message: "Invalid status value" });
         }
         const product = await Product.findByIdAndUpdate(
@@ -233,6 +260,7 @@ router.get("/:id", async (req, res) => {
         const similarProducts = await Product.find({
             category: product.category,
             _id: { $ne: product._id },
+            status: { $in: ["active", "approved"] },
         }).limit(4);
 
         res.json({ ...product.toObject(), similarProducts });
@@ -268,7 +296,53 @@ router.post(
                 fit,
                 care,
                 sizes,
+                socialMediaName,
+                businessName,
+                onboardingSellerType,
+                onboardingBusinessName,
+                onboardingInstagramId,
             } = req.body;
+
+            const currentUser = await User.findById(req.user._id);
+            if (!currentUser) {
+                return res.status(401).json({ message: "User not found" });
+            }
+
+            const userUpdates = {};
+            const isAdmin = currentUser.role === "Admin";
+
+            if (!isAdmin && !currentUser.hasCompletedSellerSetup) {
+                const st = onboardingSellerType ? String(onboardingSellerType).trim() : "";
+                const existingType =
+                    currentUser.sellerType && String(currentUser.sellerType).trim();
+
+                if (st) {
+                    userUpdates.sellerType = st;
+                    userUpdates.businessName =
+                        onboardingBusinessName !== undefined && onboardingBusinessName !== null
+                            ? String(onboardingBusinessName).trim()
+                            : "";
+                    userUpdates.instagramId =
+                        onboardingInstagramId !== undefined && onboardingInstagramId !== null
+                            ? String(onboardingInstagramId).trim()
+                            : "";
+                    userUpdates.hasCompletedSellerSetup = true;
+                    userUpdates.role = "Seller";
+                    userUpdates.sellerProfileStatus = "pending";
+                    userUpdates.sellerStatus = "pending";
+                } else if (existingType) {
+                    userUpdates.hasCompletedSellerSetup = true;
+                    if (currentUser.role !== "Admin" && currentUser.role !== "Seller") {
+                        userUpdates.role = "Seller";
+                    }
+                } else {
+                    return res.status(400).json({ message: "Seller onboarding is required before listing." });
+                }
+            }
+
+            if (Object.keys(userUpdates).length) {
+                await User.findByIdAndUpdate(req.user._id, { $set: userUpdates });
+            }
 
             // Upload files to Cloudinary manually from memory buffer
             if (uploadedFiles.length > 0) {
@@ -305,6 +379,11 @@ router.post(
                 category,
                 condition,
                 description,
+                socialMediaName: socialMediaName ? String(socialMediaName).trim() : "",
+                businessName:
+                    businessName !== undefined && businessName !== null
+                        ? String(businessName).trim()
+                        : "",
                 details: { fabric, fit, care },
                 images: imageUrls,
                 imageUrl: imageUrls[0] || "",
@@ -313,7 +392,11 @@ router.post(
                 status: "pending",
             });
 
-            res.status(201).json(product);
+            const freshUser = await User.findById(req.user._id);
+            res.status(201).json({
+                product,
+                user: buildUserPayload(freshUser),
+            });
         } catch (error) {
             res.status(500).json({ message: error.message });
         }

@@ -59,6 +59,25 @@ const userSchema = new mongoose.Schema(
             enum: ["pending", "approved", "rejected"],
             default: "pending",
         },
+        sellerProfileStatus: {
+            type: String,
+            enum: ["pending", "approved", "rejected"],
+            default: "pending",
+        },
+        hasCompletedSellerSetup: {
+            type: Boolean,
+            default: false,
+        },
+        hasBankDetailsAdded: {
+            type: Boolean,
+            default: false,
+        },
+        bankingDetails: {
+            accountName: { type: String, default: "" },
+            accountNumber: { type: String, default: "" },
+            ifsc: { type: String, default: "" },
+            routingCode: { type: String, default: "" },
+        },
         isSellerVerified: {
             type: Boolean,
             default: false,

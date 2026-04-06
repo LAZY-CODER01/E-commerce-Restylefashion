@@ -1,15 +1,24 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { Suspense, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import Input from "@/components/Input";
 import Button from "@/components/Button";
 import { useAuth } from "@/context/AuthContext";
-
+import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
+import {
+  completeDraftListingFlow,
+  shouldRehydrateAfterAuth,
+} from "@/lib/draftListing";
 
-export default function LoginPage() {
-  const { login } = useAuth();
+function LoginForm() {
+  const { login, setUser, redirectBasedOnRole } = useAuth();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectIntent = searchParams.get("redirect");
+
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState({});
 
@@ -31,21 +40,58 @@ export default function LoginPage() {
     e.preventDefault();
     setApiError("");
 
-    if (validate()) {
-      setLoading(true);
-      const result = await login(formData.email, formData.password);
-
-      if (!result.success) {
-        setApiError(result.message);
-        toast.error(result.message || "Invalid credentials");
-        setLoading(false);
-      } else {
-        toast.success("Welcome back! Loading your profile...");
-      }
-    } else {
+    if (!validate()) {
       toast.warn("Please check the form for errors.");
+      return;
+    }
+
+    setLoading(true);
+    const wantsRehydrate = shouldRehydrateAfterAuth(redirectIntent);
+    const wantsAutoSubmitDraft =
+      redirectIntent === "complete-listing" || redirectIntent === "listing-page";
+    const skipDefaultRedirect = wantsRehydrate || wantsAutoSubmitDraft;
+
+    const result = await login(formData.email, formData.password, {
+      skipRedirect: skipDefaultRedirect,
+    });
+
+    if (!result.success) {
+      setApiError(result.message);
+      toast.error(result.message || "Invalid credentials");
+      setLoading(false);
+      return;
+    }
+
+    if (wantsRehydrate) {
+      toast.success("Welcome back! Your listing draft was restored.");
+      router.push(redirectIntent || "/sell");
+      setLoading(false);
+      return;
+    }
+
+    if (wantsAutoSubmitDraft) {
+      const flow = await completeDraftListingFlow(setUser);
+      if (flow.ok) {
+        toast.success("Welcome back! Your listing was submitted.");
+        router.push("/verification");
+      } else if (flow.reason === "no_draft") {
+        toast.info(
+          flow.message ||
+            "No saved listing found. Continue from the Sell flow when you are ready."
+        );
+        redirectBasedOnRole(result.user.role);
+      } else {
+        toast.error(flow.message || "Could not submit your listing. Try again from your dashboard.");
+        redirectBasedOnRole(result.user.role);
+      }
+      setLoading(false);
     }
   };
+
+  const signupHref =
+    redirectIntent != null && redirectIntent !== ""
+      ? `/signup?redirect=${encodeURIComponent(redirectIntent)}`
+      : "/signup";
 
   return (
     <div className="min-h-[calc(100dvh-70px)] bg-brand-light flex items-center justify-center p-4">
@@ -96,7 +142,7 @@ export default function LoginPage() {
 
           <p className="text-center text-[14px] text-gray-500 mt-2">
             New here?{' '}
-            <Link href="/signup" className="font-semibold text-brand-pink hover:underline">
+            <Link href={signupHref} className="font-semibold text-brand-pink hover:underline">
               Sign up
             </Link>
           </p>
@@ -104,5 +150,19 @@ export default function LoginPage() {
 
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-[calc(100dvh-70px)] bg-brand-light flex items-center justify-center p-4 text-gray-500 text-[15px]">
+          Loading…
+        </div>
+      }
+    >
+      <LoginForm />
+    </Suspense>
   );
 }

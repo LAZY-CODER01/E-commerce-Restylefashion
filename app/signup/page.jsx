@@ -1,22 +1,29 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { Suspense, useState } from "react";
 import Link from "next/link";
 import Input from "@/components/Input";
 import Button from "@/components/Button";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 
 import { toast } from "react-toastify";
+import {
+  completeDraftListingFlow,
+  shouldRehydrateAfterAuth,
+} from "@/lib/draftListing";
 
-export default function SignupPage() {
+function SignupForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectIntent = searchParams.get("redirect");
+
   const [formData, setFormData] = useState({
     fullName: "", email: "", mobile: "", password: "", confirmPassword: "", role: "User"
   });
   const [errors, setErrors] = useState({});
 
-  const { register } = useAuth();
+  const { register, setUser, redirectBasedOnRole } = useAuth();
   const [loading, setLoading] = useState(false);
   const [apiError, setApiError] = useState("");
 
@@ -46,25 +53,59 @@ export default function SignupPage() {
 
     if (validate()) {
       setLoading(true);
-      const result = await register({
-        fullName: formData.fullName,
-        email: formData.email,
-        mobile: formData.mobile,
-        password: formData.password,
-        role: formData.role
-      });
+      const wantsRehydrate = shouldRehydrateAfterAuth(redirectIntent);
+      const wantsAutoSubmitDraft =
+        redirectIntent === "complete-listing" || redirectIntent === "listing-page";
+      const skipDefaultRedirect = wantsRehydrate || wantsAutoSubmitDraft;
+
+      const result = await register(
+        {
+          fullName: formData.fullName,
+          email: formData.email,
+          mobile: formData.mobile,
+          password: formData.password,
+          role: formData.role,
+        },
+        { skipRedirect: skipDefaultRedirect }
+      );
 
       if (!result.success) {
         setApiError(result.message);
         toast.error(result.message || "Registration failed. Please try again.");
         setLoading(false);
+      } else if (wantsRehydrate) {
+        toast.success(`Welcome, ${formData.fullName}! Your listing draft was restored.`);
+        router.push(redirectIntent || "/sell");
+        setLoading(false);
+      } else if (wantsAutoSubmitDraft) {
+        const flow = await completeDraftListingFlow(setUser);
+        if (flow.ok) {
+          toast.success(`Welcome, ${formData.fullName}! Your listing was submitted.`);
+          router.push("/verification");
+        } else if (flow.reason === "no_draft") {
+          toast.info(
+            flow.message ||
+              "Account created! Complete your listing from the Sell flow when you are ready."
+          );
+          redirectBasedOnRole(result.user.role);
+        } else {
+          toast.error(flow.message || "Could not submit your listing. You can finish from your dashboard.");
+          redirectBasedOnRole(result.user.role);
+        }
+        setLoading(false);
       } else {
         toast.success(`Account created successfully! Welcome to Restyle, ${formData.fullName}!`);
+        setLoading(false);
       }
     } else {
       toast.warn("Please correct the errors in the form.");
     }
   };
+
+  const loginHref =
+    redirectIntent != null && redirectIntent !== ""
+      ? `/login?redirect=${encodeURIComponent(redirectIntent)}`
+      : "/login";
 
   return (
     <div className="min-h-[calc(100dvh-70px)] bg-brand-light flex items-center justify-center p-4">
@@ -151,7 +192,10 @@ export default function SignupPage() {
 
           <p className="text-center text-[14px] text-gray-500 mt-2">
             Already have an account?{' '}
-            <Link href="/login" className="font-semibold text-brand-pink hover:underline">
+            <Link
+              href={loginHref}
+              className="font-semibold text-brand-pink hover:underline"
+            >
               Log in
             </Link>
           </p>
@@ -159,5 +203,19 @@ export default function SignupPage() {
 
       </div>
     </div>
+  );
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-[calc(100dvh-70px)] bg-brand-light flex items-center justify-center p-4 text-gray-500 text-[15px]">
+          Loading…
+        </div>
+      }
+    >
+      <SignupForm />
+    </Suspense>
   );
 }

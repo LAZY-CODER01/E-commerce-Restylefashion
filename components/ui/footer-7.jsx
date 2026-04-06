@@ -54,16 +54,16 @@ export const Footer7 = () => {
       {/* SECTION 1: Links & Contact (Off-White) */}
       <div className="bg-[#FAFAFA] px-4 md:px-9 py-10 md:py-16">
         <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row md:justify-between gap-10 md:gap-8">
+          <div className="flex flex-col md:flex-row md:justify-between gap-10 md:gap-8 md:items-start">
 
-            {/* Link Columns Wrapper */}
-            <div className="flex flex-wrap gap-8 md:gap-12 flex-1">
+            {/* Link Columns — mobile: single column, left-aligned; md+: original flex-wrap row */}
+            <div className="flex flex-col gap-8 flex-1 text-left md:flex-row md:flex-wrap md:gap-12">
               {linkColumns.map((col) => (
-                <div key={col.title} className="min-w-[120px]">
+                <div key={col.title} className="min-w-[120px] flex flex-col items-start">
                   <h4 className="text-[11px] font-bold tracking-[0.1em] uppercase text-[#2F2F2F] mb-3">
                     {col.title}
                   </h4>
-                  <ul className="flex flex-col gap-2">
+                  <ul className="flex flex-col gap-2 items-start">
                     {col.links.map((name) => (
                       <li key={name}>
                         <Link
@@ -79,30 +79,32 @@ export const Footer7 = () => {
               ))}
             </div>
 
-            {/* Contact Us */}
-            <div className="flex flex-col shrink-0">
+            {/* Contact Us — after link blocks on mobile, full-width centered */}
+            <div className="flex flex-col shrink-0 w-full md:w-auto max-md:pt-8 max-md:border-t max-md:border-gray-200/90 max-md:items-center max-md:text-center md:items-start md:text-left md:border-t-0 md:pt-0">
               <h4 className="text-[11px] font-bold tracking-[0.1em] uppercase text-[#2F2F2F] mb-3">
                 Contact Us
               </h4>
-              <div className="flex flex-col gap-3">
-                <div className="flex items-center gap-2.5">
-                  <FaMapMarkerAlt className="text-[#F7246E] text-[14px] shrink-0" aria-hidden="true" />
-                  <span className="text-[14px] text-[#2F2F2F]/70">A-1064, 2nd Floor, DLF Phase 1, Gurugram 122009</span>
+              <div className="flex flex-col gap-3 w-full max-w-md mx-auto md:mx-0 md:max-w-none">
+                <div className="flex items-start gap-2.5 justify-center md:justify-start">
+                  <FaMapMarkerAlt className="text-[#F7246E] text-[14px] shrink-0 mt-0.5" aria-hidden="true" />
+                  <span className="text-[14px] text-[#2F2F2F]/70 text-center md:text-left">
+                    A-1064, 2nd Floor, DLF Phase 1, Gurugram 122009
+                  </span>
                 </div>
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-2.5 justify-center md:justify-start">
                   <FaPhoneAlt className="text-[#F7246E] text-[13px] shrink-0" aria-hidden="true" />
                   <a
-                    href="tel:+8882888832"
+                    href="tel:+918882888832"
                     className="text-[14px] text-[#2F2F2F]/70 hover:text-[#F7246E] transition-colors"
                   >
                     +91 8882888832
                   </a>
                 </div>
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-2.5 justify-center md:justify-start">
                   <FaEnvelope className="text-[#F7246E] text-[13px] shrink-0" aria-hidden="true" />
                   <a
                     href="mailto:Restylefashion2026@gmail.com"
-                    className="text-[14px] text-[#2F2F2F]/70 hover:text-[#F7246E] transition-colors break-all md:break-normal"
+                    className="text-[14px] text-[#2F2F2F]/70 hover:text-[#F7246E] transition-colors break-all md:break-normal text-center md:text-left"
                   >
                     Restylefashion2026@gmail.com
                   </a>

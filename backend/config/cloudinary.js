@@ -1,10 +1,21 @@
 const cloudinary = require("cloudinary").v2;
 const multer = require("multer");
-require("dotenv").config(); // Force load env variables to prevent missing credential
+const path = require("path");
+require("dotenv").config({ path: path.join(__dirname, "..", ".env") });
+
+const cloudName =
+    process.env.CLOUDINARY_CLOUD_NAME || process.env.CLOUD_NAME || process.env.cloud_name;
+const apiKey =
+    process.env.CLOUDINARY_API_KEY || process.env.CLOUD_API_KEY || process.env.api_key;
+const apiSecret =
+    process.env.CLOUDINARY_API_SECRET ||
+    process.env.CLOUD_API_SECRET ||
+    process.env.api_secret;
+
 cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET,
+    cloud_name: cloudName,
+    api_key: apiKey,
+    api_secret: apiSecret,
 });
 
 // Configure Multer to use memory storage (compatible with Vercel serverless functions)

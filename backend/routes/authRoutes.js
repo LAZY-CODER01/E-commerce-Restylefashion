@@ -2,6 +2,7 @@ const express = require("express");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const { protect } = require("../middleware/auth");
+const { buildUserPayload } = require("../utils/userPayload");
 
 const router = express.Router();
 
@@ -32,14 +33,8 @@ router.post("/register", async (req, res) => {
             role: role || "User",
         });
 
-        // Return user data with token
         res.status(201).json({
-            _id: user._id,
-            fullName: user.fullName,
-            email: user.email,
-            mobile: user.mobile,
-            role: user.role,
-            avatar: user.avatar,
+            ...buildUserPayload(user),
             token: generateToken(user._id),
         });
     } catch (error) {
@@ -70,14 +65,8 @@ router.post("/login", async (req, res) => {
             return res.status(401).json({ message: "Invalid email or password" });
         }
 
-        // Return user data with token
         res.json({
-            _id: user._id,
-            fullName: user.fullName,
-            email: user.email,
-            mobile: user.mobile,
-            role: user.role,
-            avatar: user.avatar,
+            ...buildUserPayload(user),
             token: generateToken(user._id),
         });
     } catch (error) {
@@ -90,15 +79,7 @@ router.post("/login", async (req, res) => {
 // @access  Private
 router.get("/profile", protect, async (req, res) => {
     try {
-        res.json({
-            _id: req.user._id,
-            fullName: req.user.fullName,
-            email: req.user.email,
-            mobile: req.user.mobile,
-            role: req.user.role,
-            avatar: req.user.avatar,
-            createdAt: req.user.createdAt,
-        });
+        res.json(buildUserPayload(req.user));
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -109,17 +90,22 @@ router.get("/profile", protect, async (req, res) => {
 // @access  Private
 router.put("/seller-profile", protect, async (req, res) => {
     try {
-        const { sellerType, businessName, instagramId, pincode } = req.body;
+        const { sellerType, businessName, instagramId, pincode, fullName } = req.body;
 
         const updateFields = {};
         if (sellerType !== undefined) updateFields.sellerType = sellerType;
         if (businessName !== undefined) updateFields.businessName = businessName;
         if (instagramId !== undefined) updateFields.instagramId = instagramId;
         if (pincode !== undefined) updateFields.pincode = pincode;
+        if (fullName !== undefined && String(fullName).trim()) {
+            updateFields.fullName = String(fullName).trim();
+        }
 
-        // Upgrade role to Seller when details are provided
-        if (businessName || pincode) {
+        if (sellerType || businessName || pincode) {
             updateFields.role = "Seller";
+            updateFields.hasCompletedSellerSetup = true;
+            updateFields.sellerProfileStatus = "pending";
+            updateFields.sellerStatus = "pending";
         }
 
         const user = await User.findByIdAndUpdate(
@@ -129,18 +115,49 @@ router.put("/seller-profile", protect, async (req, res) => {
         );
 
         res.json({
-            _id: user._id,
-            fullName: user.fullName,
-            email: user.email,
-            mobile: user.mobile,
-            role: user.role,
-            avatar: user.avatar,
-            sellerType: user.sellerType,
-            businessName: user.businessName,
-            instagramId: user.instagramId,
-            pincode: user.pincode,
-            sellerStatus: user.sellerStatus,
-            isSellerVerified: user.isSellerVerified,
+            ...buildUserPayload(user),
+            token: generateToken(user._id),
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// @route   PUT /api/auth/banking-details
+// @desc    Save seller payout / banking details
+// @access  Private
+router.put("/banking-details", protect, async (req, res) => {
+    try {
+        const { accountName, accountNumber, ifsc, routingCode } = req.body;
+        const accName = accountName ? String(accountName).trim() : "";
+        const accNum = accountNumber ? String(accountNumber).trim() : "";
+        const ifscV = ifsc ? String(ifsc).trim() : "";
+        const routing = routingCode ? String(routingCode).trim() : "";
+        if (!accName || !accNum || (!ifscV && !routing)) {
+            return res.status(400).json({
+                message:
+                    "Account name, account number, and at least one of IFSC or routing code are required.",
+            });
+        }
+
+        const user = await User.findByIdAndUpdate(
+            req.user._id,
+            {
+                $set: {
+                    bankingDetails: {
+                        accountName: accName,
+                        accountNumber: accNum,
+                        ifsc: ifscV,
+                        routingCode: routing,
+                    },
+                    hasBankDetailsAdded: true,
+                },
+            },
+            { new: true, runValidators: true }
+        );
+
+        res.json({
+            ...buildUserPayload(user),
             token: generateToken(user._id),
         });
     } catch (error) {

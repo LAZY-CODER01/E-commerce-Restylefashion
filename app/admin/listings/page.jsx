@@ -27,19 +27,22 @@ const NAV_ITEMS = [
 
 const STATUS_TABS = [
   { label: "Pending", value: "pending", color: "text-amber-500 bg-amber-50 border-amber-200" },
-  { label: "Approved", value: "approved", color: "text-green-600 bg-green-50 border-green-200" },
+  { label: "Active", value: "active", color: "text-green-600 bg-green-50 border-green-200" },
   { label: "Rejected", value: "rejected", color: "text-red-500 bg-red-50 border-red-200" },
 ];
 
 function StatusBadge({ status }) {
+  const normalized = status === "approved" ? "active" : status;
   const map = {
     pending: "bg-amber-50 text-amber-600 border border-amber-200",
-    approved: "bg-green-50 text-green-600 border border-green-200",
+    active: "bg-green-50 text-green-600 border border-green-200",
     rejected: "bg-red-50 text-red-500 border border-red-200",
   };
+  const display =
+    normalized === "pending" ? "Pending" : normalized === "active" ? "Active" : "Rejected";
   return (
-    <span className={`text-[11px] font-bold uppercase tracking-widest px-3 py-1 rounded-full ${map[status] || ""}`}>
-      {status}
+    <span className={`text-[11px] font-bold uppercase tracking-widest px-3 py-1 rounded-full ${map[normalized] || map.pending}`}>
+      {display}
     </span>
   );
 }
@@ -305,12 +308,12 @@ export default function AdminListingsPage() {
                       {actionLoading[selectedProduct._id] === "rejected" ? "Rejecting..." : "Reject"}
                     </button>
                     <button
-                      onClick={() => handleAction(selectedProduct._id, "approved")}
+                      onClick={() => handleAction(selectedProduct._id, "active")}
                       disabled={!!actionLoading[selectedProduct._id]}
                       className="flex-1 h-[52px] rounded-full bg-brand-pink text-white font-bold text-[15px] hover:bg-brand-pink/90 transition-all shadow-lg shadow-brand-pink/20 flex items-center justify-center gap-2 disabled:opacity-50"
                     >
                       <CheckCircleOutlineIcon sx={{ fontSize: 20 }} />
-                      {actionLoading[selectedProduct._id] === "approved" ? "Approving..." : "Approve"}
+                      {actionLoading[selectedProduct._id] === "active" ? "Approving..." : "Approve"}
                     </button>
                   </div>
                 )}
@@ -319,7 +322,7 @@ export default function AdminListingsPage() {
           )}
 
           {/* Mobile: Inline Action Buttons below each card */}
-          {selectedProduct && (
+          {selectedProduct && selectedProduct.status === "pending" && (
             <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-4 flex gap-4 z-50 shadow-xl">
               <button
                 onClick={() => handleAction(selectedProduct._id, "rejected")}
@@ -330,7 +333,7 @@ export default function AdminListingsPage() {
                 Reject
               </button>
               <button
-                onClick={() => handleAction(selectedProduct._id, "approved")}
+                onClick={() => handleAction(selectedProduct._id, "active")}
                 disabled={!!actionLoading[selectedProduct._id]}
                 className="flex-1 h-[52px] rounded-full bg-brand-pink text-white font-bold shadow-lg shadow-brand-pink/20 flex items-center justify-center gap-2 disabled:opacity-50"
               >

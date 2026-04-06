@@ -29,15 +29,16 @@ export function AuthProvider({ children }) {
     fetchUser();
   }, []);
 
-  const login = async (email, password) => {
+  const login = async (email, password, options = {}) => {
     try {
       const { data } = await api.post("/auth/login", { email, password });
       setUser(data);
       localStorage.setItem("restyle_token", data.token);
 
-      // Role-based redirection
-      redirectBasedOnRole(data.role);
-      return { success: true };
+      if (!options.skipRedirect) {
+        redirectBasedOnRole(data.role);
+      }
+      return { success: true, user: data };
     } catch (error) {
       return {
         success: false,
@@ -46,14 +47,16 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const register = async (userData) => {
+  const register = async (userData, options = {}) => {
     try {
       const { data } = await api.post("/auth/register", userData);
       setUser(data);
       localStorage.setItem("restyle_token", data.token);
 
-      redirectBasedOnRole(data.role);
-      return { success: true };
+      if (!options.skipRedirect) {
+        redirectBasedOnRole(data.role);
+      }
+      return { success: true, user: data };
     } catch (error) {
       return {
         success: false,
@@ -81,11 +84,13 @@ export function AuthProvider({ children }) {
   const logout = () => {
     setUser(null);
     localStorage.removeItem("restyle_token");
-    router.push("/login");
+    router.push("/");
   };
 
   return (
-    <AuthContext.Provider value={{ user, setUser, loading, login, register, logout }}>
+    <AuthContext.Provider
+      value={{ user, setUser, loading, login, register, logout, redirectBasedOnRole }}
+    >
       {children}
     </AuthContext.Provider>
   );

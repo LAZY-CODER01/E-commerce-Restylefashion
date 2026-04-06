@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import api from "@/lib/api";
 import { toast } from "react-toastify";
+import { getDraftListing, mergeDraftListing } from "@/lib/draftListing";
 
 const SELLER_TYPES = [
   {
@@ -48,31 +49,44 @@ const SELLER_TYPES = [
 
 export default function SellerTypePage() {
   const router = useRouter();
-  const { user, loading } = useAuth();
+  const { user } = useAuth();
   const [selectedType, setSelectedType] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [modalData, setModalData] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
 
   useEffect(() => {
-    if (!loading && !user) {
-      router.replace("/login");
+    const draft = getDraftListing();
+    if (draft?.sellerType) {
+      setSelectedType(draft.sellerType);
     }
-  }, [user, loading, router]);
+  }, []);
+
+  useEffect(() => {
+    if (selectedType) {
+      mergeDraftListing({ sellerType: selectedType });
+    }
+  }, [selectedType]);
 
   const isSelected = (id) => selectedType === id;
 
   const handleStartSelling = async () => {
     if (!selectedType) return;
-    setSubmitting(true);
-    try {
-      await api.put("/auth/seller-profile", { sellerType: selectedType });
-      localStorage.setItem("seller_type", selectedType);
+    mergeDraftListing({ sellerType: selectedType });
+    localStorage.setItem("seller_type", selectedType);
+
+    if (user) {
+      setSubmitting(true);
+      try {
+        await api.put("/auth/seller-profile", { sellerType: selectedType });
+        router.push("/seller/onboarding/details");
+      } catch (err) {
+        toast.error(err.response?.data?.message || "Something went wrong");
+      } finally {
+        setSubmitting(false);
+      }
+    } else {
       router.push("/seller/onboarding/details");
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Something went wrong");
-    } finally {
-      setSubmitting(false);
     }
   };
 
@@ -86,8 +100,6 @@ export default function SellerTypePage() {
     setModalVisible(false);
     setTimeout(() => setModalData(null), 200);
   };
-
-  if (loading || !user) return null;
 
   return (
     <>
@@ -280,21 +292,6 @@ export default function SellerTypePage() {
               <p className="text-gray-600 text-sm leading-relaxed pl-[52px]">
                 {modalData.guideline}
               </p>
-
-              {/* Select button */}
-              {/* <button
-                onClick={() => {
-                  setSelectedType(modalData.id);
-                  closeModal();
-                }}
-                className="mt-5 w-full h-[44px] rounded-full text-white font-semibold text-[14px] transition-all duration-200 hover:opacity-90"
-                style={{
-                  backgroundColor: modalData.color,
-                  boxShadow: `0 4px 14px ${modalData.colorBorder}`,
-                }}
-              >
-                Select {modalData.label}
-              </button> */}
             </div>
           </div>
         </div>

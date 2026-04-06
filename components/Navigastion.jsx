@@ -74,7 +74,7 @@ export default function Navigation() {
 
             <Link
               href="/"
-              className="absolute left-[47%] -translate-x-1/2 md:static md:translate-x-0 font-extrabold text-[26px] sm:text-[28px] tracking-tight bg-gradient-to-b from-black to-[#F7246E] bg-clip-text text-transparent"
+              className="absolute left-[40%] -translate-x-1/2 md:static md:translate-x-0 font-extrabold text-[26px] sm:text-[28px] tracking-tight bg-gradient-to-b from-black to-[#F7246E] bg-clip-text text-transparent"
             >
               Restyle
             </Link>
@@ -101,8 +101,9 @@ export default function Navigation() {
               <>
                 {/* Sell Button */}
                 <button
-                  onClick={() => router.push(user ? "/seller/onboarding/type" : "/login")}
-                  className="bg-[#F7246E] hover:bg-magenta-300 text-white font-bold py-1.5 px-3 sm:px-5 rounded-full text-[13px] sm:text-[14px] transition-colors shadow-sm"
+                  type="button"
+                  onClick={() => router.push("/sell")}
+                  className="bg-[#F7246E] hover:bg-magenta-300 text-white font-bold py-1.5 px-3 sm:px-5 rounded-full text-[13px] sm:text-[14px] transition-colors shadow-sm cursor-pointer" 
                 >
                   Sell
                 </button>

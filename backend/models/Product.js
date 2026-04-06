@@ -38,6 +38,16 @@ const productSchema = new mongoose.Schema(
             type: String,
             default: "",
         },
+        socialMediaName: {
+            type: String,
+            default: "",
+            trim: true,
+        },
+        businessName: {
+            type: String,
+            default: "",
+            trim: true,
+        },
         details: {
             fabric: { type: String, default: "" },
             fit: { type: String, default: "" },
@@ -75,7 +85,7 @@ const productSchema = new mongoose.Schema(
         },
         status: {
             type: String,
-            enum: ["pending", "approved", "rejected"],
+            enum: ["pending", "active", "rejected", "approved"],
             default: "pending",
         },
     },

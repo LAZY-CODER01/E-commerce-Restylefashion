@@ -8,82 +8,119 @@ import { toast } from "react-toastify";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useAuth } from "@/context/AuthContext";
 import api from "@/lib/api";
+import { getDraftListing, mergeDraftListing } from "@/lib/draftListing";
+
+const SOCIAL_SELLER_TYPES = new Set(["influencer", "designer", "thrifter"]);
+
+function readInitialSellerType() {
+  if (typeof window === "undefined") return "";
+  const draft = getDraftListing();
+  return draft?.sellerType || localStorage.getItem("seller_type") || "";
+}
+
+function readInitialProfile() {
+  if (typeof window === "undefined") {
+    return { fullName: "", businessName: "", socialMediaName: "" };
+  }
+  const draft = getDraftListing();
+  const sp = draft?.sellerProfile;
+  return {
+    fullName: sp?.fullName || "",
+    businessName: sp?.businessName || "",
+    socialMediaName: sp?.socialMediaName || sp?.instagramId || "",
+  };
+}
 
 export default function SellerDetailsPage() {
   const router = useRouter();
-  const { user, loading, setUser } = useAuth();
-  const [sellerType, setSellerType] = useState("");
-  const [formData, setFormData] = useState({
-    fullName: "",
-    businessName: "",
-    instagramId: "",
-    pincode: "",
-  });
+  const { user, setUser } = useAuth();
+  const [sellerType, setSellerType] = useState(() => readInitialSellerType());
+  const [formData, setFormData] = useState(() => readInitialProfile());
   const [submitting, setSubmitting] = useState(false);
 
-  // Auth guard
-  useEffect(() => {
-    if (!loading && !user) {
-      router.replace("/login");
-    }
-  }, [user, loading, router]);
+  const showSocialField = SOCIAL_SELLER_TYPES.has(sellerType);
+  const isIndividual = sellerType === "individual";
+  const showBusinessName = !isIndividual;
+  const infoHeading = isIndividual ? "Personal Info" : "Business Info";
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const type = localStorage.getItem("seller_type") || "";
-      setSellerType(type);
-      // Pre-fill name from logged-in user
-      if (user?.fullName) {
-        setFormData((prev) => ({ ...prev, fullName: user.fullName }));
-      }
+    if (user?.fullName) {
+      setFormData((prev) =>
+        prev.fullName.trim() ? prev : { ...prev, fullName: user.fullName }
+      );
     }
   }, [user]);
 
-  // Same UX as Thrifter & Influencer: show Instagram for Designer too
-  const showSocialField =
-    sellerType === "thrifter" ||
-    sellerType === "influencer" ||
-    sellerType === "designer";
+  useEffect(() => {
+    if (!showSocialField) {
+      setFormData((prev) => ({ ...prev, socialMediaName: "" }));
+    }
+  }, [showSocialField, sellerType]);
+
+  useEffect(() => {
+    if (isIndividual) {
+      setFormData((prev) => ({ ...prev, businessName: "" }));
+    }
+  }, [isIndividual]);
+
+  useEffect(() => {
+    mergeDraftListing({ sellerType, sellerProfile: formData });
+  }, [sellerType, formData]);
 
   const isFilled =
     formData.fullName.trim() !== "" &&
-    formData.businessName.trim() !== "" &&
-    // formData.pincode.trim() !== "" &&
-    (showSocialField ? formData.instagramId.trim() !== "" : true);
+    (showBusinessName ? formData.businessName.trim() !== "" : true) &&
+    (showSocialField ? formData.socialMediaName.trim() !== "" : true);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!isFilled) return;
 
-    setSubmitting(true);
-    try {
-      // Save full profile to backend — this also upgrades role to Seller
-      const { data } = await api.put("/auth/seller-profile", {
-        sellerType,
-        businessName: formData.businessName,
-        instagramId: formData.instagramId,
-        // pincode: formData.pincode,
-      });
+    mergeDraftListing({
+      sellerType,
+      sellerProfile: {
+        ...formData,
+        businessName: showBusinessName ? formData.businessName : "",
+        socialMediaName: showSocialField ? formData.socialMediaName : "",
+      },
+    });
 
-      // Update stored token with the newly issued one (role is now Seller)
-      if (data.token) {
-        localStorage.setItem("restyle_token", data.token);
-        setUser(data); // sync in-memory user state (role is now Seller)
+    if (user) {
+      setSubmitting(true);
+      try {
+        const { data } = await api.put("/auth/seller-profile", {
+          sellerType,
+          businessName: showBusinessName ? formData.businessName : "",
+          instagramId: showSocialField ? formData.socialMediaName : "",
+          fullName: formData.fullName,
+        });
+
+        if (data.token) {
+          localStorage.setItem("restyle_token", data.token);
+          setUser(data);
+        }
+
+        localStorage.setItem("seller_profile", JSON.stringify(formData));
+
+        toast.success("Profile saved!");
+        router.push("/seller/products/new");
+      } catch (err) {
+        toast.error(err.response?.data?.message || "Failed to save profile");
+      } finally {
+        setSubmitting(false);
       }
-
-      // Also cache profile for multi-step reference
-      localStorage.setItem("seller_profile", JSON.stringify(formData));
-
-      toast.success("Profile saved!");
+    } else {
+      localStorage.setItem(
+        "seller_profile",
+        JSON.stringify({
+          ...formData,
+          businessName: showBusinessName ? formData.businessName : "",
+          socialMediaName: showSocialField ? formData.socialMediaName : "",
+        })
+      );
       router.push("/seller/products/new");
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to save profile");
-    } finally {
-      setSubmitting(false);
     }
   };
-
-  if (loading || !user) return null;
 
   return (
     <div className="min-h-screen bg-brand-light flex items-center justify-center p-4 font-roboto">
@@ -92,6 +129,7 @@ export default function SellerDetailsPage() {
          <div className="p-8 border-b border-gray-100 flex flex-col gap-6">
             <div className="flex items-center gap-4">
                <button 
+                 type="button"
                  onClick={() => router.back()}
                  className="w-10 h-10 rounded-full hover:bg-gray-50 flex items-center justify-center text-brand-dark transition-all"
                >
@@ -115,7 +153,7 @@ export default function SellerDetailsPage() {
 
          <form onSubmit={handleSubmit} className="p-10 flex flex-col gap-6">
             <div className="flex flex-col gap-3">
-               <h3 className="text-[14px] font-bold text-brand-dark uppercase tracking-widest border-l-4 border-brand-pink pl-3">Business Info</h3>
+               <h3 className="text-[14px] font-bold text-brand-dark uppercase tracking-widest border-l-4 border-brand-pink pl-3">{infoHeading}</h3>
                <div className="grid grid-cols-1 gap-6">
                   <Input 
                     label="Full Name"
@@ -123,26 +161,22 @@ export default function SellerDetailsPage() {
                     value={formData.fullName}
                     onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                   />
+                  {showBusinessName && (
                   <Input 
                     label="Business Name"
                     placeholder="e.g. Vintage Vault"
                     value={formData.businessName}
                     onChange={(e) => setFormData({ ...formData, businessName: e.target.value })}
                   />
+                  )}
                   {showSocialField && (
                     <Input 
-                      label="Instagram Handle"
-                      placeholder="@yourusername"
-                      value={formData.instagramId}
-                      onChange={(e) => setFormData({ ...formData, instagramId: e.target.value })}
+                      label="Social Media Name"
+                      placeholder="@handle or display name"
+                      value={formData.socialMediaName}
+                      onChange={(e) => setFormData({ ...formData, socialMediaName: e.target.value })}
                     />
                   )}
-                  {/* <Input 
-                    label="Pincode"
-                    placeholder="e.g. 400001"
-                    value={formData.pincode}
-                    onChange={(e) => setFormData({ ...formData, pincode: e.target.value })}
-                  /> */}
                </div>
             </div>
 
