@@ -86,6 +86,7 @@ export const Footer7 = () => {
                         href="#"
                         className="text-[13px] font-normal text-[#2F2F2F]/70 leading-snug hover:text-[#F7246E] transition-colors"
                       >
+                        
                         {name}
                       </Link>
                     ))}
