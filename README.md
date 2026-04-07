@@ -13,9 +13,20 @@ pnpm dev
 # or
 bun dev
 
+
+git remote remove origin
+git remote add origin https://github.com/avinash874/website-ecommerce.git
+git remote -v
+git add .
+git commit -m "initial commit"
+git push --set-upstream origin maingit add .
+git commit -m ""
+git push origin main
+
 git add .
 git commit -m ""
 git push origin main
+
 
 
 rm -rf .next
