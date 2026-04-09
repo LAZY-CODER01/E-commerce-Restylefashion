@@ -1,7 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useCallback } from "react";
 import Button from "@/components/Button";
+import Input from "@/components/Input";
+import ValidationTooltip from "@/components/ValidationTooltip";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import api from "@/lib/api";
@@ -34,7 +36,7 @@ const SELLER_TYPES = [
     colorLight: "rgba(247,36,110,0.08)",
     colorBorder: "rgba(247,36,110,0.25)",
     guideline:
-      "Must upload real product photos, have a minimum of 5 items to start, and preferably an active social media page. Verification requires adding your store link/business name and an email/phone cross-check. (One-time 24hr verification process)",
+      "Must upload real product photos, have a minimum of 5 items to start, and preferably an active social media page. Verification requires adding your store link and an email/phone cross-check. (One-time 24hr verification process)",
   },
   {
     id: "designer",
@@ -47,58 +49,138 @@ const SELLER_TYPES = [
   },
 ];
 
+function emptyForm() {
+  return {
+    fullName: "",
+    instagram: "",
+    otp: "",
+    gst: "",
+    otpSent: false,
+  };
+}
+
 export default function SellerTypePage() {
   const router = useRouter();
-  const { user } = useAuth();
-  const [selectedType, setSelectedType] = useState(null);
+  const { user, setUser } = useAuth();
+  const [modalType, setModalType] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [form, setForm] = useState(emptyForm);
+  const [modalErrors, setModalErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
-  const [modalData, setModalData] = useState(null);
-  const [modalVisible, setModalVisible] = useState(false);
 
-  useEffect(() => {
+  const openModal = useCallback((type) => {
     const draft = getDraftListing();
-    if (draft?.sellerType) {
-      setSelectedType(draft.sellerType);
-    }
+    setModalType(type);
+    setForm({
+      fullName: draft?.sellerProfile?.fullName?.trim() || "",
+      instagram:
+        draft?.sellerProfile?.socialMediaName?.trim() ||
+        draft?.sellerProfile?.instagramId?.trim() ||
+        "",
+      otp: "",
+      gst: draft?.sellerProfile?.gstNumber?.trim() || "",
+      otpSent: false,
+    });
+    setModalErrors({});
+    setModalOpen(true);
   }, []);
 
-  useEffect(() => {
-    if (selectedType) {
-      mergeDraftListing({ sellerType: selectedType });
+  const closeModal = () => {
+    setModalOpen(false);
+    setTimeout(() => {
+      setModalType(null);
+      setModalErrors({});
+    }, 200);
+  };
+
+  const handleSendOtp = () => {
+    toast.success("OTP sent to your registered mobile number");
+    setForm((f) => ({ ...f, otpSent: true }));
+    setModalErrors((e) => {
+      const next = { ...e };
+      delete next.otp;
+      return next;
+    });
+  };
+
+  const validateModal = () => {
+    if (!modalType) return false;
+    const e = {};
+    const t = modalType.id;
+
+    if (!form.fullName.trim()) {
+      e.fullName = "Please fill in this field.";
     }
-  }, [selectedType]);
 
-  const isSelected = (id) => selectedType === id;
+    if (t === "influencer" || t === "thrifter" || t === "designer") {
+      if (!form.instagram.trim()) {
+        e.instagram = "Please fill in this field.";
+      }
+    }
 
-  const handleStartSelling = async () => {
-    if (!selectedType) return;
-    mergeDraftListing({ sellerType: selectedType });
-    localStorage.setItem("seller_type", selectedType);
+    if (t === "influencer" || t === "thrifter") {
+      if (!form.otpSent) {
+        e.otp = "Please request an OTP, then fill in this field.";
+      } else if (!/^\d{6}$/.test(form.otp.trim())) {
+        e.otp = "Please fill in this field.";
+      }
+    }
+
+    setModalErrors(e);
+    return Object.keys(e).length === 0;
+  };
+
+  const handleContinueToListing = async (ev) => {
+    ev.preventDefault();
+    if (!modalType) return;
+    if (!validateModal()) {
+      toast.warn("Please complete the required fields.");
+      return;
+    }
+
+    const sellerType = modalType.id;
+    const profile = {
+      fullName: form.fullName.trim(),
+      businessName: "",
+      socialMediaName:
+        sellerType === "influencer" ||
+        sellerType === "thrifter" ||
+        sellerType === "designer"
+          ? form.instagram.trim()
+          : "",
+      gstNumber: sellerType === "designer" ? form.gst.trim() : "",
+      otpVerified:
+        sellerType === "influencer" || sellerType === "thrifter" ? true : false,
+    };
+
+    mergeDraftListing({ sellerType, sellerProfile: profile });
+    localStorage.setItem("seller_type", sellerType);
 
     if (user) {
       setSubmitting(true);
       try {
-        await api.put("/auth/seller-profile", { sellerType: selectedType });
-        router.push("/seller/onboarding/details");
+        const { data } = await api.put("/auth/seller-profile", {
+          sellerType,
+          businessName: "",
+          instagramId: profile.socialMediaName,
+          fullName: profile.fullName,
+        });
+        if (data.token) {
+          localStorage.setItem("restyle_token", data.token);
+          setUser(data);
+        }
       } catch (err) {
-        toast.error(err.response?.data?.message || "Something went wrong");
+        toast.error(err.response?.data?.message || "Could not save seller profile");
+        setSubmitting(false);
+        return;
       } finally {
         setSubmitting(false);
       }
-    } else {
-      router.push("/seller/onboarding/details");
     }
-  };
 
-  const openModal = (e, type) => {
-    e.stopPropagation();
-    setModalData(type);
-    setModalVisible(true);
-  };
-
-  const closeModal = () => {
-    setModalVisible(false);
-    setTimeout(() => setModalData(null), 200);
+    toast.success("Profile saved. Continue with your listing.");
+    closeModal();
+    router.push("/seller/products/new");
   };
 
   return (
@@ -106,10 +188,10 @@ export default function SellerTypePage() {
       <div className="min-h-[calc(100dvh-80px)] bg-brand-light flex items-center justify-center p-4 font-roboto">
         <div className="w-full max-w-md bg-white rounded-3xl shadow-lg border border-gray-100 overflow-hidden p-6 sm:p-8 animate-slideUp">
           <div className="flex flex-col gap-8 sm:gap-10">
-            {/* Header */}
             <div>
               <div className="flex items-center gap-4 mb-3 sm:mb-4 -ml-2">
                 <button
+                  type="button"
                   onClick={() => router.back()}
                   className="w-10 h-10 rounded-full hover:bg-gray-50 flex items-center justify-center text-brand-dark transition-all"
                 >
@@ -137,162 +219,216 @@ export default function SellerTypePage() {
               </h2>
 
               <p className="text-[13px] sm:text-[14px] text-gray-500 font-medium">
-                Select your category to customize your profile
+                Tap a category to continue — a form will open for your details
               </p>
             </div>
 
-            {/* Options */}
             <div className="flex flex-col gap-3 sm:gap-4">
-              {SELLER_TYPES.map((type) => {
-                const selected = isSelected(type.id);
-                return (
-                  <button
-                    key={type.id}
-                    onClick={() => setSelectedType(type.id)}
-                    className="w-full h-[60px] sm:h-[64px] rounded-[24px] text-[15px] sm:text-[16px] font-bold transition-all duration-300 border-2 flex items-center justify-between px-6 sm:px-8 group"
-                    style={{
-                      backgroundColor: selected ? type.colorLight : "#fff",
-                      borderColor: selected ? type.color : "#f3f4f6",
-                      color: selected ? type.color : "#2F2F2F",
-                      boxShadow: selected
-                        ? `0 4px 14px ${type.colorBorder}`
-                        : "0 1px 3px rgba(0,0,0,0.04)",
-                      transform: selected ? "scale(1.02)" : "scale(1)",
-                    }}
-                  >
-                    <span>{type.label}</span>
-                    <span
-                      onClick={(e) => openModal(e, type)}
-                      className="w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 z-10"
-                      style={{
-                        backgroundColor: selected
-                          ? `${type.color}15`
-                          : "#f3f4f6",
-                        color: selected ? type.color : "#9ca3af",
-                      }}
-                      title="View guidelines"
-                    >
-                      <svg
-                        width="18"
-                        height="18"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <circle cx="12" cy="12" r="10" />
-                        <path d="M12 16v-4" />
-                        <path d="M12 8h.01" />
-                      </svg>
-                    </span>
-                  </button>
-                );
-              })}
+              {SELLER_TYPES.map((type) => (
+                <button
+                  key={type.id}
+                  type="button"
+                  onClick={() => openModal(type)}
+                  className="w-full h-[60px] sm:h-[64px] rounded-[24px] text-[15px] sm:text-[16px] font-bold transition-all duration-300 border-2 flex items-center justify-center px-6 sm:px-8 text-left hover:scale-[1.01] active:scale-[0.99]"
+                  style={{
+                    backgroundColor: type.colorLight,
+                    borderColor: type.colorBorder,
+                    color: "#2F2F2F",
+                    boxShadow: "0 4px 14px rgba(247,36,110,0.08)",
+                  }}
+                >
+                  {type.label}
+                </button>
+              ))}
             </div>
-
-            {/* Button */}
-            <Button
-              onClick={handleStartSelling}
-              disabled={!selectedType || submitting}
-              fullWidth
-              className="h-[50px] sm:h-[54px] rounded-full font-bold text-[15px] sm:text-[16px] mt-2 sm:mt-4"
-            >
-              {submitting ? "Saving..." : "Start Selling"}
-            </Button>
           </div>
         </div>
       </div>
 
-      {/* Info Modal */}
-      {modalData && (
+      {modalType && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4"
           style={{
-            opacity: modalVisible ? 1 : 0,
+            opacity: modalOpen ? 1 : 0,
             transition: "opacity 0.2s ease",
-            pointerEvents: modalVisible ? "auto" : "none",
+            pointerEvents: modalOpen ? "auto" : "none",
           }}
         >
-          {/* Backdrop */}
           <div
             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
             onClick={closeModal}
+            aria-hidden
           />
 
-          {/* Modal Content */}
           <div
-            className="relative w-full max-w-sm bg-white rounded-2xl shadow-2xl overflow-hidden"
+            className="relative w-full max-w-md max-h-[90vh] overflow-y-auto bg-white rounded-2xl shadow-2xl"
             style={{
-              transform: modalVisible ? "scale(1)" : "scale(0.95)",
+              transform: modalOpen ? "scale(1)" : "scale(0.95)",
               transition: "transform 0.2s ease",
             }}
           >
-            {/* Accent bar */}
             <div
-              className="h-1.5 w-full"
-              style={{ backgroundColor: modalData.color }}
+              className="h-1.5 w-full sticky top-0 z-10"
+              style={{ backgroundColor: modalType.color }}
             />
 
-            <div className="p-6">
-              {/* Close button */}
-              <button
-                onClick={closeModal}
-                className="absolute top-5 right-4 w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M18 6L6 18" />
-                  <path d="M6 6l12 12" />
-                </svg>
-              </button>
-
-              {/* Icon + Title */}
-              <div className="flex items-center gap-3 mb-3 pr-8">
-                <div
-                  className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                  style={{
-                    backgroundColor: modalData.colorLight,
-                    color: modalData.color,
-                  }}
+            <form
+              onSubmit={handleContinueToListing}
+              className="p-6 pb-8 flex flex-col gap-5"
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div
+                    className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                    style={{
+                      backgroundColor: modalType.colorLight,
+                      color: modalType.color,
+                    }}
+                  >
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                      <circle cx="12" cy="7" r="4" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3
+                      className="text-lg font-bold leading-tight"
+                      style={{ color: modalType.color }}
+                    >
+                      {modalType.label}
+                    </h3>
+                    <p className="text-[12px] text-gray-500 mt-1 leading-snug">
+                      {modalType.guideline}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={closeModal}
+                  className="w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 shrink-0"
                 >
                   <svg
-                    width="20"
-                    height="20"
+                    width="16"
+                    height="16"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
+                    strokeWidth="2.5"
                   >
-                    <circle cx="12" cy="12" r="10" />
-                    <path d="M12 16v-4" />
-                    <path d="M12 8h.01" />
+                    <path d="M18 6L6 18" />
+                    <path d="M6 6l12 12" />
                   </svg>
-                </div>
-                <h3
-                  className="text-xl font-bold"
-                  style={{ color: modalData.color }}
-                >
-                  {modalData.label}
-                </h3>
+                </button>
               </div>
 
-              {/* Guideline Content */}
-              <p className="text-gray-600 text-sm leading-relaxed pl-[52px]">
-                {modalData.guideline}
-              </p>
-            </div>
+              <Input
+                id="modal-fullName"
+                label="Full Name"
+                placeholder="As per your ID"
+                value={form.fullName}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, fullName: e.target.value }))
+                }
+                error={modalErrors.fullName}
+                tooltipError
+              />
+
+              {(modalType.id === "influencer" ||
+                modalType.id === "thrifter" ||
+                modalType.id === "designer") && (
+                <Input
+                  id="modal-instagram"
+                  label="Instagram Handle"
+                  placeholder="@username"
+                  value={form.instagram}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, instagram: e.target.value }))
+                  }
+                  error={modalErrors.instagram}
+                  tooltipError
+                />
+              )}
+
+              {(modalType.id === "influencer" ||
+                modalType.id === "thrifter") && (
+                <div className="flex w-full flex-col gap-1.5">
+                  <label
+                    htmlFor="modal-otp"
+                    className="text-[14px] font-medium text-brand-dark"
+                  >
+                    OTP verification
+                  </label>
+                  <div className="relative isolate w-full">
+                    <div className="flex w-full flex-col gap-2 md:flex-row md:items-center md:gap-3">
+                      <input
+                        id="modal-otp"
+                        type="text"
+                        inputMode="numeric"
+                        autoComplete="one-time-code"
+                        maxLength={6}
+                        placeholder="6-digit code"
+                        value={form.otp}
+                        onChange={(e) => {
+                          setForm((f) => ({
+                            ...f,
+                            otp: e.target.value.replace(/\D/g, "").slice(0, 6),
+                          }));
+                          setModalErrors((prev) => {
+                            if (!prev.otp) return prev;
+                            const next = { ...prev };
+                            delete next.otp;
+                            return next;
+                          });
+                        }}
+                        className="min-h-[52px] w-full flex-1 rounded-xl border border-gray-200 bg-brand-light px-4 py-3.5 text-[15px] text-brand-dark outline-none transition-all placeholder:text-gray-400 focus:border-brand-pink focus:shadow-[0_0_0_3px_rgba(247,36,110,0.1)] md:min-w-0"
+                      />
+                      <Button
+                        type="button"
+                        variant="outlined"
+                        className="h-[52px] w-full shrink-0 rounded-xl px-5 font-bold whitespace-nowrap md:mt-0 md:w-auto md:min-w-[132px]"
+                        onClick={handleSendOtp}
+                      >
+                        Send OTP
+                      </Button>
+                    </div>
+                    {modalErrors.otp && (
+                      <ValidationTooltip message={modalErrors.otp} floating />
+                    )}
+                  </div>
+                  <p className="text-[11px] text-gray-500">
+                    Tap Send OTP, then enter the code you receive on your phone.
+                  </p>
+                </div>
+              )}
+
+              {modalType.id === "designer" && (
+                <Input
+                  id="modal-gst"
+                  label="GST (optional)"
+                  placeholder="GSTIN if registered"
+                  value={form.gst}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, gst: e.target.value }))
+                  }
+                />
+              )}
+
+              <Button
+                type="submit"
+                fullWidth
+                disabled={submitting}
+                className="h-[50px] rounded-full font-bold text-[15px] mt-2"
+              >
+                {submitting ? "Saving..." : "Continue to Product Listing"}
+              </Button>
+            </form>
           </div>
         </div>
       )}

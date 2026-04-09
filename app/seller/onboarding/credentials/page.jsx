@@ -149,6 +149,7 @@ export default function SellerCredentialsPage() {
             value={formData.confirmPassword}
             onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
             error={formData.confirmPassword && !passwordsMatch ? "Passwords do not match" : ""}
+            tooltipError
             disabled={showOtp && isOtpMatched}
           />
 
@@ -163,6 +164,7 @@ export default function SellerCredentialsPage() {
                   setOtpError("");
                 }}
                 error={otpError}
+                tooltipError
               />
               {!isOtpMatched && (
                 <button 

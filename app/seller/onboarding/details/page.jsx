@@ -20,14 +20,14 @@ function readInitialSellerType() {
 
 function readInitialProfile() {
   if (typeof window === "undefined") {
-    return { fullName: "", businessName: "", socialMediaName: "" };
+    return { fullName: "", socialMediaName: "", gstNumber: "" };
   }
   const draft = getDraftListing();
   const sp = draft?.sellerProfile;
   return {
     fullName: sp?.fullName || "",
-    businessName: sp?.businessName || "",
     socialMediaName: sp?.socialMediaName || sp?.instagramId || "",
+    gstNumber: sp?.gstNumber || "",
   };
 }
 
@@ -40,8 +40,8 @@ export default function SellerDetailsPage() {
 
   const showSocialField = SOCIAL_SELLER_TYPES.has(sellerType);
   const isIndividual = sellerType === "individual";
-  const showBusinessName = !isIndividual;
-  const infoHeading = isIndividual ? "Personal Info" : "Business Info";
+  const showGst = sellerType === "designer";
+  const infoHeading = isIndividual ? "Personal Info" : "Seller Info";
 
   useEffect(() => {
     if (user?.fullName) {
@@ -58,18 +58,23 @@ export default function SellerDetailsPage() {
   }, [showSocialField, sellerType]);
 
   useEffect(() => {
-    if (isIndividual) {
-      setFormData((prev) => ({ ...prev, businessName: "" }));
+    if (!showGst) {
+      setFormData((prev) => ({ ...prev, gstNumber: "" }));
     }
-  }, [isIndividual]);
+  }, [showGst]);
 
   useEffect(() => {
-    mergeDraftListing({ sellerType, sellerProfile: formData });
+    mergeDraftListing({
+      sellerType,
+      sellerProfile: {
+        ...formData,
+        businessName: "",
+      },
+    });
   }, [sellerType, formData]);
 
   const isFilled =
     formData.fullName.trim() !== "" &&
-    (showBusinessName ? formData.businessName.trim() !== "" : true) &&
     (showSocialField ? formData.socialMediaName.trim() !== "" : true);
 
   const handleSubmit = async (e) => {
@@ -80,8 +85,7 @@ export default function SellerDetailsPage() {
       sellerType,
       sellerProfile: {
         ...formData,
-        businessName: showBusinessName ? formData.businessName : "",
-        socialMediaName: showSocialField ? formData.socialMediaName : "",
+        businessName: "",
       },
     });
 
@@ -90,7 +94,7 @@ export default function SellerDetailsPage() {
       try {
         const { data } = await api.put("/auth/seller-profile", {
           sellerType,
-          businessName: showBusinessName ? formData.businessName : "",
+          businessName: "",
           instagramId: showSocialField ? formData.socialMediaName : "",
           fullName: formData.fullName,
         });
@@ -110,14 +114,7 @@ export default function SellerDetailsPage() {
         setSubmitting(false);
       }
     } else {
-      localStorage.setItem(
-        "seller_profile",
-        JSON.stringify({
-          ...formData,
-          businessName: showBusinessName ? formData.businessName : "",
-          socialMediaName: showSocialField ? formData.socialMediaName : "",
-        })
-      );
+      localStorage.setItem("seller_profile", JSON.stringify(formData));
       router.push("/seller/products/new");
     }
   };
@@ -125,70 +122,77 @@ export default function SellerDetailsPage() {
   return (
     <div className="min-h-screen bg-brand-light flex items-center justify-center p-4 font-roboto">
       <div className="w-full max-w-lg bg-white rounded-[32px] shadow-sm overflow-hidden animate-fadeIn">
-        
-         <div className="p-8 border-b border-gray-100 flex flex-col gap-6">
-            <div className="flex items-center gap-4">
-               <button 
-                 type="button"
-                 onClick={() => router.back()}
-                 className="w-10 h-10 rounded-full hover:bg-gray-50 flex items-center justify-center text-brand-dark transition-all"
-               >
-                 <ArrowBackIcon sx={{ fontSize: 20 }} />
-               </button>
-               <h2 className="text-[20px] font-bold text-brand-dark">Seller Profile</h2>
-            </div>
- 
-            <div className="flex flex-col gap-2">
-               <div className="flex justify-between items-end mb-1">
-                  <span className="text-[12px] font-bold text-brand-pink uppercase tracking-widest">
-                    Enterprise Info
-                  </span>
-                  <span className="text-[11px] font-bold text-gray-400">Step 2 of 6</span>
-               </div>
-               <div className="w-full h-2 bg-brand-light rounded-full overflow-hidden">
-                  <div className="h-full bg-brand-pink rounded-full transition-all duration-500 w-1/3" />
-               </div>
-            </div>
-         </div>
-
-         <form onSubmit={handleSubmit} className="p-10 flex flex-col gap-6">
-            <div className="flex flex-col gap-3">
-               <h3 className="text-[14px] font-bold text-brand-dark uppercase tracking-widest border-l-4 border-brand-pink pl-3">{infoHeading}</h3>
-               <div className="grid grid-cols-1 gap-6">
-                  <Input 
-                    label="Full Name"
-                    placeholder="Enter your full name"
-                    value={formData.fullName}
-                    onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                  />
-                  {showBusinessName && (
-                  <Input 
-                    label="Business Name"
-                    placeholder="e.g. Vintage Vault"
-                    value={formData.businessName}
-                    onChange={(e) => setFormData({ ...formData, businessName: e.target.value })}
-                  />
-                  )}
-                  {showSocialField && (
-                    <Input 
-                      label="Social Media Name"
-                      placeholder="@handle or display name"
-                      value={formData.socialMediaName}
-                      onChange={(e) => setFormData({ ...formData, socialMediaName: e.target.value })}
-                    />
-                  )}
-               </div>
-            </div>
-
-            <Button 
-              type="submit" 
-              fullWidth 
-              disabled={!isFilled || submitting}
-              className="h-[54px] rounded-full font-bold text-[16px] mt-8 mb-4 shadow-lg shadow-brand-pink/20"
+        <div className="p-8 border-b border-gray-100 flex flex-col gap-6">
+          <div className="flex items-center gap-4">
+            <button
+              type="button"
+              onClick={() => router.back()}
+              className="w-10 h-10 rounded-full hover:bg-gray-50 flex items-center justify-center text-brand-dark transition-all"
             >
-              {submitting ? "Saving..." : "Continue to Product Listing"}
-            </Button>
-         </form>
+              <ArrowBackIcon sx={{ fontSize: 20 }} />
+            </button>
+            <h2 className="text-[20px] font-bold text-brand-dark">Seller Profile</h2>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <div className="flex justify-between items-end mb-1">
+              <span className="text-[12px] font-bold text-brand-pink uppercase tracking-widest">
+                Enterprise Info
+              </span>
+              <span className="text-[11px] font-bold text-gray-400">Step 2 of 6</span>
+            </div>
+            <div className="w-full h-2 bg-brand-light rounded-full overflow-hidden">
+              <div className="h-full bg-brand-pink rounded-full transition-all duration-500 w-1/3" />
+            </div>
+          </div>
+        </div>
+
+        <form onSubmit={handleSubmit} className="p-10 flex flex-col gap-6">
+          <div className="flex flex-col gap-3">
+            <h3 className="text-[14px] font-bold text-brand-dark uppercase tracking-widest border-l-4 border-brand-pink pl-3">
+              {infoHeading}
+            </h3>
+            <div className="grid grid-cols-1 gap-6">
+              <Input
+                label="Full Name"
+                placeholder="Enter your full name"
+                value={formData.fullName}
+                onChange={(e) =>
+                  setFormData({ ...formData, fullName: e.target.value })
+                }
+              />
+              {showSocialField && (
+                <Input
+                  label="Instagram Handle"
+                  placeholder="@username"
+                  value={formData.socialMediaName}
+                  onChange={(e) =>
+                    setFormData({ ...formData, socialMediaName: e.target.value })
+                  }
+                />
+              )}
+              {showGst && (
+                <Input
+                  label="GST (optional)"
+                  placeholder="GSTIN if registered"
+                  value={formData.gstNumber}
+                  onChange={(e) =>
+                    setFormData({ ...formData, gstNumber: e.target.value })
+                  }
+                />
+              )}
+            </div>
+          </div>
+
+          <Button
+            type="submit"
+            fullWidth
+            disabled={!isFilled || submitting}
+            className="h-[54px] rounded-full font-bold text-[16px] mt-8 mb-4 shadow-lg shadow-brand-pink/20"
+          >
+            {submitting ? "Saving..." : "Continue to Product Listing"}
+          </Button>
+        </form>
       </div>
     </div>
   );
