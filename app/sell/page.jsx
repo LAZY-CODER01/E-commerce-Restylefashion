@@ -11,11 +11,6 @@ function profileIncomplete(draft) {
   if (!draft?.sellerType) return true;
   const sp = draft.sellerProfile || {};
   if (!String(sp.fullName || "").trim()) return true;
-  if (draft.sellerType === "individual") {
-    // business name not required
-  } else if (!String(sp.businessName || "").trim()) {
-    return true;
-  }
   if (SOCIAL_TYPES.has(draft.sellerType) && !String(sp.socialMediaName || "").trim()) {
     return true;
   }
@@ -42,7 +37,7 @@ export default function SellPage() {
       return;
     }
     if (profileIncomplete(draft)) {
-      router.replace("/seller/onboarding/details");
+      router.replace("/seller/onboarding/type");
       return;
     }
     router.replace("/seller/products/new");

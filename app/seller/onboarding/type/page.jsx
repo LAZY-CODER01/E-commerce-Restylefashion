@@ -256,7 +256,6 @@ export default function SellerTypePage() {
         >
           <div
             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-            onClick={closeModal}
             aria-hidden
           />
 
@@ -312,7 +311,7 @@ export default function SellerTypePage() {
                 <button
                   type="button"
                   onClick={closeModal}
-                  className="w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 shrink-0"
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-brand-pink transition hover:bg-brand-pink/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-pink"
                 >
                   <svg
                     width="16"

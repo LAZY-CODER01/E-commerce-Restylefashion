@@ -63,6 +63,32 @@ function maxSellingForRetail(retail) {
   return Math.floor((retail * 70) / 100);
 }
 
+/** Inches — reference chart for tops; garment fit may vary by brand and fabric. */
+const SIZE_CHART_ROWS = [
+  { size: "XXS", chest: "30-32", waist: "24-26", hips: "30-32", length: "24-25", shoulder: "14-15" },
+  { size: "XS", chest: "32-34", waist: "26-28", hips: "32-34", length: "25-26", shoulder: "15-16" },
+  { size: "S", chest: "35-37", waist: "28-30", hips: "35-37", length: "26-27", shoulder: "16-17" },
+  { size: "M", chest: "38-40", waist: "31-33", hips: "38-40", length: "27-28", shoulder: "17-18" },
+  { size: "L", chest: "41-43", waist: "34-36", hips: "41-43", length: "28-29", shoulder: "18-19" },
+  { size: "XL", chest: "44-46", waist: "37-39", hips: "44-46", length: "29-30", shoulder: "19-20" },
+  { size: "XXL", chest: "47-49", waist: "40-42", hips: "47-49", length: "30-31", shoulder: "20-21" },
+  { size: "3XL", chest: "50-53", waist: "43-46", hips: "50-53", length: "31-32", shoulder: "21-22" },
+  { size: "4XL", chest: "54-57", waist: "47-50", hips: "54-57", length: "32-33", shoulder: "22-23" },
+];
+
+function SelectChevron() {
+  return (
+    <span
+      className="pointer-events-none absolute right-4 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center text-brand-dark/50"
+      aria-hidden
+    >
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M6 9l6 6 6-6" />
+      </svg>
+    </span>
+  );
+}
+
 function getLivePriceErrors(retailStr, sellingStr) {
   const err = {};
   const retail = retailStr ? parseInt(retailStr, 10) : NaN;
@@ -104,6 +130,10 @@ export default function NewProductPage() {
   const [imagePreviews, setImagePreviews] = useState([]);
   const [submitting, setSubmitting] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
+  const [isSizeChartOpen, setIsSizeChartOpen] = useState(false);
+  const [isConditionGuideOpen, setIsConditionGuideOpen] = useState(false);
+  const [isSellingPriceInfoOpen, setIsSellingPriceInfoOpen] = useState(false);
+  const sellingInfoRef = useRef(null);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -175,6 +205,26 @@ export default function NewProductPage() {
     });
   }, [formData.retailPrice, formData.sellingPrice]);
 
+  useEffect(() => {
+    if (!isSizeChartOpen && !isConditionGuideOpen) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [isSizeChartOpen, isConditionGuideOpen]);
+
+  useEffect(() => {
+    if (!isSellingPriceInfoOpen) return;
+    const onClickOutside = (e) => {
+      if (sellingInfoRef.current && !sellingInfoRef.current.contains(e.target)) {
+        setIsSellingPriceInfoOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onClickOutside);
+    return () => document.removeEventListener("mousedown", onClickOutside);
+  }, [isSellingPriceInfoOpen]);
+
   const setPriceField = (key, raw) => {
     const cleaned = sanitizePriceDigits(raw);
     setFormData((prev) => ({ ...prev, [key]: cleaned }));
@@ -188,15 +238,9 @@ export default function NewProductPage() {
 
   const handleRetailPriceChange = (raw) => {
     const cleaned = sanitizePriceDigits(raw);
-    const retail = parseInt(cleaned, 10);
-    const suggested =
-      Number.isFinite(retail) && retail > 0
-        ? String(maxSellingForRetail(retail))
-        : "";
     setFormData((prev) => ({
       ...prev,
       retailPrice: cleaned,
-      sellingPrice: suggested,
     }));
   };
 
@@ -369,6 +413,11 @@ export default function NewProductPage() {
   };
 
   if (loading) return null;
+  const retailNum = parseInt(formData.retailPrice, 10);
+  const recommendedPlaceholder =
+    Number.isFinite(retailNum) && retailNum > 0
+      ? `₹${maxSellingForRetail(retailNum)} ~ Recommended`
+      : "Enter price";
 
   return (
     <div className="min-h-screen bg-brand-light flex items-center justify-center p-4 font-roboto">
@@ -506,7 +555,7 @@ export default function NewProductPage() {
                         return n;
                       });
                     }}
-                    className="h-[54px] w-full px-6 border border-gray-200 rounded-full bg-gray-50/50 text-[14px] text-brand-dark font-bold cursor-pointer outline-none focus:border-brand-pink focus:bg-white transition-all"
+                    className="h-[54px] w-full cursor-pointer appearance-none rounded-full border border-gray-300 bg-gray-50/50 py-0 pl-6 pr-12 text-[14px] font-bold text-brand-dark outline-none transition-all focus:border-brand-pink focus:bg-white"
                   >
                     <option value="">Select Category</option>
                     <option value="vintage">Vintage</option>
@@ -516,6 +565,7 @@ export default function NewProductPage() {
                     <option value="accessories">Accessories</option>
                     <option value="footwear">Footwear</option>
                   </select>
+                  <SelectChevron />
                   {fieldErrors.category && (
                     <ValidationTooltip message={fieldErrors.category} floating />
                   )}
@@ -523,9 +573,22 @@ export default function NewProductPage() {
               </div>
 
               <div id="field-condition" className="flex flex-col gap-1.5">
-                <label className="text-[12px] font-bold text-brand-dark uppercase tracking-widest pl-1">
-                  Condition
-                </label>
+                <div className="flex items-center gap-2 pl-1">
+                  <label className="text-[12px] font-bold text-brand-dark uppercase tracking-widest">
+                    Condition
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setIsConditionGuideOpen(true)}
+                    className="inline-flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded-full border border-brand-pink/40 text-brand-pink transition hover:border-brand-pink hover:bg-brand-pink/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-pink"
+                    aria-label="Open condition guidelines"
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden>
+                      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
+                      <path d="M12 16v-5M12 8h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                    </svg>
+                  </button>
+                </div>
                 <div className="relative isolate w-full">
                   <select
                     value={formData.condition}
@@ -537,16 +600,17 @@ export default function NewProductPage() {
                         return n;
                       });
                     }}
-                    className="h-[54px] w-full px-6 border border-gray-200 rounded-full bg-gray-50/50 text-[14px] text-brand-dark font-bold cursor-pointer outline-none focus:border-brand-pink focus:bg-white transition-all"
+                    className="h-[54px] w-full cursor-pointer appearance-none rounded-full border border-gray-300 bg-gray-50/50 py-0 pl-6 pr-12 text-[14px] font-bold text-brand-dark outline-none transition-all focus:border-brand-pink focus:bg-white"
                   >
                     <option value="">Select Condition</option>
-                    <option value="New">Brand New</option>
-                    <option value="New without tags">New without Tags</option>
-                    <option value="Excellent">Excellent</option>
-                    <option value="Gently Used">Gently Used</option>
-                    <option value="Good">Good</option>
-                    <option value="Vintage">Vintage</option>
+                    <option value="New">Brand new</option>
+                    <option value="Like new">Like new</option>
+                    <option value="Used - Very Good">Used - Very Good</option>
+                    <option value="Used - Good">Used - Good</option>
+                    <option value="Used">Used</option>
+                    {/* <option value="Vintage">Vintage</option> */}
                   </select>
+                  <SelectChevron />
                   {fieldErrors.condition && (
                     <ValidationTooltip message={fieldErrors.condition} floating />
                   )}
@@ -578,9 +642,27 @@ export default function NewProductPage() {
               </div>
 
               <div id="field-sizes" className="flex flex-col gap-2 md:col-span-2">
-                <label className="text-[12px] font-bold text-brand-dark uppercase tracking-widest pl-1">
-                  Select Size
-                </label>
+                <div className="flex items-center gap-2 pl-1">
+                  <span className="text-[12px] font-bold text-brand-dark uppercase tracking-widest">
+                    Select Size
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setIsSizeChartOpen(true)}
+                    className="inline-flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded-full border border-brand-pink/40 text-brand-pink transition hover:border-brand-pink hover:bg-brand-pink/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-pink"
+                    aria-label="Open size chart"
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden>
+                      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
+                      <path
+                        d="M12 16v-5M12 8h.01"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                  </button>
+                </div>
                 <div className="relative isolate w-full">
                   <div className="flex gap-3 flex-wrap cursor-pointer">
                     {sizes.map((size) => (
@@ -621,15 +703,44 @@ export default function NewProductPage() {
                     />
                   </div>
                   <div id="field-sellingPrice">
-                    <Input
-                      label="Selling Price (≤ 70% of MRP)"
-                      placeholder="Auto from MRP"
-                      inputMode="numeric"
-                      value={formData.sellingPrice}
-                      onChange={(e) => handleSellingPriceChange(e.target.value)}
-                      error={fieldErrors.sellingPrice}
-                      tooltipError
-                    />
+                    <div className="flex w-full flex-col gap-1.5">
+                      <div className="flex items-center gap-2">
+                        <label className="text-[14px] font-medium text-brand-dark">
+                          Selling Price (INR) *
+                        </label>
+                        <div className="relative" ref={sellingInfoRef}>
+                          <button
+                            type="button"
+                            onClick={() => setIsSellingPriceInfoOpen((prev) => !prev)}
+                            className="inline-flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded-full border border-brand-pink/40 text-brand-pink transition hover:border-brand-pink hover:bg-brand-pink/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-pink"
+                            aria-label="Selling price help"
+                          >
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden>
+                              <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
+                              <path d="M12 16v-5M12 8h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                            </svg>
+                          </button>
+                          {isSellingPriceInfoOpen && (
+                            <div className="absolute right-0 top-7 z-20 w-64 rounded-xl border border-brand-pink/20 bg-white p-3 text-[12px] font-medium leading-relaxed text-brand-dark shadow-xl">
+                              The selling price of a product cannot exceed its original price.
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <div className="relative isolate w-full">
+                        <input
+                          type="text"
+                          inputMode="numeric"
+                          value={formData.sellingPrice}
+                          onChange={(e) => handleSellingPriceChange(e.target.value)}
+                          placeholder={recommendedPlaceholder}
+                          className="w-full rounded-xl border border-gray-200 bg-brand-light px-4 py-3.5 text-[15px] text-brand-dark outline-none transition-all duration-200 placeholder:text-gray-400 focus:border-brand-pink focus:shadow-[0_0_0_3px_rgba(247,36,110,0.1)]"
+                        />
+                        {fieldErrors.sellingPrice && (
+                          <ValidationTooltip message={fieldErrors.sellingPrice} floating />
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -646,6 +757,144 @@ export default function NewProductPage() {
           </div>
         </form>
       </div>
+
+      {isSizeChartOpen && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="size-chart-title"
+        >
+          <div className="absolute inset-0 cursor-default bg-black/45" aria-hidden />
+          <div
+            className="relative z-[101] max-h-[min(90vh,720px)] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl sm:p-8"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => setIsSizeChartOpen(false)}
+              className="absolute right-4 top-4 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-brand-pink transition hover:bg-brand-pink/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-pink"
+              aria-label="Close"
+            >
+              <span className="text-2xl font-light leading-none">&times;</span>
+            </button>
+
+            <h2
+              id="size-chart-title"
+              className="pr-10 text-center text-lg font-bold tracking-tight text-brand-dark sm:text-xl"
+            >
+              SIZE CHART (in inches)
+            </h2>
+            <p className="mt-2 text-center text-[13px] leading-relaxed text-gray-500">
+              Refer to the sizing chart to help you find your best fit. Garment sizes may vary based
+              on brand, fabric and design.
+            </p>
+
+            <div className="mt-6 overflow-x-auto rounded-xl border border-gray-100">
+              <table className="w-full min-w-[520px] border-collapse text-left text-[12px] sm:text-[13px]">
+                <thead>
+                  <tr className="bg-brand-pink text-white">
+                    <th className="px-3 py-2.5 font-bold sm:px-4">Size</th>
+                    <th className="px-3 py-2.5 font-bold sm:px-4">Chest</th>
+                    <th className="px-3 py-2.5 font-bold sm:px-4">Waist</th>
+                    <th className="px-3 py-2.5 font-bold sm:px-4">Hips</th>
+                    <th className="px-3 py-2.5 font-bold sm:px-4">Length (Top)</th>
+                    <th className="px-3 py-2.5 font-bold sm:px-4">Shoulder</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {SIZE_CHART_ROWS.map((row, i) => (
+                    <tr
+                      key={row.size}
+                      className={i % 2 === 0 ? "bg-brand-pink/[0.06]" : "bg-white"}
+                    >
+                      <td className="px-3 py-2 font-bold text-brand-pink sm:px-4">{row.size}</td>
+                      <td className="px-3 py-2 text-brand-dark sm:px-4">{row.chest}</td>
+                      <td className="px-3 py-2 text-brand-dark sm:px-4">{row.waist}</td>
+                      <td className="px-3 py-2 text-brand-dark sm:px-4">{row.hips}</td>
+                      <td className="px-3 py-2 text-brand-dark sm:px-4">{row.length}</td>
+                      <td className="px-3 py-2 text-brand-dark sm:px-4">{row.shoulder}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="mt-8">
+              <div className="flex items-center gap-3">
+                <div className="h-px flex-1 bg-brand-pink/40" />
+                <h3 className="text-center text-[12px] font-bold uppercase tracking-[0.2em] text-brand-dark sm:text-sm">
+                  How to measure
+                </h3>
+                <div className="h-px flex-1 bg-brand-pink/40" />
+              </div>
+
+              <div className="mt-6 flex flex-col gap-6 sm:flex-row sm:items-start sm:gap-8">
+                {/* <div className="mx-auto shrink-0 sm:mx-0">
+                  <img
+                    src="/size-chart-how-to-measure.png"
+                    alt="Diagram showing across shoulder, bust, waist, hips, and sleeve length"
+                    className="h-auto max-w-[200px] rounded-lg object-contain sm:max-w-[220px]"
+                  />
+                </div> */}
+                <ul className="flex-1 space-y-3 text-[13px] leading-snug text-gray-600">
+                  <li>
+                    <span className="font-bold text-brand-pink">Across Shoulder</span>
+                    <span className="text-gray-500"> — Measure horizontally between the tips of your shoulders.</span>
+                  </li>
+                  <li>
+                    <span className="font-bold text-brand-pink">Bust</span>
+                    <span className="text-gray-500"> — Measure horizontally around the fullest part of your chest.</span>
+                  </li>
+                  <li>
+                    <span className="font-bold text-brand-pink">Waist</span>
+                    <span className="text-gray-500"> — Measure horizontally around your waist without tightening the tape.</span>
+                  </li>
+                  <li>
+                    <span className="font-bold text-brand-pink">Hips</span>
+                    <span className="text-gray-500"> — Standing with feet together, measure around the fullest part of your hips.</span>
+                  </li>
+                  <li>
+                    <span className="font-bold text-brand-pink">Sleeve Length</span>
+                    <span className="text-gray-500"> — Measure from the shoulder bone to the wrist bone.</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isConditionGuideOpen && (
+        <div
+          className="fixed inset-0 z-[120] flex items-center justify-center p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="condition-guide-title"
+        >
+          <div className="absolute inset-0 bg-black/45" aria-hidden />
+          <div className="relative z-[121] w-full max-w-2xl rounded-2xl bg-white p-6 shadow-2xl sm:p-8">
+            <button
+              type="button"
+              onClick={() => setIsConditionGuideOpen(false)}
+              className="absolute right-4 top-4 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-brand-pink transition hover:bg-brand-pink/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-pink"
+              aria-label="Close"
+            >
+              <span className="text-2xl font-light leading-none">&times;</span>
+            </button>
+            <h2 id="condition-guide-title" className="pr-10 text-lg font-bold text-brand-dark sm:text-xl">
+              Condition Guidelines
+            </h2>
+            <div className="mt-5 space-y-3 text-[14px] leading-relaxed text-gray-700">
+              <p><span className="font-bold text-brand-dark">Brand new:</span> Item is new with original tags and has never been worn or used.</p>
+              <p><span className="font-bold text-brand-dark">Like new:</span> Item is in mint condition and unused, but without original tags or packaging.</p>
+              <p><span className="font-bold text-brand-dark">Used - Very Good:</span> Item has been lightly worn and remains in excellent condition with no visible flaws. Examples: creasing, light wear, minimal sole wear.</p>
+              <p><span className="font-bold text-brand-dark">Used - Good:</span> Item shows minor visible flaws or signs of wear but is still fully wearable. All flaws must be shown in photos and mentioned in the description. Examples: fading, pilling, discolouration, scuffing.</p>
+              <p><span className="font-bold text-brand-dark">Used:</span> Item is well-used with noticeable imperfections and clear signs of wear. Examples: stains, tears, fraying, cracking, stretching.</p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
