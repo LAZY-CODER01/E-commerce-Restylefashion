@@ -65,15 +65,15 @@ function maxSellingForRetail(retail) {
 
 /** Inches — reference chart for tops; garment fit may vary by brand and fabric. */
 const SIZE_CHART_ROWS = [
-  { size: "XXS", chest: "30-32", waist: "24-26", hips: "30-32", length: "24-25", shoulder: "14-15" },
+  // { size: "XXS", chest: "30-32", waist: "24-26", hips: "30-32", length: "24-25", shoulder: "14-15" },
   { size: "XS", chest: "32-34", waist: "26-28", hips: "32-34", length: "25-26", shoulder: "15-16" },
   { size: "S", chest: "35-37", waist: "28-30", hips: "35-37", length: "26-27", shoulder: "16-17" },
   { size: "M", chest: "38-40", waist: "31-33", hips: "38-40", length: "27-28", shoulder: "17-18" },
   { size: "L", chest: "41-43", waist: "34-36", hips: "41-43", length: "28-29", shoulder: "18-19" },
   { size: "XL", chest: "44-46", waist: "37-39", hips: "44-46", length: "29-30", shoulder: "19-20" },
-  { size: "XXL", chest: "47-49", waist: "40-42", hips: "47-49", length: "30-31", shoulder: "20-21" },
-  { size: "3XL", chest: "50-53", waist: "43-46", hips: "50-53", length: "31-32", shoulder: "21-22" },
-  { size: "4XL", chest: "54-57", waist: "47-50", hips: "54-57", length: "32-33", shoulder: "22-23" },
+  // { size: "XXL", chest: "47-49", waist: "40-42", hips: "47-49", length: "30-31", shoulder: "20-21" },
+  // { size: "3XL", chest: "50-53", waist: "43-46", hips: "50-53", length: "31-32", shoulder: "21-22" },
+  // { size: "4XL", chest: "54-57", waist: "47-50", hips: "54-57", length: "32-33", shoulder: "22-23" },
 ];
 
 function SelectChevron() {
@@ -823,21 +823,21 @@ export default function NewProductPage() {
             <div className="mt-8">
               <div className="flex items-center gap-3">
                 <div className="h-px flex-1 bg-brand-pink/40" />
-                <h3 className="text-center text-[12px] font-bold uppercase tracking-[0.2em] text-brand-dark sm:text-sm">
+                <h3 className="text-center text-[13px] font-bold uppercase tracking-[0.2em] text-brand-dark sm:text-[15px]">
                   How to measure
                 </h3>
                 <div className="h-px flex-1 bg-brand-pink/40" />
               </div>
 
-              <div className="mt-6 flex flex-col gap-6 sm:flex-row sm:items-start sm:gap-8">
-                {/* <div className="mx-auto shrink-0 sm:mx-0">
+              <div className="mt-6 flex flex-col items-stretch gap-4 sm:flex-row sm:items-start sm:gap-5 md:gap-6">
+                <div className="mx-auto flex w-full max-w-[165px] shrink-0 justify-center sm:mx-0 sm:w-[34%] sm:max-w-[200px] md:max-w-[220px]">
                   <img
-                    src="/size-chart-how-to-measure.png"
+                    src="/how-to-measure-diagram.png"
                     alt="Diagram showing across shoulder, bust, waist, hips, and sleeve length"
-                    className="h-auto max-w-[200px] rounded-lg object-contain sm:max-w-[220px]"
+                    className="h-auto max-h-[260px] w-full object-contain object-top sm:max-h-[min(42vh,320px)] md:max-h-[340px]"
                   />
-                </div> */}
-                <ul className="flex-1 space-y-3 text-[13px] leading-snug text-gray-600">
+                </div>
+                <ul className="min-w-0 flex-1 space-y-2.5 text-[12px] leading-relaxed text-gray-600 sm:space-y-3 sm:pt-0.5 sm:text-[13px] md:text-[14px] md:leading-snug">
                   <li>
                     <span className="font-bold text-brand-pink">Across Shoulder</span>
                     <span className="text-gray-500"> — Measure horizontally between the tips of your shoulders.</span>
