@@ -96,7 +96,6 @@ const productSchema = new mongoose.Schema(
     },
     { timestamps: true }
 );
-
 // Text index for search
 productSchema.index({ title: "text", brand: "text", description: "text" });
 
