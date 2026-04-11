@@ -8,9 +8,11 @@ import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
 import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined';
 import FeaturedPlayListOutlinedIcon from '@mui/icons-material/FeaturedPlayListOutlined';
 import PhotoCameraOutlinedIcon from '@mui/icons-material/PhotoCameraOutlined';
+import ViewModuleOutlinedIcon from '@mui/icons-material/ViewModuleOutlined';
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Accordion_02 from "@/components/ui/ruixen-accordian02";
+import { useAuth } from "@/context/AuthContext";
 
 /**
  * Guideline Compliance:
@@ -18,38 +20,45 @@ import Accordion_02 from "@/components/ui/ruixen-accordian02";
  * - Web: 12-column grid, 36px margins (px-9), 36px padding.
  */
 
-const PROFILE_MENU_ITEMS = [
+const BASE_MENU_ITEMS = [
   {
     title: "Orders",
     subtitle: "Check your order status",
     icon: <LocalShippingOutlinedIcon strokeWidth={1} sx={{ fontSize: 32 }} />,
-    path: "/seller/orders"
+    path: "/orders"
   },
   {
     title: "Wishlist",
     subtitle: "All your curated product collections",
     icon: <FavoriteBorderOutlinedIcon strokeWidth={1} sx={{ fontSize: 32 }} />,
-    path: "#"
+    path: "/wishlist"
   },
   {
     title: "Saved Address",
     subtitle: "Edit your saved addresses",
     icon: <HomeOutlinedIcon strokeWidth={1} sx={{ fontSize: 32 }} />,
-    path: "#"
+    path: "/profile/address"
   },
   {
     title: "Saved Payment Methods",
     subtitle: "Save your payment methods for faster checkout",
     icon: <FeaturedPlayListOutlinedIcon strokeWidth={1} sx={{ fontSize: 32 }} />,
-    path: "#"
+    path: "/profile/payment-methods"
   },
   {
     title: "Profile Details",
     subtitle: "Change your profile details",
     icon: <PersonOutlineOutlinedIcon strokeWidth={1} sx={{ fontSize: 32 }} />,
-    path: "#"
+    path: "/profile/details"
   },
 ];
+
+const LISTINGS_MENU_ITEM = {
+  title: "My Listings",
+  subtitle: "Manage your listed products",
+  icon: <ViewModuleOutlinedIcon strokeWidth={1} sx={{ fontSize: 32 }} />,
+  path: "/profile/listings"
+};
 
 const LEGAL_LINKS = [
   "FAQs",
@@ -62,10 +71,17 @@ import { toast } from "react-toastify";
 
 export default function UserProfile() {
   const router = useRouter();
+  const { user } = useAuth();
   const profileInputRef = useRef(null);
   const coverInputRef = useRef(null);
   const [profileImage, setProfileImage] = useState(null);
   const [coverImage, setCoverImage] = useState(null);
+
+  // Build menu: inject Listings for Seller/Influencer roles
+  const isSeller = user?.role === "Seller" || user?.role === "Influencer";
+  const PROFILE_MENU_ITEMS = isSeller
+    ? [LISTINGS_MENU_ITEM, ...BASE_MENU_ITEMS]
+    : BASE_MENU_ITEMS;
 
   const handleProfileImageChange = (e) => {
     const file = e.target.files[0];
@@ -153,10 +169,10 @@ export default function UserProfile() {
           {/* 4. User Info (Name + Details) */}
           <div className="col-span-4 md:col-span-8 flex flex-col items-center md:items-start pt-2 md:pt-4">
             <h1 className="text-[28px] md:text-[36px] font-bold text-[#2F2F2F] tracking-tight leading-tight">
-              John Doe
+              {user?.fullName || "Guest"}
             </h1>
             <p className="text-[14px] md:text-[16px] text-gray-500 font-medium tracking-wide">
-              MEMBER SINCE 2024
+              {user?.role ? user.role.toUpperCase() : "MEMBER"}
             </p>
           </div>
         </div>
@@ -173,7 +189,7 @@ export default function UserProfile() {
           {PROFILE_MENU_ITEMS.map((item, idx) => (
             <button 
               key={idx}
-              onClick={() => item.path !== "#" && router.push(item.path)}
+              onClick={() => router.push(item.path)}
               className="w-full flex items-center px-4 md:px-[36px] py-5 md:py-8 gap-6 hover:bg-gray-50 transition-all text-left group"
             >
               <div className="text-[#2F2F2F] opacity-90 group-hover:text-brand-pink transition-colors">
@@ -187,6 +203,9 @@ export default function UserProfile() {
                   {item.subtitle}
                 </p>
               </div>
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-gray-300 group-hover:text-brand-pink transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
             </button>
           ))}
         </div>

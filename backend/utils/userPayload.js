@@ -23,6 +23,8 @@ function buildUserPayload(user) {
                     String(user.bankingDetails.accountNumber).trim() !== "")
         ),
         isSellerVerified: user.isSellerVerified,
+        addresses: user.addresses || [],
+        paymentMethods: user.paymentMethods || [],
         createdAt: user.createdAt,
     };
 }

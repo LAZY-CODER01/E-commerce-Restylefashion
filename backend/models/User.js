@@ -82,6 +82,35 @@ const userSchema = new mongoose.Schema(
             type: Boolean,
             default: false,
         },
+        // Saved addresses
+        addresses: [
+            {
+                label:   { type: String, default: "Home" },
+                name:    { type: String, required: true, trim: true },
+                mobile:  { type: String, required: true, trim: true },
+                line1:   { type: String, required: true, trim: true },
+                line2:   { type: String, default: "", trim: true },
+                city:    { type: String, required: true, trim: true },
+                state:   { type: String, required: true, trim: true },
+                pincode: { type: String, required: true, trim: true },
+                country: { type: String, default: "India", trim: true },
+                isDefault: { type: Boolean, default: false },
+            },
+        ],
+        // Saved payment methods (cards + UPI – we never store raw CVV)
+        paymentMethods: [
+            {
+                type:    { type: String, enum: ["card", "upi"], required: true },
+                // Card fields
+                last4:   { type: String, default: "" },
+                brand:   { type: String, default: "" },
+                nameOnCard: { type: String, default: "" },
+                expiry:  { type: String, default: "" },
+                // UPI fields
+                upiId:   { type: String, default: "" },
+                isDefault: { type: Boolean, default: false },
+            },
+        ],
     },
     { timestamps: true }
 );
