@@ -6,7 +6,7 @@ import Link from "next/link";
 const EMAIL_RE = /\S+@\S+\.\S+/;
 const PHONE_RE = /^[6-9]\d{9}$/;
 
-const PRIMARY_RING = "rgba(247, 36, 104, 0.22)";
+const PRIMARY_RING = "rgba(247, 36, 110, 0.22)";
 
 function GoogleIcon({ className }) {
   return (
@@ -31,21 +31,14 @@ function GoogleIcon({ className }) {
   );
 }
 
-function FacebookIcon({ className }) {
+function PhoneHandsetIcon({ className }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" aria-hidden>
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" aria-hidden>
       <path
-        fill="#1877F2"
-        d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.86.3 1.7.54 2.5a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.8.24 1.64.42 2.5.54A2 2 0 0 1 22 16.92z"
       />
-    </svg>
-  );
-}
-
-function AppleIcon({ className }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-      <path d="M16.365 1.43c0 1.14-.493 2.27-1.177 3.08-.744.9-1.99 1.57-2.987 1.57-.12 0-.23-.02-.3-.03-.01-.06-.04-.22-.04-.39 0-1.15.572-2.27 1.206-2.98.804-.94 2.142-1.64 3.248-1.68.03.13.05.28.05.43zm4.565 15.71c-.03.07-.463 1.58-1.518 3.12-.945 1.34-1.94 2.71-3.43 2.71-1.517 0-1.9-.88-3.63-.88-1.698 0-2.302.91-3.67.91-1.377 0-2.332-1.26-3.428-2.8-1.287-1.82-2.323-4.63-2.323-7.28 0-4.28 2.797-6.55 5.552-6.55 1.448 0 2.675.95 3.6.95.865 0 2.222-1.01 3.902-1.01.613 0 2.886.06 4.374 2.19-.13.09-2.383 1.37-2.383 4.19 0 3.26 2.854 4.42 2.955 4.45z" />
     </svg>
   );
 }
@@ -63,7 +56,7 @@ function RestyleLogoMark() {
         </Link>
       </div>
       <p className="max-w-[280px] px-1 text-center font-sans text-[12px] font-medium leading-snug tracking-tight text-gray-500 sm:max-w-none sm:text-[13px]">
-        Community-driven thrift fashion marketplace.
+        Get started & grab best offers on top brands
       </p>
     </div>
   );
@@ -130,15 +123,11 @@ function DividerWithLabel({ children }) {
 }
 
 function SocialButtons({ onSocialLogin }) {
-  const items = [
-    { id: "Google", label: "Google", Icon: GoogleIcon },
-    { id: "Facebook", label: "Facebook", Icon: FacebookIcon },
-    { id: "Apple", label: "Apple", Icon: AppleIcon },
-  ];
+  const items = [{ id: "Google", label: "Google", Icon: GoogleIcon }];
   return (
     <div className="space-y-3">
       <DividerWithLabel>Continue with</DividerWithLabel>
-      <div className="grid grid-cols-3 gap-2 sm:gap-3">
+      <div className="grid grid-cols-1 gap-2 sm:gap-3">
         {items.map(({ id, label, Icon }) => (
           <button
             key={id}
@@ -155,12 +144,40 @@ function SocialButtons({ onSocialLogin }) {
   );
 }
 
-function PrimaryGradientButton({ children, loading, type = "submit" }) {
+/** Shown under email/password login: Google and phone entry side by side. */
+function EmailAlternateLoginRow({ onGoogleLogin, onPhoneLogin }) {
+  return (
+    <div className="space-y-3">
+      <DividerWithLabel>or Login via</DividerWithLabel>
+      <div className="grid grid-cols-2 gap-2 sm:gap-3">
+        <button
+          type="button"
+          onClick={() => onGoogleLogin("Google")}
+          className="flex h-[52px] min-h-[44px] flex-col items-center justify-center gap-1 rounded-[11px] border border-gray-200 bg-white px-2 font-sans text-[11px] font-semibold text-gray-700 shadow-sm transition duration-200 hover:border-brand-pink/40 hover:text-brand-pink hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-pink/40 sm:h-14 sm:text-xs"
+        >
+          <GoogleIcon className="h-[18px] w-[18px] shrink-0 sm:h-5 sm:w-5" />
+          <span className="leading-tight text-center">Login with Google</span>
+        </button>
+        <button
+          type="button"
+          onClick={onPhoneLogin}
+          className="flex h-[52px] min-h-[44px] flex-col items-center justify-center gap-1 rounded-[11px] border border-gray-200 bg-white px-2 font-sans text-[11px] font-semibold text-gray-700 shadow-sm transition duration-200 hover:border-brand-pink/40 hover:text-brand-pink hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-pink/40 sm:h-14 sm:text-xs"
+        >
+          <PhoneHandsetIcon className="h-[18px] w-[18px] shrink-0 text-gray-600 sm:h-5 sm:w-5" />
+          <span className="leading-tight text-center">Login with phone number</span>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function PrimaryGradientButton({ children, loading, type = "submit", onClick, disabled }) {
   return (
     <button
       type={type}
-      disabled={loading}
-      className="relative mt-1 flex h-12 w-full items-center justify-center overflow-hidden rounded-[11px] bg-gradient-to-r from-brand-pink via-[#E91E7A] to-brand-purple font-sans text-[15px] font-bold text-white shadow-pink-md transition duration-200 hover:shadow-pink-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-pink/50 disabled:cursor-not-allowed disabled:opacity-75"
+      onClick={onClick}
+      disabled={disabled || loading}
+      className="relative mt-1 flex h-12 w-full items-center justify-center overflow-hidden rounded-[11px] bg-[#F7246E] font-sans text-[15px] font-bold text-white shadow-pink-md transition duration-200 hover:bg-brand-pink-hover hover:shadow-pink-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-pink/50 disabled:cursor-not-allowed disabled:opacity-75"
     >
       {loading ? (
         <span className="flex items-center gap-2" aria-live="polite">
@@ -387,16 +404,26 @@ function SignupView({ onSwitchToLogin }) {
   );
 }
 
+function formatIndiaMobileDisplay(digits) {
+  const d = digits.replace(/\D/g, "");
+  if (d.length !== 10) return digits;
+  return `+91 ${d.slice(0, 5)} ${d.slice(5)}`;
+}
+
 function LoginView({ onSwitchToSignup }) {
   const [method, setMethod] = useState("email");
+  const [step, setStep] = useState(1);
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [otp, setOtp] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [otpSuccess, setOtpSuccess] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [otpRequested, setOtpRequested] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({
     email: "",
     password: "",
     phone: "",
-    otp: "",
     rememberMe: false,
   });
   const [errors, setErrors] = useState({});
@@ -422,33 +449,71 @@ function LoginView({ onSwitchToSignup }) {
     return () => window.clearTimeout(timerId);
   }, [sessionPayload]);
 
-  const validate = () => {
+  const resetPhoneOtpFlow = () => {
+    setStep(1);
+    setOtp("");
+    setError("");
+    setOtpSuccess(false);
+    setIsLoading(false);
+    setPhoneNumber("");
+  };
+
+  const validateEmail = () => {
     const next = {};
-    if (method === "email") {
-      if (!form.email.trim()) next.email = "Email is required.";
-      else if (!EMAIL_RE.test(form.email)) next.email = "Enter a valid email.";
-      if (!form.password) next.password = "Password is required.";
-    } else {
-      if (!form.phone.trim()) next.phone = "Phone number is required.";
-      else if (!PHONE_RE.test(form.phone)) next.phone = "Enter a valid 10-digit phone.";
-      if (otpRequested && !form.otp.trim()) next.otp = "OTP is required.";
-      else if (otpRequested && !/^\d{4,6}$/.test(form.otp)) next.otp = "Enter a valid OTP.";
-    }
+    if (!form.email.trim()) next.email = "Email is required.";
+    else if (!EMAIL_RE.test(form.email)) next.email = "Enter a valid email.";
+    if (!form.password) next.password = "Password is required.";
     setErrors(next);
     return Object.keys(next).length === 0;
   };
 
-  const handleRequestOtp = () => {
+  const handleMethodChange = (id) => {
+    setMethod(id);
+    setErrors({});
+    resetPhoneOtpFlow();
+  };
+
+  const handleSendOtp = () => {
     const phoneError = !PHONE_RE.test(form.phone) ? "Enter a valid 10-digit phone." : "";
     setErrors((prev) => ({ ...prev, phone: phoneError }));
     if (phoneError) return;
-    setOtpRequested(true);
+    setPhoneNumber(form.phone);
+    setOtp("");
+    setError("");
+    setOtpSuccess(false);
+    setErrors({});
+    setStep(2);
     console.log("Request OTP for:", form.phone);
+  };
+
+  const handleVerifyOtp = () => {
+    setError("");
+    setOtpSuccess(false);
+    setIsLoading(true);
+    window.setTimeout(() => {
+      if (otp === "123456") {
+        setOtpSuccess(true);
+        setIsLoading(false);
+        console.log("Phone OTP login success for:", phoneNumber);
+      } else {
+        setError("Incorrect OTP");
+        setIsLoading(false);
+      }
+    }, 1500);
+  };
+
+  const handleChangeMobileNumber = () => {
+    setStep(1);
+    setOtp("");
+    setError("");
+    setOtpSuccess(false);
+    setIsLoading(false);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validate()) return;
+    if (method !== "email") return;
+    if (!validateEmail()) return;
     setSubmitting(true);
     await new Promise((r) => setTimeout(r, 900));
     console.log("Login submit payload:", form);
@@ -461,120 +526,178 @@ function LoginView({ onSwitchToSignup }) {
 
   const tabId = method === "email" ? "login-panel-email" : "login-panel-phone";
 
+  const showPhoneOtpStep2 = method === "phone" && step === 2;
+
   return (
     <div className="w-full min-w-0 max-w-[420px] rounded-2xl border border-gray-100 bg-white p-4 shadow-[0_8px_40px_rgba(0,0,0,0.06)] sm:p-9">
       <div className="mb-6 text-center sm:mb-8">
         <RestyleLogoMark />
       </div>
 
-      <MethodTabs
-        method={method}
-        onChange={(id) => {
-          setMethod(id);
-          setErrors({});
-        }}
-      />
+      {!showPhoneOtpStep2 ? (
+        <MethodTabs method={method} onChange={handleMethodChange} />
+      ) : null}
 
-      <form
-        onSubmit={handleSubmit}
-        className="mt-5 space-y-3 sm:mt-6 sm:space-y-4"
-        noValidate
-        role="tabpanel"
-        id={tabId}
-        aria-labelledby={`tab-${method}`}
-      >
-        {method === "email" ? (
-          <>
-            <div>
-              <BaseInput
-                name="email"
-                type="email"
-                value={form.email}
-                onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
-                placeholder="Email"
-                autoComplete="email"
-              />
-              <FieldError message={errors.email} />
-            </div>
-
-            <div>
-              <BaseInput
-                name="password"
-                type={showPassword ? "text" : "password"}
-                value={form.password}
-                onChange={(e) => setForm((p) => ({ ...p, password: e.target.value }))}
-                placeholder="Password"
-                autoComplete="current-password"
-                rightSlot={
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword((s) => !s)}
-                    className="rounded-md p-1 text-gray-500 transition hover:text-brand-pink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand-pink/40"
-                    aria-label={showPassword ? "Hide password" : "Show password"}
-                  >
-                    <EyeIcon open={showPassword} />
-                  </button>
-                }
-              />
-              <FieldError message={errors.password} />
-            </div>
-          </>
-        ) : (
-          <>
-            <div>
-              <BaseInput
-                name="phone"
-                value={form.phone}
-                onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value.replace(/\D/g, "").slice(0, 10) }))}
-                placeholder="Phone number"
-                autoComplete="tel"
-              />
-              <FieldError message={errors.phone} />
-            </div>
-            <div className="flex flex-col gap-3 sm:grid sm:grid-cols-[1fr_auto] sm:items-stretch">
-              <BaseInput
-                name="otp"
-                value={form.otp}
-                onChange={(e) => setForm((p) => ({ ...p, otp: e.target.value.replace(/\D/g, "").slice(0, 6) }))}
-                placeholder="Enter OTP"
-                autoComplete="one-time-code"
-              />
-              <button
-                type="button"
-                onClick={handleRequestOtp}
-                className="h-12 shrink-0 rounded-[11px] border border-gray-200 bg-white px-4 font-sans text-[13px] font-semibold text-brand-pink shadow-sm transition duration-200 hover:border-brand-pink/50 hover:bg-brand-pink/[0.06] hover:shadow-[0_0_0_3px_rgba(247,36,110,0.12)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-pink/40 sm:text-sm"
-              >
-                {otpRequested ? "Resend OTP" : "Request OTP"}
-              </button>
-            </div>
-            <FieldError message={errors.otp} />
-          </>
-        )}
-
-        <div className="flex flex-col gap-3 pt-1 sm:flex-row sm:items-center sm:justify-between sm:gap-2">
-          <label className="flex cursor-pointer select-none items-center gap-2.5 font-sans text-[13px] font-normal text-gray-600 sm:text-[14px]">
-            <input
-              type="checkbox"
-              checked={form.rememberMe}
-              onChange={(e) => setForm((p) => ({ ...p, rememberMe: e.target.checked }))}
-              className="h-4 w-4 shrink-0 rounded border-gray-300 text-brand-pink transition focus:ring-2 focus:ring-brand-pink/25 focus:ring-offset-0"
+      {method === "email" ? (
+        <form
+          onSubmit={handleSubmit}
+          className="mt-5 space-y-3 sm:mt-6 sm:space-y-4"
+          noValidate
+          role="tabpanel"
+          id={tabId}
+          aria-labelledby={`tab-${method}`}
+        >
+          <div>
+            <BaseInput
+              name="email"
+              type="email"
+              value={form.email}
+              onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
+              placeholder="Email"
+              autoComplete="email"
             />
-            Remember me
-          </label>
+            <FieldError message={errors.email} />
+          </div>
+
+          <div>
+            <BaseInput
+              name="password"
+              type={showPassword ? "text" : "password"}
+              value={form.password}
+              onChange={(e) => setForm((p) => ({ ...p, password: e.target.value }))}
+              placeholder="Password"
+              autoComplete="current-password"
+              rightSlot={
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((s) => !s)}
+                  className="rounded-md p-1 text-gray-500 transition hover:text-brand-pink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand-pink/40"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  <EyeIcon open={showPassword} />
+                </button>
+              }
+            />
+            <FieldError message={errors.password} />
+          </div>
+
+          <div className="flex flex-col gap-3 pt-1 sm:flex-row sm:items-center sm:justify-between sm:gap-2">
+            <label className="flex cursor-pointer select-none items-center gap-2.5 font-sans text-[13px] font-normal text-gray-600 sm:text-[14px]">
+              <input
+                type="checkbox"
+                checked={form.rememberMe}
+                onChange={(e) => setForm((p) => ({ ...p, rememberMe: e.target.checked }))}
+                className="h-4 w-4 shrink-0 rounded border-gray-300 text-brand-pink transition focus:ring-2 focus:ring-brand-pink/25 focus:ring-offset-0"
+              />
+              Remember me
+            </label>
+            <button
+              type="button"
+              className="self-start text-left font-sans text-[13px] font-medium text-brand-pink underline decoration-brand-pink/25 underline-offset-2 transition hover:decoration-brand-pink sm:self-auto sm:text-[14px]"
+            >
+              Forgot password?
+            </button>
+          </div>
+
+          <PrimaryGradientButton loading={submitting}>Log in</PrimaryGradientButton>
+        </form>
+      ) : step === 1 ? (
+        <div
+          className="mt-5 space-y-3 sm:mt-6 sm:space-y-4"
+          role="tabpanel"
+          id={tabId}
+          aria-labelledby={`tab-${method}`}
+        >
+          <div>
+            <BaseInput
+              name="phone"
+              value={form.phone}
+              onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value.replace(/\D/g, "").slice(0, 10) }))}
+              placeholder="Phone number"
+              autoComplete="tel"
+            />
+            <FieldError message={errors.phone} />
+          </div>
+          <PrimaryGradientButton type="button" onClick={handleSendOtp}>
+            Send OTP
+          </PrimaryGradientButton>
+        </div>
+      ) : (
+        <div
+          className="mt-5 flex flex-col items-center space-y-5 text-center sm:mt-6 sm:space-y-6"
+          role="tabpanel"
+          id="login-panel-phone-otp"
+          aria-labelledby="tab-phone"
+        >
+          <div className="w-full space-y-2">
+            <h2 className="font-sans text-lg font-bold text-gray-900 sm:text-xl">Verify your number</h2>
+            <p className="font-sans text-[14px] font-normal leading-relaxed text-gray-500 sm:text-[15px]">
+              OTP sent to{" "}
+              <span className="font-medium text-gray-800">{formatIndiaMobileDisplay(phoneNumber)}</span>
+            </p>
+          </div>
+
+          {error ? (
+            <p className="w-full font-sans text-sm font-medium text-red-600" role="alert">
+              {error}
+            </p>
+          ) : null}
+
+          {otpSuccess ? (
+            <p className="w-full font-sans text-sm font-semibold text-emerald-600" role="status">
+              You&apos;re in! Login successful.
+            </p>
+          ) : null}
+
+          <div className="w-full max-w-[280px]">
+            <input
+              type="text"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              maxLength={6}
+              value={otp}
+              onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+              placeholder="••••••"
+              aria-label="One-time password"
+              className="h-14 w-full rounded-[11px] border border-gray-200 bg-white px-3 text-center font-sans text-2xl font-semibold tracking-[0.35em] text-gray-800 outline-none transition-[border-color,box-shadow] duration-200 placeholder:text-gray-300 placeholder:tracking-normal focus:border-brand-pink focus:shadow-[0_0_0_3px_var(--auth-focus)] disabled:opacity-60 sm:h-[52px] sm:text-[26px]"
+              style={{ "--auth-focus": PRIMARY_RING }}
+              disabled={isLoading || otpSuccess}
+            />
+          </div>
+
+          <div className="w-full">
+            <PrimaryGradientButton
+              type="button"
+              loading={isLoading}
+              disabled={otpSuccess}
+              onClick={handleVerifyOtp}
+            >
+              Verify &amp; Login
+            </PrimaryGradientButton>
+          </div>
+
           <button
             type="button"
-            className="self-start text-left font-sans text-[13px] font-medium text-brand-pink underline decoration-brand-pink/25 underline-offset-2 transition hover:decoration-brand-pink sm:self-auto sm:text-[14px]"
+            onClick={handleChangeMobileNumber}
+            className="font-sans text-[14px] font-medium text-brand-pink transition hover:text-brand-pink-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-pink/40 sm:text-[15px]"
           >
-            Forgot password?
+            Change mobile number
           </button>
         </div>
+      )}
 
-        <PrimaryGradientButton loading={submitting}>Log in</PrimaryGradientButton>
-      </form>
-
-      <div className="mt-6 sm:mt-7">
-        <SocialButtons onSocialLogin={handleSocialLogin} />
-      </div>
+      {method === "email" ? (
+        <div className="mt-6 sm:mt-7">
+          <EmailAlternateLoginRow
+            onGoogleLogin={handleSocialLogin}
+            onPhoneLogin={() => handleMethodChange("phone")}
+          />
+        </div>
+      ) : step === 1 ? (
+        <div className="mt-6 sm:mt-7">
+          <SocialButtons onSocialLogin={handleSocialLogin} />
+        </div>
+      ) : null}
 
       <p className="mt-6 text-center font-sans text-[14px] font-normal leading-relaxed text-gray-600 sm:mt-7 sm:text-[15px]">
         Don&apos;t have an account?{" "}
