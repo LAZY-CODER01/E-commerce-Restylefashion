@@ -531,7 +531,6 @@ function LoginView({ onSwitchToSignup }) {
               />
               <FieldError message={errors.phone} />
             </div>
-
             <div className="flex flex-col gap-3 sm:grid sm:grid-cols-[1fr_auto] sm:items-stretch">
               <BaseInput
                 name="otp"
