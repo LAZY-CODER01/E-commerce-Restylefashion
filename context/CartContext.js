@@ -8,7 +8,8 @@ const CartContext = createContext(null);
 function safeParseArray(value) {
   try {
     const parsed = JSON.parse(value);
-    return Array.isArray(parsed) ? parsed : [];
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((item) => item != null && typeof item === "object");
   } catch {
     return [];
   }
@@ -23,7 +24,7 @@ export function CartProvider({ children }) {
   const [cart, setCart] = useState([]);
   const [wishlist, setWishlist] = useState([]);
 
-  const userKey = user?.email || user?.id || user?._id || "guest";
+  const userKey = String(user?.email ?? user?.id ?? user?._id ?? "guest");
   const CART_KEY = `restyle_cart_${userKey}`;
   const WISHLIST_KEY = `restyle_wishlist_${userKey}`;
 

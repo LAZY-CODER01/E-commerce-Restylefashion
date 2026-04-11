@@ -1,6 +1,9 @@
 "use client";
 
-import React, { useState, use } from "react";
+import React, { useState, use, useEffect, useMemo } from "react";
+import Link from "next/link";
+import { toast } from "react-toastify";
+import api from "@/lib/api";
 import ProductImageGallery from "@/components/pdp/ProductImageGallery";
 import SizeSelector from "@/components/pdp/SizeSelector";
 import ConditionTag from "@/components/pdp/ConditionTag";
@@ -13,28 +16,31 @@ import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import { ALL_PRODUCTS } from "@/data/mockData";
 import { useCart } from "@/context/CartContext";
 
+const VALID_PRODUCTS = ALL_PRODUCTS.filter((p) => p != null && p.id != null);
+
 // Mock Data Function
 const getProductData = (id) => {
-  if (!id) return null;
-  const foundProduct = ALL_PRODUCTS.find(p => String(p.id) === String(id));
-  
+  if (id == null || id === "") return null;
+  const list = VALID_PRODUCTS;
+  const foundProduct = list.find((p) => String(p.id) === String(id));
+
   if (!foundProduct) return null;
 
   // Logic for Similar Products
-  const similarProducts = ALL_PRODUCTS.filter(p => {
+  const similarProducts = list.filter((p) => {
     if (String(p.id) === String(id)) return false;
-    
+
     // Same category
     if (p.category === foundProduct.category) return true;
-    
+
     // Matching tags
-    const commonTags = p.tags?.filter(tag => foundProduct.tags?.includes(tag));
+    const commonTags = p.tags?.filter((tag) => foundProduct.tags?.includes(tag));
     return commonTags && commonTags.length > 0;
   }).slice(0, 6);
 
   // Logic for Best Sellers
-  const bestSellers = ALL_PRODUCTS
-    .filter(p => p.category === foundProduct.category)
+  const bestSellers = list
+    .filter((p) => p.category === foundProduct.category)
     .sort((a, b) => (b.totalSales || 0) - (a.totalSales || 0))
     .slice(0, 6);
 
@@ -66,22 +72,151 @@ const getProductData = (id) => {
   };
 };
 
-import { toast } from "react-toastify";
+const PLACEHOLDER_IMG =
+  "https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?auto=format&fit=crop&w=800&q=80";
+
+function mapRelatedForCards(items) {
+  return (Array.isArray(items) ? items : []).map((x) => ({
+    id: String(x._id ?? x.id),
+    _id: x._id,
+    title: x.title,
+    brand: x.brand,
+    price: Number(x.price) || 0,
+    originalPrice: Number(x.originalPrice ?? x.price) || 0,
+    imageUrl: x.imageUrl || x.images?.[0] || PLACEHOLDER_IMG,
+    rating: x.rating ?? 4.5,
+    sizes: Array.isArray(x.sizes) && x.sizes.length ? x.sizes : ["S", "M", "L"],
+  }));
+}
+
+/** Shape API `GET /products/:id` into the same shape as `getProductData` (mock). */
+function normalizeApiProductForPdp(data) {
+  const p = data;
+  const idStr = String(p._id ?? p.id ?? "");
+  let images = Array.isArray(p.images) && p.images.length ? [...p.images] : [];
+  if (!images.length && p.imageUrl) images = [p.imageUrl];
+  if (!images.length) images = [PLACEHOLDER_IMG];
+
+  const details =
+    p.details && typeof p.details === "object" && !Array.isArray(p.details)
+      ? {
+          fabric: p.details.fabric || "",
+          fit: p.details.fit || "",
+          care: p.details.care || "",
+        }
+      : { fabric: "", fit: "", care: "" };
+
+  const sellerDoc = p.seller;
+  const seller =
+    sellerDoc && typeof sellerDoc === "object" && !Array.isArray(sellerDoc)
+      ? {
+          name: sellerDoc.fullName || "Seller",
+          rating: 4.8,
+          location: "India",
+          avatar:
+            sellerDoc.avatar ||
+            "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80",
+        }
+      : {
+          name: "Restyle Seller",
+          rating: 4.8,
+          location: "Mumbai",
+          avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80",
+        };
+
+  const price = Number(p.price) || 0;
+  const original = Number(p.originalPrice) || price;
+  let discount = Number(p.discount);
+  if (!Number.isFinite(discount) || discount < 0) {
+    discount = original > 0 ? Math.max(0, Math.min(100, Math.round(((original - price) / original) * 100))) : 0;
+  }
+
+  const related = mapRelatedForCards(p.similarProducts);
+
+  return {
+    ...p,
+    id: idStr,
+    price,
+    originalPrice: original,
+    discount,
+    images,
+    imageUrl: images[0],
+    details,
+    seller,
+    stockStatus: p.stockStatus || "In Stock",
+    condition: p.condition || "Gently Used",
+    sizes: Array.isArray(p.sizes) && p.sizes.length ? p.sizes : ["XS", "S", "M", "L", "XL"],
+    description: p.description || "",
+    similarProducts: related,
+    bestSellers: related,
+    rating: p.rating ?? 4.5,
+    ratingCount: p.ratingCount ?? 0,
+  };
+}
 
 export default function ProductDetailsPage({ params }) {
-  // Direct use of the params promise for Next.js 15+
-  const { id } = use(params);
-  const product = getProductData(id);
+  const resolvedParams = use(params);
+  const id = resolvedParams?.id ?? resolvedParams?.slug ?? "";
+
+  const mockProduct = useMemo(() => getProductData(id), [id]);
+  const [remoteProduct, setRemoteProduct] = useState(null);
+  const [fetchStatus, setFetchStatus] = useState(() => (getProductData(id) ? "ready" : "loading"));
+
+  useEffect(() => {
+    const mock = getProductData(id);
+    if (mock) {
+      setRemoteProduct(null);
+      setFetchStatus("ready");
+      return;
+    }
+    if (!id) {
+      setRemoteProduct(null);
+      setFetchStatus("notfound");
+      return;
+    }
+    let cancelled = false;
+    setFetchStatus("loading");
+    setRemoteProduct(null);
+    api
+      .get(`/products/${id}`)
+      .then(({ data }) => {
+        if (cancelled) return;
+        setRemoteProduct(normalizeApiProductForPdp(data));
+        setFetchStatus("ready");
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setRemoteProduct(null);
+        setFetchStatus("notfound");
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
+
+  const product = mockProduct ?? remoteProduct;
 
   const [selectedSize, setSelectedSize] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [isDescExpanded, setIsDescExpanded] = useState(true);
+
+  useEffect(() => {
+    setSelectedSize("");
+    setQuantity(1);
+  }, [id]);
+
   const { wishlist, toggleWishlist, addToBag } = useCart();
-  const isWishlisted = wishlist.some((w) => String(w?.id ?? w?._id ?? w?.sku ?? w?.slug ?? w?.productId) === String(product?.id));
-  
+  const safeWishlist = Array.isArray(wishlist) ? wishlist : [];
+  const productIdKey = product?.id != null || product?._id != null ? String(product.id ?? product._id) : "";
+  const isWishlisted =
+    Boolean(productIdKey) &&
+    safeWishlist.some((w) => String(w?.id ?? w?._id ?? w?.sku ?? w?.slug ?? w?.productId) === productIdKey);
+
   const handleWishlistToggle = () => {
+    if (!product) return;
+    const wid = product.id ?? product._id;
     toggleWishlist({
-      id: product.id,
+      id: wid,
       title: product.title,
       brand: product.brand,
       price: product.price,
@@ -92,12 +227,13 @@ export default function ProductDetailsPage({ params }) {
   };
 
   const handleAddToCart = () => {
+    if (!product) return;
     if (!selectedSize) {
       toast.warn("Please select a size first.");
       return;
     }
     addToBag({
-      id: product.id,
+      id: product.id ?? product._id,
       title: product.title,
       brand: product.brand,
       price: product.price,
@@ -117,14 +253,46 @@ export default function ProductDetailsPage({ params }) {
     toast.info("Redirecting to checkout...");
   };
 
-  if (!product) return (
-    <div className="min-h-screen flex items-center justify-center bg-brand-light">
-      <div className="bg-white p-8 rounded-2xl shadow-sm text-center">
-        <div className="w-12 h-12 border-4 border-brand-pink border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-        <p className="text-[15px] font-bold text-brand-dark">Loading product details...</p>
+  if (!product && fetchStatus === "loading") {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-brand-light">
+        <div className="rounded-2xl bg-white p-8 text-center shadow-sm">
+          <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-brand-pink border-t-transparent" />
+          <p className="text-[15px] font-bold text-brand-dark">Loading product details…</p>
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
+
+  if (!product && fetchStatus === "notfound") {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-brand-light px-4">
+        <div className="max-w-md rounded-2xl bg-white p-8 text-center shadow-sm">
+          <p className="text-lg font-bold text-brand-dark">Product not found</p>
+          <p className="mt-2 text-[14px] text-gray-500">
+            This listing may have been removed or the link is invalid.
+          </p>
+          <Link
+            href="/"
+            className="mt-6 inline-block rounded-[11px] bg-[#F7246E] px-6 py-3 text-[14px] font-bold text-white shadow-pink-md transition hover:bg-brand-pink-hover"
+          >
+            Back to shop
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-brand-light">
+        <div className="rounded-2xl bg-white p-8 text-center shadow-sm">
+          <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-brand-pink border-t-transparent" />
+          <p className="text-[15px] font-bold text-brand-dark">Loading product details…</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white pb-24">

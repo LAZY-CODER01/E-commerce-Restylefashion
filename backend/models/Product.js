@@ -1,5 +1,43 @@
 const mongoose = require("mongoose");
 
+/** Allowed `condition` values (single source for enum + normalization). */
+const PRODUCT_CONDITIONS = [
+    "New",
+    "Brand new",
+    "Like new",
+    "Used - Very Good",
+    "Used-Very Good",
+    "Used - Good",
+    "Used-Good",
+    "Used",
+    "New without tags",
+    "Excellent",
+    "Gently Used",
+    "Good",
+    "Vintage",
+];
+
+/**
+ * Map incoming strings to an exact enum member. Fixes Unicode dashes (U+2013, U+2014, etc.)
+ * and spacing so `Used - Good` always validates.
+ */
+function normalizeProductCondition(raw) {
+    if (raw === undefined || raw === null) return null;
+    let s = String(raw).trim();
+    if (!s) return null;
+    // Unicode hyphen / dash / minus → ASCII hyphen (common cause of enum mismatch)
+    s = s.replace(/[\u2010\u2011\u2012\u2013\u2014\u2015\u2212\uFE58\uFE63\uFF0D]/g, "-");
+    s = s.replace(/\s+/g, " ").trim();
+    if (PRODUCT_CONDITIONS.includes(s)) return s;
+    const lower = s.toLowerCase();
+    const byLower = PRODUCT_CONDITIONS.find((c) => c.toLowerCase() === lower);
+    if (byLower) return byLower;
+    const compact = (x) => x.toLowerCase().replace(/\s+/g, "");
+    const sc = compact(s);
+    const byCompact = PRODUCT_CONDITIONS.find((c) => compact(c) === sc);
+    return byCompact || null;
+}
+
 const productSchema = new mongoose.Schema(
     {
         title: {
@@ -36,7 +74,8 @@ const productSchema = new mongoose.Schema(
         },
         condition: {
             type: String,
-            enum: ["New", "New without tags", "Excellent", "Gently Used", "Good", "Vintage"],
+            trim: true,
+            enum: PRODUCT_CONDITIONS,
             default: "Gently Used",
         },
         description: {
@@ -96,6 +135,14 @@ const productSchema = new mongoose.Schema(
     },
     { timestamps: true }
 );
+
+productSchema.pre("validate", function (next) {
+    if (this.condition === undefined || this.condition === null) return next();
+    const normalized = normalizeProductCondition(this.condition);
+    if (normalized) this.condition = normalized;
+    next();
+});
+
 // Text index for search
 productSchema.index({ title: "text", brand: "text", description: "text" });
 

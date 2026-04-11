@@ -4,7 +4,8 @@ import React from "react";
 import ProductCard from "../ProductCard";
 
 export default function RelatedProductsSection({ title, products }) {
-  if (!products || products.length === 0) return null;
+  const list = Array.isArray(products) ? products.filter((p) => p != null && (p.id != null || p._id != null)) : [];
+  if (list.length === 0) return null;
 
   return (
     <section className="py-12 border-t border-[#F0F0F0] font-roboto">
@@ -15,10 +16,13 @@ export default function RelatedProductsSection({ title, products }) {
         
         {/* Horizontal Scroll Container */}
         <div className="flex gap-6 overflow-x-auto pb-6 -mx-4 px-4 scrollbar-none snap-x snap-mandatory">
-          {products.map((product) => (
-            <div key={product.id} className="min-w-[200px] md:min-w-[260px] flex-shrink-0 snap-start">
+          {list.map((product) => (
+            <div
+              key={String(product.id ?? product._id)}
+              className="min-w-[200px] md:min-w-[260px] flex-shrink-0 snap-start"
+            >
               <ProductCard
-                id={product.id}
+                id={product.id ?? product._id}
                 title={product.title}
                 brand={product.brand}
                 price={product.price}
