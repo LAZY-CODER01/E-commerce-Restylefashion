@@ -259,7 +259,7 @@ export default function AdminDashboardPage() {
           {[{ title: "Dashboard", path: "/admin/dashboard", icon: <DashboardIcon sx={{ fontSize: 22 }} /> },
             { title: "Listings", path: "/admin/listings", icon: <Inventory2Icon sx={{ fontSize: 22 }} /> },
             { title: "Orders", path: "/admin/orders", icon: <LocalShippingIcon sx={{ fontSize: 22 }} /> },
-            { title: "Sellers", path: "/admin/sellers", icon: <PeopleIcon sx={{ fontSize: 22 }} /> },
+            { title: "Users", path: "/admin/users", icon: <PeopleIcon sx={{ fontSize: 22 }} /> },
           ].map((item) => {
             const isActive = pathname === item.path;
             return (

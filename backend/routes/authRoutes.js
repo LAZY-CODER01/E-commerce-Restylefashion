@@ -1,7 +1,7 @@
 const express = require("express");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
-const { protect } = require("../middleware/auth");
+const { protect, authorize } = require("../middleware/auth");
 const { buildUserPayload } = require("../utils/userPayload");
 
 const router = express.Router();
@@ -80,6 +80,26 @@ router.post("/login", async (req, res) => {
 router.get("/profile", protect, async (req, res) => {
     try {
         res.json(buildUserPayload(req.user));
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// @route   POST /api/auth/make-admin
+// @desc    Promote the currently logged-in user to Admin (bootstrap helper)
+// @access  Private
+router.post("/make-admin", protect, async (req, res) => {
+    try {
+        const user = await User.findByIdAndUpdate(
+            req.user._id,
+            { $set: { role: "Admin" } },
+            { new: true }
+        );
+        res.json({
+            message: "Your account has been promoted to Admin.",
+            ...buildUserPayload(user),
+            token: generateToken(user._id),
+        });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -346,4 +366,51 @@ router.patch("/payment-methods/:id/default", protect, async (req, res) => {
     } catch (error) { res.status(500).json({ message: error.message }); }
 });
 
+// ─────────────────────────────────────────────────────────────────────────────
+// ADMIN — USERS
+// ─────────────────────────────────────────────────────────────────────────────
+
+// @route   GET /api/auth/users
+// @desc    Get all users (admin only) with optional role filter & search
+// @access  Private/Admin
+router.get("/users", protect, authorize("Admin"), async (req, res) => {
+    try {
+        const { role, search, page = 1, limit = 20 } = req.query;
+        const query = {};
+        if (role && role !== "all") query.role = role;
+        if (search) {
+            query.$or = [
+                { fullName: { $regex: search, $options: "i" } },
+                { email:    { $regex: search, $options: "i" } },
+                { mobile:   { $regex: search, $options: "i" } },
+            ];
+        }
+        const skip = (parseInt(page) - 1) * parseInt(limit);
+        const [users, total] = await Promise.all([
+            User.find(query)
+                .select("-password")
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(parseInt(limit)),
+            User.countDocuments(query),
+        ]);
+        res.json({ users, total, page: parseInt(page), pages: Math.ceil(total / parseInt(limit)) });
+    } catch (error) { res.status(500).json({ message: error.message }); }
+});
+
+// @route   PATCH /api/auth/users/:id/role
+// @desc    Change a user's role (admin only)
+// @access  Private/Admin
+router.patch("/users/:id/role", protect, authorize("Admin"), async (req, res) => {
+    try {
+        const { role } = req.body;
+        const allowed = ["User", "Seller", "Influencer", "Admin"];
+        if (!allowed.includes(role)) return res.status(400).json({ message: "Invalid role." });
+        const user = await User.findByIdAndUpdate(req.params.id, { role }, { new: true });
+        if (!user) return res.status(404).json({ message: "User not found." });
+        res.json(buildUserPayload(user));
+    } catch (error) { res.status(500).json({ message: error.message }); }
+});
+
 module.exports = router;
+
