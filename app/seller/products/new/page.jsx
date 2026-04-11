@@ -65,7 +65,7 @@ function maxSellingForRetail(retail) {
 
 /** Inches — reference chart for tops; garment fit may vary by brand and fabric. */
 const SIZE_CHART_ROWS = [
-  { size: "XXS", chest: "30-32", waist: "24-26", hips: "30-32", length: "24-25", shoulder: "14-15" },
+  // { size: "XXS", chest: "30-32", waist: "24-26", hips: "30-32", length: "24-25", shoulder: "14-15" },
   { size: "XS", chest: "32-34", waist: "26-28", hips: "32-34", length: "25-26", shoulder: "15-16" },
   { size: "S", chest: "35-37", waist: "28-30", hips: "35-37", length: "26-27", shoulder: "16-17" },
   { size: "M", chest: "38-40", waist: "31-33", hips: "38-40", length: "27-28", shoulder: "17-18" },
