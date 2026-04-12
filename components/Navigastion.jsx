@@ -74,14 +74,14 @@ export default function Navigation() {
 
             <Link
               href="/"
-              className="absolute left-[40%] -translate-x-1/2 md:static md:translate-x-0 font-extrabold text-[26px] sm:text-[28px] tracking-tight bg-gradient-to-b from-black to-[#F7246E] bg-clip-text text-transparent"
+              className="absolute left-[35%] -translate-x-1/2 md:static md:translate-x-0 font-extrabold text-[26px] sm:text-[28px] tracking-tight bg-gradient-to-b from-black to-[#F7246E] bg-clip-text text-transparent"
             >
               Restyle
             </Link>
           </div>
 
           {/* Right Actions */}
-          <div className="flex items-center gap-2.5 sm:gap-6">
+          <div className="flex items-center gap-1 sm:gap-2">
             {pathname.startsWith("/admin") ? (
               <button className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 transition rounded-full pl-2 pr-4 py-1.5 shadow-sm">
                  <div className="w-7 h-7 bg-brand-pink text-white rounded-full flex items-center justify-center">
@@ -103,7 +103,7 @@ export default function Navigation() {
                 <button
                   type="button"
                   onClick={() => router.push("/sell")}
-                  className="bg-[#F7246E] hover:bg-magenta-300 text-white font-bold py-1.5 px-3 sm:px-5 rounded-full text-[13px] sm:text-[14px] transition-colors shadow-sm cursor-pointer" 
+                  className="bg-[#F7246E] hover:bg-magenta-300 text-white font-bold py-1.5 px-2.5 sm:px-4 rounded-full text-[13px] sm:text-[14px] transition-colors shadow-sm cursor-pointer" 
                 >
                   Sell
                 </button>
@@ -141,27 +141,33 @@ export default function Navigation() {
                   )}
                 </Link>
 
-                {/* Wishlist */}
+                {/* Wishlist — active state is color only (no circle / ring on click) */}
                 <Link
                   href="/wishlist"
                   aria-label="Wishlist"
-                  className="hidden sm:flex relative items-center justify-center text-brand-dark hover:text-brand-pink transition"
+                  aria-current={pathname === "/wishlist" ? "page" : undefined}
+                  className={`relative inline-flex items-center justify-center p-1.5 text-brand-dark outline-none transition [-webkit-tap-highlight-color:transparent] focus-visible:outline-none active:opacity-90 sm:p-2 ${
+                    pathname === "/wishlist" ? "text-brand-pink" : "hover:text-brand-pink"
+                  }`}
                 >
-                  <FavoriteBorderOutlinedIcon />
+                  <FavoriteBorderOutlinedIcon sx={{ fontSize: 24 }} />
                   {!!wishlistCount && (
-                    <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-[#F7246E] text-white text-[11px] font-bold flex items-center justify-center">
+                    <span className="absolute -right-0.5 -top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[#F7246E] px-1 text-[11px] font-bold text-white">
                       {wishlistCount > 99 ? "99+" : wishlistCount}
                     </span>
                   )}
                 </Link>
 
-                {/* Bag */}
+                {/* Bag — same: no circular hit chrome or focus ring */}
                 <Link
                   href="/orders"
                   aria-label="Orders Bag"
-                  className="relative flex items-center justify-center text-brand-dark hover:text-brand-pink transition"
+                  aria-current={pathname === "/orders" ? "page" : undefined}
+                  className={`relative inline-flex items-center justify-center p-1 text-brand-dark outline-none transition [-webkit-tap-highlight-color:transparent] focus-visible:outline-none active:opacity-90 sm:p-2 ${
+                    pathname === "/orders" ? "text-brand-pink" : "hover:text-brand-pink"
+                  }`}
                 >
-                  <ShoppingBagOutlinedIcon />
+                  <ShoppingBagOutlinedIcon sx={{ fontSize: 24 }} />
                   {!!cartCount && (
                     <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-[#F7246E] text-white text-[11px] font-bold flex items-center justify-center">
                       {cartCount > 99 ? "99+" : cartCount}

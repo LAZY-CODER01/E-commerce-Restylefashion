@@ -90,6 +90,40 @@ export function CartProvider({ children }) {
     setCart((prev) => prev.filter((c) => getId(c) !== id));
   };
 
+  /** Change quantity by delta; removes line if quantity drops below 1. */
+  const incrementCartItem = (itemOrId, delta) => {
+    const id = typeof itemOrId === "object" ? getId(itemOrId) : itemOrId;
+    if (!id || !Number.isFinite(delta)) return;
+    setCart((prev) => {
+      const idx = prev.findIndex((c) => getId(c) === id);
+      if (idx < 0) return prev;
+      const cur = prev[idx];
+      const curQty = Math.max(1, Number(cur?.qty ?? cur?.quantity ?? 1) || 1);
+      const nextQty = curQty + delta;
+      if (nextQty < 1) return prev.filter((c) => getId(c) !== id);
+      const next = [...prev];
+      next[idx] = { ...cur, qty: nextQty };
+      return next;
+    });
+  };
+
+  const setCartItemQuantity = (itemOrId, qty) => {
+    const id = typeof itemOrId === "object" ? getId(itemOrId) : itemOrId;
+    if (!id) return;
+    const q = Math.floor(Number(qty));
+    if (!Number.isFinite(q) || q < 1) {
+      setCart((prev) => prev.filter((c) => getId(c) !== id));
+      return;
+    }
+    setCart((prev) => {
+      const idx = prev.findIndex((c) => getId(c) === id);
+      if (idx < 0) return prev;
+      const next = [...prev];
+      next[idx] = { ...next[idx], qty: q };
+      return next;
+    });
+  };
+
   const deleteFromWishlist = (itemOrId) => {
     const id = typeof itemOrId === "object" ? getId(itemOrId) : itemOrId;
     if (!id) return;
@@ -106,6 +140,8 @@ export function CartProvider({ children }) {
       toggleWishlist,
       deleteFromCart,
       deleteFromWishlist,
+      incrementCartItem,
+      setCartItemQuantity,
     }),
     [cart, wishlist]
   );

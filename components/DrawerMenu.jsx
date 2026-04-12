@@ -183,15 +183,19 @@ export default function DrawerMenu({ open, onClose, drawerRef }) {
           {/* Secondary Links Section */}
           <div className="px-6 py-8">
             <div className="flex flex-col gap-7">
-              {SECONDARY_ITEMS.map((item) => (
+              {SECONDARY_ITEMS.map((item) => {
+                const active = pathname === item.link;
+                return (
                 <Link
                   key={item.name}
                   href={item.link}
                   onClick={onClose}
-                  className={`flex items-center gap-4 text-[17px] font-medium transition-colors hover:text-brand-pink ${item.highlight ? "text-brand-pink" : "text-brand-dark"
-                    }`}
+                  aria-current={active ? "page" : undefined}
+                  className={`flex items-center gap-4 text-[17px] font-medium transition-colors hover:text-brand-pink ${
+                    active || item.highlight ? "text-brand-pink" : "text-brand-dark"
+                  }`}
                 >
-                  <span className={item.highlight ? "text-brand-pink" : "text-gray-400"}>
+                  <span className={active || item.highlight ? "text-brand-pink" : "text-gray-400"}>
                     {item.icon}
                   </span>
                   <span className="flex-1">{item.name}</span>
@@ -202,7 +206,8 @@ export default function DrawerMenu({ open, onClose, drawerRef }) {
                     <span className="text-[13px] font-bold text-brand-pink">{cartCount}</span>
                   ) : null}
                 </Link>
-              ))}
+              );
+              })}
 
               {/* Authentication Actions */}
               {user ? (
