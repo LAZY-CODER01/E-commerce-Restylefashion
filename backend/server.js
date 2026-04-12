@@ -19,6 +19,7 @@ const allowedOrigins = [
     "http://127.0.0.1:3000",
     "http://127.0.0.1:3001",
     "https://e-commerce-restylefashion.vercel.app",
+    "https://e-commerce-restylefashion-3325.vercel.app",
 ];
 
 app.use(
