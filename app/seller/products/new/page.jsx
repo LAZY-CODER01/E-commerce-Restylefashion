@@ -18,6 +18,7 @@ import {
 } from "@/lib/draftListing";
 import clsx from "clsx";
 import ValidationTooltip from "@/components/ValidationTooltip";
+import { SELLER_PRODUCT_CATEGORY_OPTIONS } from "@/data/categories";
 
 const SOCIAL_SELLER_TYPES = new Set(["influencer", "designer", "thrifter"]);
 
@@ -575,12 +576,11 @@ export default function NewProductPage() {
                     className="h-[54px] w-full cursor-pointer appearance-none rounded-full border border-gray-300 bg-gray-50/50 py-0 pl-6 pr-12 text-[14px] font-bold text-brand-dark outline-none transition-all focus:border-brand-pink focus:bg-white"
                   >
                     <option value="">Select Category</option>
-                    <option value="vintage">Vintage</option>
-                    <option value="formals">Formals</option>
-                    <option value="streetwear">Streetwear</option>
-                    <option value="ethnic">Ethnic</option>
-                    <option value="accessories">Accessories</option>
-                    <option value="footwear">Footwear</option>
+                    {SELLER_PRODUCT_CATEGORY_OPTIONS.map(({ id, label }) => (
+                      <option key={id} value={id}>
+                        {label}
+                      </option>
+                    ))}
                   </select>
                   <SelectChevron />
                   {fieldErrors.category && (
@@ -712,7 +712,7 @@ export default function NewProductPage() {
                     <div className="flex w-full flex-col gap-1.5">
                       <div className="flex items-center justify-start gap-1">
                         <label className="text-[13px] font-medium leading-snug text-brand-dark sm:text-[14px]">
-                          Selling Price (INR) *
+                          Selling Price *
                         </label>
                         <div className="relative shrink-0" ref={sellingInfoRef}>
                           <button

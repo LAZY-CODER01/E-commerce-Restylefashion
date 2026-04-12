@@ -17,20 +17,7 @@ import Inventory2Icon from "@mui/icons-material/Inventory2";
 import PeopleIcon from "@mui/icons-material/People";
 import { useSearch } from "@/context/SearchContext";
 import { useCart } from "@/context/CartContext";
-
-const CATEGORY_ITEMS = [
-  { id: "all", label: "All" },
-  { id: "tops", label: "Tops" },
-  { id: "bottoms", label: "Bottoms" },
-  { id: "dresses", label: "Dresses" },
-  { id: "co-ords", label: "Co-ords" },
-  { id: "outerwear", label: "Outerwear" },
-  { id: "jumpsuits", label: "Dresses | Jumpsuits" },
-  { id: "coats", label: "Coats | Jackets" },
-  { id: "desi", label: "Desi x GenZ" },
-  { id: "hot", label: "Hot Picks" },
-  { id: "influencers", label: "Shop by Influencers" }
-];
+import { DRAWER_CATEGORY_ITEMS } from "@/data/categories";
 
 const SECONDARY_ITEMS = [
   {
@@ -162,7 +149,7 @@ export default function DrawerMenu({ open, onClose, drawerRef }) {
                   )
                 })
               ) : (
-                CATEGORY_ITEMS.map((item) => (
+                DRAWER_CATEGORY_ITEMS.map((item) => (
                   <button
                     key={item.id}
                     onClick={() => handleCategoryClick(item.id)}

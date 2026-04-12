@@ -68,7 +68,8 @@ const productSchema = new mongoose.Schema(
                 "streetwear", "vintage", "formals", "ethnic",
                 "accessories", "footwear", "tops", "bottoms",
                 "dresses", "co-ords", "outerwear", "activewear",
-                "bags", "jewellery", "other"
+                "bags", "jewellery", "other",
+                "jumpsuits", "coats", "desi", "hot",
             ],
             lowercase: true,
         },
