@@ -43,7 +43,7 @@ function PhoneHandsetIcon({ className }) {
   );
 }
 
-/** Matches `components/Navigastion.jsx` center logo: black → magenta gradient, same sizes. */
+/** Matches `components/Navigastion.jsx` center logo: black → magenta gradient, same sizes.*/
 function RestyleLogoMark() {
   return (
     <div className="mx-auto flex flex-col items-center justify-center gap-1.5">

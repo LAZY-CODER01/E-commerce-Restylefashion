@@ -7,7 +7,6 @@ import { useRouter, usePathname } from "next/navigation";
 import { toast } from "react-toastify";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
-import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import { useAuth } from "@/context/AuthContext";
 import api from "@/lib/api";
 import {
@@ -88,6 +87,27 @@ function SelectChevron() {
     </span>
   );
 }
+
+/** Single thin circle + “i”, sized to sit next to label text (e.g. condition hints). */
+function InlineInfoGlyph({ tone = "brand", size = 16 }) {
+  const color = tone === "orange" ? "text-orange-600" : "text-brand-pink";
+  return (
+    <svg
+      width={size}
+      height={size}
+      className={`shrink-0 ${color}`}
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden
+    >
+      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.15" />
+      <path d="M12 16v-5M12 8h.01" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+const inlineInfoBtnClass =
+  "inline-flex min-h-[26px] min-w-[26px] shrink-0 cursor-pointer items-center justify-center rounded-full text-brand-pink transition hover:opacity-75 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-pink/40";
 
 function getLivePriceErrors(retailStr, sellingStr) {
   const err = {};
@@ -504,14 +524,11 @@ export default function NewProductPage() {
               <ValidationTooltip message={fieldErrors.photos} floating />
             )}
             </div>
-            <div className="flex items-center justify-center gap-3 px-1 sm:px-2">
-              <span
-                className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-orange-50 text-orange-700 ring-1 ring-orange-100"
-                aria-hidden
-              >
-                <InfoOutlinedIcon sx={{ fontSize: 18 }} className="block leading-none" />
+            <div className="flex w-full items-start justify-start gap-2 px-1 sm:px-2">
+              <span className="mt-0.5 inline-flex shrink-0" aria-hidden>
+                <InlineInfoGlyph tone="orange" size={17} />
               </span>
-              <p className="max-w-xl flex-1 text-left text-[13px] font-medium italic leading-snug text-orange-800">
+              <p className="min-w-0 text-left text-[13px] font-medium italic leading-snug text-orange-800">
                 Fill the correct details. Once the product is listed it cannot be edited.
               </p>
             </div>
@@ -572,21 +589,18 @@ export default function NewProductPage() {
                 </div>
               </div>
 
-              <div id="field-condition" className="flex flex-col gap-1.5">
-                <div className="flex items-center gap-2 pl-1">
+              <div id="field-condition" className="flex flex-col gap-1">
+                <div className="flex items-center justify-start gap-1 pl-1">
                   <label className="text-[12px] font-bold text-brand-dark uppercase tracking-widest">
                     Condition
                   </label>
                   <button
                     type="button"
                     onClick={() => setIsConditionGuideOpen(true)}
-                    className="inline-flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded-full border border-brand-pink/40 text-brand-pink transition hover:border-brand-pink hover:bg-brand-pink/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-pink"
+                    className={inlineInfoBtnClass}
                     aria-label="Open condition guidelines"
                   >
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden>
-                      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
-                      <path d="M12 16v-5M12 8h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                    </svg>
+                    <InlineInfoGlyph />
                   </button>
                 </div>
                 <div className="relative isolate w-full">
@@ -642,25 +656,17 @@ export default function NewProductPage() {
               </div>
 
               <div id="field-sizes" className="flex flex-col gap-2 md:col-span-2">
-                <div className="flex items-center gap-2 pl-1">
+                <div className="flex items-center justify-start gap-1.5 pl-1">
                   <span className="text-[12px] font-bold text-brand-dark uppercase tracking-widest">
                     Select Size
                   </span>
                   <button
                     type="button"
                     onClick={() => setIsSizeChartOpen(true)}
-                    className="inline-flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded-full border border-brand-pink/40 text-brand-pink transition hover:border-brand-pink hover:bg-brand-pink/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-pink"
+                    className={inlineInfoBtnClass}
                     aria-label="Open size chart"
                   >
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden>
-                      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
-                      <path
-                        d="M12 16v-5M12 8h.01"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                      />
-                    </svg>
+                    <InlineInfoGlyph />
                   </button>
                 </div>
                 <div className="relative isolate w-full">
@@ -690,8 +696,8 @@ export default function NewProductPage() {
                 {/* <p className="text-[11px] font-medium text-gray-500 pl-1"> */}
                   {/* Selling price auto-fills at <span className="font-bold text-brand-dark">30% off MRP</span> (max 70% of MRP). You can lower it further; raising it above that shows an error. */}
                 {/* </p> */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div id="field-retailPrice">
+                <div className="grid grid-cols-2 items-end gap-3 sm:gap-4">
+                  <div id="field-retailPrice" className="min-w-0">
                     <Input
                       label="Retail Price (MRP)"
                       placeholder="e.g. 2999"
@@ -702,23 +708,20 @@ export default function NewProductPage() {
                       tooltipError
                     />
                   </div>
-                  <div id="field-sellingPrice">
+                  <div id="field-sellingPrice" className="min-w-0">
                     <div className="flex w-full flex-col gap-1.5">
-                      <div className="flex items-center gap-2">
-                        <label className="text-[14px] font-medium text-brand-dark">
+                      <div className="flex items-center justify-start gap-1">
+                        <label className="text-[13px] font-medium leading-snug text-brand-dark sm:text-[14px]">
                           Selling Price (INR) *
                         </label>
-                        <div className="relative" ref={sellingInfoRef}>
+                        <div className="relative shrink-0" ref={sellingInfoRef}>
                           <button
                             type="button"
                             onClick={() => setIsSellingPriceInfoOpen((prev) => !prev)}
-                            className="inline-flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded-full border border-brand-pink/40 text-brand-pink transition hover:border-brand-pink hover:bg-brand-pink/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-pink"
+                            className={inlineInfoBtnClass}
                             aria-label="Selling price help"
                           >
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden>
-                              <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
-                              <path d="M12 16v-5M12 8h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                            </svg>
+                            <InlineInfoGlyph />
                           </button>
                           {isSellingPriceInfoOpen && (
                             <div className="absolute right-0 top-7 z-20 w-64 rounded-xl border border-brand-pink/20 bg-white p-3 text-[12px] font-medium leading-relaxed text-brand-dark shadow-xl">
