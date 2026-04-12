@@ -13,10 +13,26 @@ const productRoutes = require("./routes/productRoutes");
 const app = express();
 
 // ---------- Middleware ----------
-app.use(cors({
-    origin: ["http://localhost:3000", "http://localhost:3001","https://e-commerce-restylefashion.vercel.app"],
-    credentials: true,
-}));
+const allowedOrigins = [
+    "http://localhost:3000",
+    "http://localhost:3001",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:3001",
+    "https://e-commerce-restylefashion.vercel.app",
+];
+
+app.use(
+    cors({
+        origin(origin, cb) {
+            if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+            if (process.env.NODE_ENV !== "production" && /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin)) {
+                return cb(null, true);
+            }
+            cb(null, false);
+        },
+        credentials: true,
+    })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
