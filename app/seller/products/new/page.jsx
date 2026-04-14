@@ -76,6 +76,32 @@ const SIZE_CHART_ROWS = [
   // { size: "4XL", chest: "54-57", waist: "47-50", hips: "54-57", length: "32-33", shoulder: "22-23" },
 ];
 
+const CONDITION_OPTIONS = [
+  {
+    title: "Brand new",
+    description: "Never worn with original tags",
+  },
+  {
+    title: "Like new",
+    description: "Never worn without original tags",
+  },
+  // {
+  //   title: "Used - Very Good",
+  //   description:
+  //     "Item has been lightly worn and remains in excellent condition with no visible flaws. Examples: creasing, light wear, minimal sole wear.",
+  // },
+  {
+    title: "Used - Good",
+    description:
+      "Slightly worn, in mint condition with no visible flaws",
+  },
+  {
+    title: "Used",
+    description:
+      "Clearly worn with visible flaws, still usable",
+  },
+];
+
 function SelectChevron() {
   return (
     <span
@@ -152,9 +178,10 @@ export default function NewProductPage() {
   const [submitting, setSubmitting] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
   const [isSizeChartOpen, setIsSizeChartOpen] = useState(false);
-  const [isConditionGuideOpen, setIsConditionGuideOpen] = useState(false);
+  const [isConditionDropdownOpen, setIsConditionDropdownOpen] = useState(false);
   const [isSellingPriceInfoOpen, setIsSellingPriceInfoOpen] = useState(false);
   const sellingInfoRef = useRef(null);
+  const conditionDropdownRef = useRef(null);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -227,13 +254,13 @@ export default function NewProductPage() {
   }, [formData.retailPrice, formData.sellingPrice]);
 
   useEffect(() => {
-    if (!isSizeChartOpen && !isConditionGuideOpen) return;
+    if (!isSizeChartOpen) return;
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
       document.body.style.overflow = prevOverflow;
     };
-  }, [isSizeChartOpen, isConditionGuideOpen]);
+  }, [isSizeChartOpen]);
 
   useEffect(() => {
     if (!isSellingPriceInfoOpen) return;
@@ -245,6 +272,17 @@ export default function NewProductPage() {
     document.addEventListener("mousedown", onClickOutside);
     return () => document.removeEventListener("mousedown", onClickOutside);
   }, [isSellingPriceInfoOpen]);
+
+  useEffect(() => {
+    if (!isConditionDropdownOpen) return;
+    const onClickOutside = (e) => {
+      if (conditionDropdownRef.current && !conditionDropdownRef.current.contains(e.target)) {
+        setIsConditionDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onClickOutside);
+    return () => document.removeEventListener("mousedown", onClickOutside);
+  }, [isConditionDropdownOpen]);
 
   const setPriceField = (key, raw) => {
     const cleaned = sanitizePriceDigits(raw);
@@ -589,42 +627,75 @@ export default function NewProductPage() {
                 </div>
               </div>
 
-              <div id="field-condition" className="flex flex-col gap-1">
+              <div
+                id="field-condition"
+                className={`flex flex-col gap-1 ${isConditionDropdownOpen ? "relative z-30" : ""}`}
+              >
                 <div className="flex items-center justify-start gap-1 pl-1">
                   <label className="text-[12px] font-bold text-brand-dark uppercase tracking-widest">
                     Condition
                   </label>
+                </div>
+                <div className="relative isolate w-full" ref={conditionDropdownRef}>
                   <button
                     type="button"
-                    onClick={() => setIsConditionGuideOpen(true)}
-                    className={inlineInfoBtnClass}
-                    aria-label="Open condition guidelines"
+                    onClick={() => setIsConditionDropdownOpen((prev) => !prev)}
+                    className="h-[54px] w-full cursor-pointer rounded-full border border-gray-300 bg-gray-50/50 py-0 pl-6 pr-12 text-left text-[14px] font-bold text-brand-dark outline-none transition-all focus:border-brand-pink focus:bg-white"
+                    aria-haspopup="listbox"
+                    aria-expanded={isConditionDropdownOpen}
                   >
-                    <InlineInfoGlyph />
+                    {formData.condition || "Select Condition"}
                   </button>
-                </div>
-                <div className="relative isolate w-full">
-                  <select
-                    value={formData.condition}
-                    onChange={(e) => {
-                      setFormData({ ...formData, condition: e.target.value });
-                      setFieldErrors((prev) => {
-                        const n = { ...prev };
-                        delete n.condition;
-                        return n;
-                      });
-                    }}
-                    className="h-[54px] w-full cursor-pointer appearance-none rounded-full border border-gray-300 bg-gray-50/50 py-0 pl-6 pr-12 text-[14px] font-bold text-brand-dark outline-none transition-all focus:border-brand-pink focus:bg-white"
-                  >
-                    <option value="">Select Condition</option>
-                    <option value="New">Brand new</option>
-                    <option value="Like new">Like new</option>
-                    <option value="Used - Very Good">Used - Very Good</option>
-                    <option value="Used - Good">Used - Good</option>
-                    <option value="Used">Used</option>
-                    {/* <option value="Vintage">Vintage</option> */}
-                  </select>
                   <SelectChevron />
+                  {isConditionDropdownOpen ? (
+                    <div
+                      role="listbox"
+                      className="absolute left-0 right-0 z-40 mt-1 max-h-80 overflow-y-auto rounded-2xl border border-gray-200 bg-white p-1.5 shadow-xl"
+                    >
+                      {CONDITION_OPTIONS.map((option) => {
+                        const selected = formData.condition === option.title;
+                        return (
+                          <button
+                            key={option.title}
+                            type="button"
+                            role="option"
+                            aria-selected={selected}
+                            onClick={() => {
+                              setFormData({ ...formData, condition: option.title });
+                              setFieldErrors((prev) => {
+                                const n = { ...prev };
+                                delete n.condition;
+                                return n;
+                              });
+                              setIsConditionDropdownOpen(false);
+                            }}
+                            className={`w-full rounded-xl px-3 py-2 text-left transition ${
+                              selected ? "bg-brand-pink/10" : "bg-white hover:bg-gray-50"
+                            }`}
+                          >
+                            <div className="flex items-start gap-2.5">
+                              <span
+                                className={`mt-1 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full border ${
+                                  selected ? "border-brand-pink" : "border-gray-300"
+                                }`}
+                                aria-hidden
+                              >
+                                <span
+                                  className={`h-2 w-2 rounded-full ${
+                                    selected ? "bg-brand-pink" : "bg-transparent"
+                                  }`}
+                                />
+                              </span>
+                              <span className="min-w-0">
+                                <p className="text-[16px] font-bold text-brand-dark">{option.title}</p>
+                                <p className="mt-0.5 text-xs leading-snug text-gray-500">{option.description}</p>
+                              </span>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  ) : null}
                   {fieldErrors.condition && (
                     <ValidationTooltip message={fieldErrors.condition} floating />
                   )}
@@ -656,9 +727,9 @@ export default function NewProductPage() {
               </div>
 
               <div id="field-sizes" className="flex flex-col gap-2 md:col-span-2">
-                <div className="flex items-center justify-start gap-1.5 pl-1">
+                <div className="flex items-center justify-start gap-0.1 pl-1">
                   <span className="text-[12px] font-bold text-brand-dark uppercase tracking-widest">
-                    Select Size
+                    Select Size * 
                   </span>
                   <button
                     type="button"
@@ -784,16 +855,16 @@ export default function NewProductPage() {
 
             <h2
               id="size-chart-title"
-              className="pr-10 text-center text-lg font-bold tracking-tight text-brand-dark sm:text-xl"
+              className="pr-10 text-left text-lg font-bold tracking-tight text-brand-dark sm:text-xl"
             >
-              SIZE CHART (in inches)
+              SIZE CHART (inches)
             </h2>
-            <p className="mt-2 text-center text-[13px] leading-relaxed text-gray-500">
-              Refer to the sizing chart to help you find your best fit. Garment sizes may vary based
+            <p className="mt-1 text-left text-[13px] leading-relaxed text-gray-500 sm:text-[14px]">
+              Refer to the sizing chart to help you find your best fit. <br/> Garment sizes may vary based
               on brand, fabric and design.
             </p>
 
-            <div className="mt-6 overflow-x-auto rounded-xl border border-gray-100">
+            <div className="mt-4 overflow-x-auto rounded-xl border border-gray-100">
               <table className="w-full min-w-[520px] border-collapse text-left text-[12px] sm:text-[13px]">
                 <thead>
                   <tr className="bg-brand-pink text-white">
@@ -824,80 +895,18 @@ export default function NewProductPage() {
             </div>
 
             <div className="mt-8">
-              <div className="flex items-center gap-3">
-                <div className="h-px flex-1 bg-brand-pink/40" />
-                <h3 className="text-center text-[13px] font-bold uppercase tracking-[0.2em] text-brand-dark sm:text-[15px]">
-                  How to measure
-                </h3>
-                <div className="h-px flex-1 bg-brand-pink/40" />
-              </div>
-
-              <div className="mt-6 flex flex-col items-stretch gap-4 sm:flex-row sm:items-start sm:gap-5 md:gap-6">
-                <div className="mx-auto flex w-full max-w-[165px] shrink-0 justify-center sm:mx-0 sm:w-[34%] sm:max-w-[200px] md:max-w-[220px]">
-                  <img
-                    src="/skelton.png"
-                    alt="Diagram showing across shoulder, bust, waist, hips, and sleeve length"
-                    className="h-auto max-h-[260px] w-full object-contain object-top sm:max-h-[min(42vh,320px)] md:max-h-[340px]"
-                  />
-                </div>
-                <ul className="min-w-0 flex-1 space-y-2.5 text-[12px] leading-relaxed text-gray-600 sm:space-y-3 sm:pt-0.5 sm:text-[13px] md:text-[14px] md:leading-snug">
-                  <li>
-                    <span className="font-bold text-brand-pink">Across Shoulder</span>
-                    <span className="text-gray-500"> — Measure horizontally between the tips of your shoulders.</span>
-                  </li>
-                  <li>
-                    <span className="font-bold text-brand-pink">Bust</span>
-                    <span className="text-gray-500"> — Measure horizontally around the fullest part of your chest.</span>
-                  </li>
-                  <li>
-                    <span className="font-bold text-brand-pink">Waist</span>
-                    <span className="text-gray-500"> — Measure horizontally around your waist without tightening the tape.</span>
-                  </li>
-                  <li>
-                    <span className="font-bold text-brand-pink">Hips</span>
-                    <span className="text-gray-500"> — Standing with feet together, measure around the fullest part of your hips.</span>
-                  </li>
-                  <li>
-                    <span className="font-bold text-brand-pink">Sleeve Length</span>
-                    <span className="text-gray-500"> — Measure from the shoulder bone to the wrist bone.</span>
-                  </li>
-                </ul>
+              <div className="overflow-hidden rounded-xl p-1 sm:p-2">
+                <img
+                  src="/size-measure-guide.png"
+                  alt="How to measure size guide"
+                  className="mx-auto h-auto w-full max-w-[920px] scale-[1.04] object-contain"
+                />
               </div>
             </div>
           </div>
         </div>
       )}
 
-      {isConditionGuideOpen && (
-        <div
-          className="fixed inset-0 z-[120] flex items-center justify-center p-4"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="condition-guide-title"
-        >
-          <div className="absolute inset-0 bg-black/45" aria-hidden />
-          <div className="relative z-[121] w-full max-w-2xl rounded-2xl bg-white p-6 shadow-2xl sm:p-8">
-            <button
-              type="button"
-              onClick={() => setIsConditionGuideOpen(false)}
-              className="absolute right-4 top-4 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-brand-pink transition hover:bg-brand-pink/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-pink"
-              aria-label="Close"
-            >
-              <span className="text-2xl font-light leading-none">&times;</span>
-            </button>
-            <h2 id="condition-guide-title" className="pr-10 text-lg font-bold text-brand-dark sm:text-xl">
-              Condition Guidelines
-            </h2>
-            <div className="mt-5 space-y-3 text-[14px] leading-relaxed text-gray-700">
-              <p><span className="font-bold text-brand-dark">Brand new:</span> Item is new with original tags and has never been worn or used.</p>
-              <p><span className="font-bold text-brand-dark">Like new:</span> Item is in mint condition and unused, but without original tags or packaging.</p>
-              <p><span className="font-bold text-brand-dark">Used - Very Good:</span> Item has been lightly worn and remains in excellent condition with no visible flaws. Examples: creasing, light wear, minimal sole wear.</p>
-              <p><span className="font-bold text-brand-dark">Used - Good:</span> Item shows minor visible flaws or signs of wear but is still fully wearable. All flaws must be shown in photos and mentioned in the description. Examples: fading, pilling, discolouration, scuffing.</p>
-              <p><span className="font-bold text-brand-dark">Used:</span> Item is well-used with noticeable imperfections and clear signs of wear. Examples: stains, tears, fraying, cracking, stretching.</p>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

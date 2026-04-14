@@ -43,10 +43,19 @@ function PhoneHandsetIcon({ className }) {
   );
 }
 
+function MailIcon({ className }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" aria-hidden>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16v12H4z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="m4 8 8 6 8-6" />
+    </svg>
+  );
+}
+
 /** Matches `components/Navigastion.jsx` center logo: black → magenta gradient, same sizes.*/
 function RestyleLogoMark() {
   return (
-    <div className="mx-auto flex flex-col items-center justify-center gap-1.5">
+    <div className="mx-auto flex flex-col items-center justify-center ">
       <div className="flex h-[50px] items-center justify-center">
         <Link
           href="/"
@@ -55,7 +64,7 @@ function RestyleLogoMark() {
           Restyle
         </Link>
       </div>
-      <p className="max-w-[280px] px-1 text-center font-sans text-[12px] font-medium leading-snug tracking-tight text-gray-500 sm:max-w-none sm:text-[13px]">
+      <p className="max-w-[280px] px-1 text-center font-sans text-[13px] font-medium leading-snug tracking-tight text-gray-500 sm:max-w-none sm:text-[14px]">
         Get started & grab best offers on top brands
       </p>
     </div>
@@ -99,7 +108,7 @@ function BaseInput({ type = "text", value, onChange, placeholder, rightSlot, nam
         onChange={onChange}
         placeholder={placeholder}
         autoComplete={autoComplete}
-        className="h-12 w-full rounded-[11px] border border-gray-200 bg-white px-3.5 py-2.5 pr-11 font-sans text-[15px] font-normal text-gray-600 outline-none transition-[border-color,box-shadow] duration-200 placeholder:text-gray-400 focus:border-brand-pink focus:shadow-[0_0_0_3px_var(--auth-focus)]"
+        className="h-12 w-full rounded-[11px] border border-gray-200 bg-white px-3.5 py-2.5 pr-24 font-sans text-[15px] font-normal text-gray-600 outline-none transition-[border-color,box-shadow] duration-200 placeholder:text-gray-400 focus:border-brand-pink focus:shadow-[0_0_0_3px_var(--auth-focus)]"
         style={{ "--auth-focus": PRIMARY_RING }}
       />
       {rightSlot ? (
@@ -145,7 +154,7 @@ function SocialButtons({ onSocialLogin }) {
 }
 
 /** Shown under email/password login: Google and phone entry side by side. */
-function EmailAlternateLoginRow({ onGoogleLogin, onPhoneLogin }) {
+function EmailAlternateLoginRow({ onGoogleLogin, isPhoneMode, onToggleMethod }) {
   return (
     <div className="space-y-3">
       <DividerWithLabel>or Login via</DividerWithLabel>
@@ -160,11 +169,17 @@ function EmailAlternateLoginRow({ onGoogleLogin, onPhoneLogin }) {
         </button>
         <button
           type="button"
-          onClick={onPhoneLogin}
+          onClick={onToggleMethod}
           className="flex h-[52px] min-h-[44px] flex-col items-center justify-center gap-1 rounded-[11px] border border-gray-200 bg-white px-2 font-sans text-[11px] font-semibold text-gray-700 shadow-sm transition duration-200 hover:border-brand-pink/40 hover:text-brand-pink hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-pink/40 sm:h-14 sm:text-xs"
         >
-          <PhoneHandsetIcon className="h-[18px] w-[18px] shrink-0 text-gray-600 sm:h-5 sm:w-5" />
-          <span className="leading-tight text-center">Login with phone number</span>
+          {isPhoneMode ? (
+            <MailIcon className="h-[18px] w-[18px] shrink-0 text-gray-600 sm:h-5 sm:w-5" />
+          ) : (
+            <PhoneHandsetIcon className="h-[18px] w-[18px] shrink-0 text-gray-600 sm:h-5 sm:w-5" />
+          )}
+          <span className="leading-tight text-center">
+            {isPhoneMode ? "Login with email" : "Login with phone number"}
+          </span>
         </button>
       </div>
     </div>
@@ -215,51 +230,16 @@ function AuthCardSkeleton() {
   );
 }
 
-function MethodTabs({ method, onChange }) {
-  return (
-    <div
-      role="tablist"
-      aria-label="Login method"
-      className="mb-1 flex gap-0 border-b border-gray-200"
-    >
-      {[
-        { id: "email", label: "Email" },
-        { id: "phone", label: "Phone" },
-      ].map(({ id, label }) => {
-        const active = method === id;
-        return (
-          <button
-            key={id}
-            type="button"
-            role="tab"
-            aria-selected={active}
-            id={`tab-${id}`}
-            onClick={() => onChange(id)}
-            className={`relative w-1/2 pb-3 pt-1 font-sans text-[15px] transition-colors duration-200 sm:text-base ${
-              active
-                ? "font-semibold text-brand-pink"
-                : "font-normal text-gray-500 hover:text-gray-600"
-            }`}
-            style={{ fontWeight: active ? 600 : 400 }}
-          >
-            {label}
-            <span
-              className={`absolute bottom-0 left-0 right-0 h-0.5 rounded-full transition-all duration-200 ${
-                active ? "bg-brand-pink opacity-100" : "bg-transparent opacity-0"
-              }`}
-              aria-hidden
-            />
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
 function SignupView({ onSwitchToLogin }) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [showOtpModal, setShowOtpModal] = useState(false);
+  const [signupOtp, setSignupOtp] = useState("");
+  const [signupOtpError, setSignupOtpError] = useState("");
+  const [phoneVerified, setPhoneVerified] = useState(false);
+  const [isOtpSending, setIsOtpSending] = useState(false);
+  const [isResendingOtp, setIsResendingOtp] = useState(false);
   const [form, setForm] = useState({
     fullName: "",
     email: "",
@@ -276,6 +256,7 @@ function SignupView({ onSwitchToLogin }) {
     else if (!EMAIL_RE.test(form.email)) next.email = "Enter a valid email.";
     if (!form.phone.trim()) next.phone = "Phone number is required.";
     else if (!PHONE_RE.test(form.phone)) next.phone = "Enter a valid 10-digit phone.";
+    else if (!phoneVerified) next.phone = "Please verify your phone number.";
     if (!form.password) next.password = "Password is required.";
     else if (form.password.length < 6) next.password = "Password must be at least 6 characters.";
     if (!form.confirmPassword) next.confirmPassword = "Please confirm your password.";
@@ -283,6 +264,53 @@ function SignupView({ onSwitchToLogin }) {
     setErrors(next);
     return Object.keys(next).length === 0;
   };
+
+  const handleVerifyClick = () => {
+    const phoneError = !PHONE_RE.test(form.phone) ? "Enter a valid 10-digit phone." : "";
+    if (phoneError) {
+      setErrors((prev) => ({ ...prev, phone: phoneError }));
+      return;
+    }
+    setErrors((prev) => ({ ...prev, phone: "" }));
+    setIsOtpSending(true);
+    window.setTimeout(() => {
+      console.log("Signup OTP sent to:", form.phone);
+      setSignupOtp("");
+      setSignupOtpError("");
+      setShowOtpModal(true);
+      setIsOtpSending(false);
+    }, 400);
+  };
+
+  const handleCloseOtpModal = () => {
+    setShowOtpModal(false);
+    setSignupOtp("");
+    setSignupOtpError("");
+  };
+
+  const handleResendSignupOtp = () => {
+    if (isResendingOtp) return;
+    setIsResendingOtp(true);
+    setSignupOtp("");
+    setSignupOtpError("");
+    window.setTimeout(() => {
+      console.log("Signup OTP resent to:", form.phone);
+      setIsResendingOtp(false);
+    }, 500);
+  };
+
+  useEffect(() => {
+    if (!showOtpModal || signupOtp.length !== 6) return;
+    if (signupOtp === "123456") {
+      setPhoneVerified(true);
+      setSignupOtpError("");
+      window.setTimeout(() => {
+        setShowOtpModal(false);
+      }, 200);
+      return;
+    }
+    setSignupOtpError("Incorrect OTP. Try 123456.");
+  }, [signupOtp, showOtpModal]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -331,9 +359,23 @@ function SignupView({ onSwitchToLogin }) {
           <BaseInput
             name="phone"
             value={form.phone}
-            onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value.replace(/\D/g, "").slice(0, 10) }))}
+            onChange={(e) => {
+              const value = e.target.value.replace(/\D/g, "").slice(0, 10);
+              setForm((p) => ({ ...p, phone: value }));
+              setPhoneVerified(false);
+            }}
             placeholder="Phone number"
             autoComplete="tel"
+            rightSlot={
+              <button
+                type="button"
+                onClick={handleVerifyClick}
+                disabled={isOtpSending}
+                className="font-sans text-[13px] font-semibold text-[#F7246E] transition hover:text-brand-pink-hover disabled:cursor-not-allowed disabled:opacity-70"
+              >
+                {phoneVerified ? "Verified" : isOtpSending ? "Sending..." : "Verify"}
+              </button>
+            }
           />
           <FieldError message={errors.phone} />
         </div>
@@ -400,6 +442,53 @@ function SignupView({ onSwitchToLogin }) {
           Log in
         </button>
       </p>
+
+      {showOtpModal ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+          <div className="w-full max-w-sm rounded-2xl border border-gray-100 bg-white p-5 shadow-[0_20px_60px_rgba(0,0,0,0.14)] sm:p-6">
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={handleCloseOtpModal}
+                className="inline-flex h-8 w-8 items-center justify-center rounded-full text-lg font-semibold text-gray-500 transition hover:bg-gray-100 hover:text-gray-700"
+                aria-label="Close OTP modal"
+              >
+                ×
+              </button>
+            </div>
+            <h3 className="text-center font-sans text-lg font-semibold text-gray-900">Verify phone number</h3>
+            <p className="mt-1 text-center font-sans text-[13px] text-gray-500">
+              Enter OTP sent to +91 {form.phone}
+            </p>
+            <input
+              type="text"
+              inputMode="numeric"
+              autoFocus
+              maxLength={6}
+              value={signupOtp}
+              onChange={(e) => setSignupOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+              placeholder="Enter 6-digit OTP"
+              className="mt-4 h-12 w-full rounded-[11px] border border-gray-200 px-3 text-center font-sans text-lg tracking-[0.2em] text-gray-800 outline-none transition-[border-color,box-shadow] duration-200 placeholder:text-gray-300 focus:border-brand-pink focus:shadow-[0_0_0_3px_var(--auth-focus)]"
+              style={{ "--auth-focus": PRIMARY_RING }}
+            />
+            {signupOtpError ? (
+              <p className="mt-2 text-center font-sans text-xs font-medium text-brand-pink/90">{signupOtpError}</p>
+            ) : (
+              <p className="mt-2 text-center font-sans text-xs text-gray-500">Use demo OTP: 123456</p>
+            )}
+            <div className="mt-3 flex justify-center">
+              <button
+                type="button"
+                onClick={handleResendSignupOtp}
+                disabled={isResendingOtp}
+                className="font-sans text-[13px] font-semibold text-[#F7246E] transition hover:text-brand-pink-hover disabled:cursor-not-allowed disabled:opacity-70"
+              >
+                {isResendingOtp ? "Resending..." : "Resend OTP"}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -415,7 +504,9 @@ function LoginView({ onSwitchToSignup }) {
   const [step, setStep] = useState(1);
   const [phoneNumber, setPhoneNumber] = useState("");
   const [otp, setOtp] = useState("");
+  const [resendCountdown, setResendCountdown] = useState(60);
   const [isLoading, setIsLoading] = useState(false);
+  const [isResendingOtp, setIsResendingOtp] = useState(false);
   const [error, setError] = useState("");
   const [otpSuccess, setOtpSuccess] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -449,6 +540,14 @@ function LoginView({ onSwitchToSignup }) {
     return () => window.clearTimeout(timerId);
   }, [sessionPayload]);
 
+  useEffect(() => {
+    if (method !== "phone" || step !== 2 || resendCountdown <= 0) return;
+    const timer = window.setTimeout(() => {
+      setResendCountdown((prev) => Math.max(prev - 1, 0));
+    }, 1000);
+    return () => window.clearTimeout(timer);
+  }, [method, step, resendCountdown]);
+
   const resetPhoneOtpFlow = () => {
     setStep(1);
     setOtp("");
@@ -456,6 +555,8 @@ function LoginView({ onSwitchToSignup }) {
     setOtpSuccess(false);
     setIsLoading(false);
     setPhoneNumber("");
+    setResendCountdown(60);
+    setIsResendingOtp(false);
   };
 
   const validateEmail = () => {
@@ -470,7 +571,9 @@ function LoginView({ onSwitchToSignup }) {
   const handleMethodChange = (id) => {
     setMethod(id);
     setErrors({});
-    resetPhoneOtpFlow();
+    if (id === "phone") {
+      resetPhoneOtpFlow();
+    }
   };
 
   const handleSendOtp = () => {
@@ -483,6 +586,7 @@ function LoginView({ onSwitchToSignup }) {
     setOtpSuccess(false);
     setErrors({});
     setStep(2);
+    setResendCountdown(60);
     console.log("Request OTP for:", form.phone);
   };
 
@@ -502,12 +606,17 @@ function LoginView({ onSwitchToSignup }) {
     }, 1500);
   };
 
-  const handleChangeMobileNumber = () => {
-    setStep(1);
-    setOtp("");
+  const handleResendOtp = () => {
+    if (resendCountdown > 0 || isResendingOtp) return;
+    setIsResendingOtp(true);
     setError("");
     setOtpSuccess(false);
-    setIsLoading(false);
+    setOtp("");
+    window.setTimeout(() => {
+      console.log("Resend login OTP for:", phoneNumber);
+      setResendCountdown(60);
+      setIsResendingOtp(false);
+    }, 500);
   };
 
   const handleSubmit = async (e) => {
@@ -527,16 +636,13 @@ function LoginView({ onSwitchToSignup }) {
   const tabId = method === "email" ? "login-panel-email" : "login-panel-phone";
 
   const showPhoneOtpStep2 = method === "phone" && step === 2;
+  const countdownLabel = `00:${String(resendCountdown).padStart(2, "0")}`;
 
   return (
     <div className="w-full min-w-0 max-w-[420px] rounded-2xl border border-gray-100 bg-white p-4 shadow-[0_8px_40px_rgba(0,0,0,0.06)] sm:p-9">
       <div className="mb-6 text-center sm:mb-8">
         <RestyleLogoMark />
       </div>
-
-      {!showPhoneOtpStep2 ? (
-        <MethodTabs method={method} onChange={handleMethodChange} />
-      ) : null}
 
       {method === "email" ? (
         <form
@@ -545,7 +651,6 @@ function LoginView({ onSwitchToSignup }) {
           noValidate
           role="tabpanel"
           id={tabId}
-          aria-labelledby={`tab-${method}`}
         >
           <div>
             <BaseInput
@@ -606,7 +711,6 @@ function LoginView({ onSwitchToSignup }) {
           className="mt-5 space-y-3 sm:mt-6 sm:space-y-4"
           role="tabpanel"
           id={tabId}
-          aria-labelledby={`tab-${method}`}
         >
           <div>
             <BaseInput
@@ -627,10 +731,9 @@ function LoginView({ onSwitchToSignup }) {
           className="mt-5 flex flex-col items-center space-y-5 text-center sm:mt-6 sm:space-y-6"
           role="tabpanel"
           id="login-panel-phone-otp"
-          aria-labelledby="tab-phone"
         >
           <div className="w-full space-y-2">
-            <h2 className="font-sans text-lg font-bold text-gray-900 sm:text-xl">Verify your number</h2>
+            <h2 className="font-sans text-lg font-bold text-gray-900 sm:text-xl">Login with number</h2>
             <p className="font-sans text-[14px] font-normal leading-relaxed text-gray-500 sm:text-[15px]">
               OTP sent to{" "}
               <span className="font-medium text-gray-800">{formatIndiaMobileDisplay(phoneNumber)}</span>
@@ -672,30 +775,33 @@ function LoginView({ onSwitchToSignup }) {
               disabled={otpSuccess}
               onClick={handleVerifyOtp}
             >
-              Verify &amp; Login
+              Login
             </PrimaryGradientButton>
           </div>
 
-          <button
-            type="button"
-            onClick={handleChangeMobileNumber}
-            className="font-sans text-[14px] font-medium text-brand-pink transition hover:text-brand-pink-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-pink/40 sm:text-[15px]"
-          >
-            Change mobile number
-          </button>
+          <div className="flex flex-col items-center gap-1">
+            <button
+              type="button"
+              onClick={handleResendOtp}
+              disabled={resendCountdown > 0 || isResendingOtp}
+              className="font-sans text-[14px] font-semibold text-[#F7246E] transition hover:text-brand-pink-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-pink/40 disabled:cursor-not-allowed disabled:opacity-65 sm:text-[15px]"
+            >
+              {isResendingOtp ? "Resending..." : "Resend OTP"}
+            </button>
+            <p className="font-sans text-xs text-gray-500">
+              {resendCountdown > 0 ? `Resend available in ${countdownLabel}` : "You can resend OTP now"}
+            </p>
+          </div>
         </div>
       )}
 
-      {method === "email" ? (
+      {!showPhoneOtpStep2 ? (
         <div className="mt-6 sm:mt-7">
           <EmailAlternateLoginRow
             onGoogleLogin={handleSocialLogin}
-            onPhoneLogin={() => handleMethodChange("phone")}
+            isPhoneMode={method === "phone"}
+            onToggleMethod={() => handleMethodChange(method === "phone" ? "email" : "phone")}
           />
-        </div>
-      ) : step === 1 ? (
-        <div className="mt-6 sm:mt-7">
-          <SocialButtons onSocialLogin={handleSocialLogin} />
         </div>
       ) : null}
 
@@ -724,7 +830,10 @@ export default function RestyleAuthStandalone() {
   }, []);
 
   return (
-    <div className="flex min-h-[100dvh] items-center justify-center bg-white px-4 py-8 font-sans sm:px-9 sm:py-12">
+    <div
+      className="flex min-h-[100dvh] items-center justify-center bg-white px-4 py-8 font-sans sm:px-9 sm:py-12"
+      style={{ fontFamily: "Roboto, sans-serif" }}
+    >
       <div className="mx-auto w-full max-w-[420px] min-w-0">
         {showSkeleton ? (
           <AuthCardSkeleton />
