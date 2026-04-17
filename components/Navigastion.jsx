@@ -79,7 +79,7 @@ export default function Navigation() {
 
           <Link
             href="/"
-            className="absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 font-extrabold text-[26px] sm:text-[28px] tracking-tight bg-gradient-to-b from-black to-[#F7246E] bg-clip-text text-transparent md:hidden"
+            className="absolute left-[46%] top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 font-extrabold text-[26px] sm:text-[28px] tracking-tight bg-gradient-to-b from-black to-[#F7246E] bg-clip-text text-transparent md:hidden"
           >
             Restyle
           </Link>
@@ -107,7 +107,7 @@ export default function Navigation() {
                 <button
                   type="button"
                   onClick={() => router.push("/sell")}
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-1.5 px-2.5 sm:px-4 rounded-full text-[13px] sm:text-[14px] transition-colors shadow-sm cursor-pointer shrink-0"
+                  className="shrink-0 cursor-pointer rounded-full bg-emerald-600 px-4 py-1.5 text-[14px] font-bold text-white shadow-sm transition-colors hover:bg-emerald-700"
                 >
                   Sell
                 </button>
