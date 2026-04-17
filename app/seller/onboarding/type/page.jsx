@@ -27,7 +27,7 @@ const SELLER_TYPES = [
   },
   {
     id: "thrifter",
-    title: "Thrifters & Preloved",
+    title: "Thrifters",
     emoji: "♻️",
     tooltip:
       "Sell your sourced drops! • Medium to high inventory • Regular restocking patterns",
