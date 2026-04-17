@@ -1,22 +1,38 @@
 /**
- * Category ids + labels for drawer nav and seller listing (single source).
- * Ids match `activeCategory` / product `category` (lowercase in DB).
+ * Category ids + labels for drawer nav (single source for menu).
+ * Ids align with `activeCategory` / product `category` where applicable.
  */
 export const DRAWER_CATEGORY_ITEMS = [
-  { id: "all", label: "All" },
+  { id: "new-arrivals", label: "New Arrivals" },
   { id: "tops", label: "Tops" },
   { id: "bottoms", label: "Bottoms" },
+  { id: "co-ords", label: "Co-ord Sets" },
+  { id: "dresses-jumpsuits", label: "Dresses | Jumpsuits" },
+  { id: "coats", label: "Coats | Jackets" },
+  { id: "desi", label: "Desi x GenZ" },
+  { id: "influencers", label: "Shop by Influencer" },
+  { id: "hot", label: "Hot Picks", labelAccent: "hot" },
+];
+
+/** Seller product form: DB enum values (not drawer-only composite ids). */
+export const SELLER_PRODUCT_CATEGORY_OPTIONS = [
+  { id: "tops", label: "Tops" },
+  { id: "bottoms", label: "Bottoms" },
+  { id: "co-ords", label: "Co-ord Sets" },
   { id: "dresses", label: "Dresses" },
-  { id: "co-ords", label: "Co-ords" },
-  { id: "outerwear", label: "Outerwear" },
-  { id: "jumpsuits", label: "Dresses | Jumpsuits" },
+  { id: "jumpsuits", label: "Jumpsuits" },
+  // { id: "outerwear", label: "Outerwear" },
   { id: "coats", label: "Coats | Jackets" },
   { id: "desi", label: "Desi x GenZ" },
   { id: "hot", label: "Hot Picks" },
-  { id: "influencers", label: "Shop by Influencers" },
+  // { id: "streetwear", label: "Streetwear" },
+  // { id: "vintage", label: "Vintage" },
+  // { id: "ethnic", label: "Ethnic" },
+  // { id: "formals", label: "Formals" },
+  // { id: "activewear", label: "Activewear" },
+  // { id: "accessories", label: "Accessories" },
+  // { id: "footwear", label: "Footwear" },
+  // { id: "bags", label: "Bags" },
+  // { id: "jewellery", label: "Jewellery" },
+  // { id: "other", label: "Other" },
 ];
-
-/** Seller product form: same entries as drawer categories, excluding nav-only. */
-export const SELLER_PRODUCT_CATEGORY_OPTIONS = DRAWER_CATEGORY_ITEMS.filter(
-  (item) => item.id !== "all" && item.id !== "influencers"
-);

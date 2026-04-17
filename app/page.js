@@ -61,11 +61,36 @@ export default function HomePage() {
       .finally(() => setListingsLoading(false));
   }, []);
 
+  const listingCategoryMatch = (p) => {
+    if (activeCategory === "all") return true;
+    if (activeCategory === "new-arrivals") {
+      const d = p.createdAt ? new Date(p.createdAt) : null;
+      if (!d || Number.isNaN(d.getTime())) return true;
+      return Date.now() - d.getTime() < 30 * 86400000;
+    }
+    if (activeCategory === "dresses-jumpsuits") {
+      return p.category === "dresses" || p.category === "jumpsuits";
+    }
+    return p.category === activeCategory;
+  };
+
+  const categorySectionTitle =
+    activeCategory === "all"
+      ? "All Listings"
+      : activeCategory === "new-arrivals"
+        ? "New Arrivals"
+        : activeCategory === "dresses-jumpsuits"
+          ? "Dresses | Jumpsuits"
+          : activeCategory === "hot"
+            ? "Hot Picks"
+            : `${activeCategory.charAt(0).toUpperCase() + activeCategory.slice(1)} Collection`;
+
   // Filter by active category + search
   const filteredListings = listings.filter((p) => {
-    const matchCat    = activeCategory === "all" || p.category === activeCategory;
-    const q           = (searchQuery || "").toLowerCase();
-    const matchSearch = !q || p.title.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q);
+    const matchCat = listingCategoryMatch(p);
+    const q = (searchQuery || "").toLowerCase();
+    const matchSearch =
+      !q || p.title.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q);
     return matchCat && matchSearch;
   });
 
@@ -144,9 +169,7 @@ export default function HomePage() {
           <div className="flex items-end justify-between">
             <div>
               <h3 className="text-[20px] font-bold text-brand-dark tracking-tight">
-                {activeCategory === "all"
-                  ? "All Listings"
-                  : `${activeCategory.charAt(0).toUpperCase() + activeCategory.slice(1)} Collection`}
+                {categorySectionTitle}
               </h3>
               {!listingsLoading && (
                 <p className="text-[13px] text-gray-400 font-medium mt-0.5">

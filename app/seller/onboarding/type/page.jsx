@@ -1,51 +1,43 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useRef } from "react";
 import Button from "@/components/Button";
-import Input from "@/components/Input";
-import ValidationTooltip from "@/components/ValidationTooltip";
+import Input, { formFieldErrorClass } from "@/components/Input";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import api from "@/lib/api";
 import { toast } from "react-toastify";
 import { getDraftListing, mergeDraftListing } from "@/lib/draftListing";
+import clsx from "clsx";
 
 const SELLER_TYPES = [
   {
     id: "individual",
-    label: "Individual Seller",
-    color: "#F7246E",
-    colorLight: "rgba(247,36,110,0.08)",
-    colorBorder: "rgba(247,36,110,0.25)",
-    guideline:
-      "Direct listing and auto-verification. You must own the products (from your wardrobe or small purchases) and be willing to directly ship and handle your orders.",
+    title: "Individual",
+    emoji: "👤",
+    tooltip:
+      "Sell from your personal Wardrobe • Preowned personal items",
   },
   {
     id: "influencer",
-    label: "Influencer",
-    color: "#F7246E",
-    colorLight: "rgba(247,36,110,0.08)",
-    colorBorder: "rgba(247,36,110,0.25)",
-    guideline:
-      "Requires a minimum of ~5K followers, good engagement, and preferably fashion-related content. Verification requires adding your profile link/username and a phone code cross-check. (One-time 24hr verification process)",
+    title: "Influencer Shop",
+    emoji: "📸",
+    tooltip:
+      "Pass on your looks to your fans! • Public Fashion Creator • Minimum ~10K followers",
   },
   {
     id: "thrifter",
-    label: "Thrifter",
-    color: "#F7246E",
-    colorLight: "rgba(247,36,110,0.08)",
-    colorBorder: "rgba(247,36,110,0.25)",
-    guideline:
-      "Must upload real product photos, have a minimum of 5 items to start, and preferably an active social media page. Verification requires adding your store link and an email/phone cross-check. (One-time 24hr verification process)",
+    title: "Thrifters & Preloved",
+    emoji: "♻️",
+    tooltip:
+      "Sell your sourced drops! • Medium to high inventory • Regular restocking patterns",
   },
   {
     id: "designer",
-    label: "Designer",
-    color: "#F7246E",
-    colorLight: "rgba(247,36,110,0.08)",
-    colorBorder: "rgba(247,36,110,0.25)",
-    guideline:
-      "Must upload original designs/portfolio, have a minimum of 5 items to start (customization or stitching preferred). Verification requires adding your brand/boutique link, GST (if registered), and an email/phone cross-check. (One-time 24hr verification process)",
+    title: "Designer",
+    emoji: "👗",
+    tooltip:
+      "Sell your own designs and new collection! • Own brand or label",
   },
 ];
 
@@ -53,92 +45,186 @@ function emptyForm() {
   return {
     fullName: "",
     instagram: "",
-    otp: "",
     gst: "",
+    otp: "",
     otpSent: false,
+    instagramVerified: false,
   };
+}
+
+function InfoButton({ open, onToggle, children }) {
+  return (
+    <div className="relative shrink-0">
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          onToggle();
+        }}
+        className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-brand-pink/80 ring-[0px] ring-brand-pink/30 transition hover:bg-brand-pink/10 hover:text-brand-pink focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-1 focus-visible:outline-brand-pink/40"
+        aria-label="Category details"
+        aria-expanded={open}
+      >
+        <span className="text-[12px] font-bold leading-none">i</span>
+      </button>
+      {open ? (
+        <div
+          role="tooltip"
+          className="absolute right-0 top-[calc(100%+6px)] z-20 w-[min(100vw-3rem,18rem)] rounded-xl border border-gray-200 bg-white p-3 text-left text-[12px] font-medium leading-snug text-gray-600 shadow-lg"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {children}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function OtpFourBoxes({ value, onChange, onFilled, disabled, hasError }) {
+  const refs = useRef([]);
+  const digits = (value || "").slice(0, 4).split("");
+  while (digits.length < 4) digits.push("");
+
+  const setAt = (index, char) => {
+    const d = String(char).replace(/\D/g, "").slice(-1);
+    let next = (value || "").replace(/\D/g, "");
+    const arr = next.split("");
+    while (arr.length < 4) arr.push("");
+    arr[index] = d;
+    next = arr.join("").slice(0, 4);
+    onChange(next);
+    if (d && index < 3) {
+      refs.current[index + 1]?.focus();
+    }
+    if (next.length === 4) {
+      onFilled?.(next);
+    }
+  };
+
+  return (
+    <div className="flex gap-2 sm:gap-3 pt-1">
+      {[0, 1, 2, 3].map((i) => (
+        <input
+          key={i}
+          ref={(el) => {
+            refs.current[i] = el;
+          }}
+          type="text"
+          inputMode="numeric"
+          autoComplete="one-time-code"
+          maxLength={1}
+          disabled={disabled}
+          value={digits[i] || ""}
+          onChange={(e) => setAt(i, e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Backspace" && !digits[i] && i > 0) {
+              refs.current[i - 1]?.focus();
+            }
+          }}
+          onPaste={(e) => {
+            e.preventDefault();
+            const t = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 4);
+            if (!t) return;
+            onChange(t);
+            if (t.length === 4) onFilled?.(t);
+          }}
+          className={clsx(
+            "h-12 w-11 shrink-0 rounded-xl border bg-gray-50/50 text-center text-base font-semibold text-gray-900 outline-none transition-all sm:h-12 sm:w-12",
+            hasError
+              ? formFieldErrorClass
+              : "border-gray-200 focus:border-rose-500 focus:ring-1 focus:ring-rose-500",
+            disabled && "opacity-50"
+          )}
+        />
+      ))}
+    </div>
+  );
 }
 
 export default function SellerTypePage() {
   const router = useRouter();
   const { user, setUser } = useAuth();
-  const [modalType, setModalType] = useState(null);
-  const [modalOpen, setModalOpen] = useState(false);
+  const [expandedId, setExpandedId] = useState(null);
+  const [infoOpenId, setInfoOpenId] = useState(null);
   const [form, setForm] = useState(emptyForm);
-  const [modalErrors, setModalErrors] = useState({});
+  const [fieldErrors, setFieldErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
 
-  const openModal = useCallback((type) => {
+  const loadFormForType = useCallback((typeId) => {
     const draft = getDraftListing();
-    setModalType(type);
     setForm({
       fullName: draft?.sellerProfile?.fullName?.trim() || "",
       instagram:
         draft?.sellerProfile?.socialMediaName?.trim() ||
         draft?.sellerProfile?.instagramId?.trim() ||
         "",
-      otp: "",
       gst: draft?.sellerProfile?.gstNumber?.trim() || "",
+      otp: "",
       otpSent: false,
+      instagramVerified:
+        typeId === "influencer" || typeId === "thrifter"
+          ? Boolean(draft?.sellerProfile?.otpVerified)
+          : false,
     });
-    setModalErrors({});
-    setModalOpen(true);
+    setFieldErrors({});
   }, []);
 
-  const closeModal = () => {
-    setModalOpen(false);
-    setTimeout(() => {
-      setModalType(null);
-      setModalErrors({});
-    }, 200);
-  };
-
-  const handleSendOtp = () => {
-    toast.success("OTP sent to your registered mobile number");
-    setForm((f) => ({ ...f, otpSent: true }));
-    setModalErrors((e) => {
-      const next = { ...e };
-      delete next.otp;
+  const toggleExpand = (id) => {
+    setInfoOpenId(null);
+    setExpandedId((cur) => {
+      const next = cur === id ? null : id;
+      if (next) loadFormForType(next);
       return next;
     });
   };
 
-  const validateModal = () => {
-    if (!modalType) return false;
+  const handleVerifyInstagram = () => {
+    if (!form.instagram.trim()) {
+      toast.warn("Add your Instagram handle first.");
+      return;
+    }
+    if (form.instagramVerified) return;
+    toast.success("OTP sent to your registered mobile number");
+    setForm((f) => ({ ...f, otpSent: true, otp: "" }));
+    setFieldErrors((e) => {
+      const n = { ...e };
+      delete n.otp;
+      return n;
+    });
+  };
+
+  const completeOtp = () => {
+    setForm((f) => ({ ...f, instagramVerified: true }));
+    toast.success("Verified");
+  };
+
+  const validate = () => {
     const e = {};
-    const t = modalType.id;
-
-    if (!form.fullName.trim()) {
-      e.fullName = "Please fill in this field.";
+    const t = expandedId;
+    if (!form.fullName.trim()) e.fullName = "Please fill in this field.";
+    if (t === "individual") {
+      setFieldErrors(e);
+      return Object.keys(e).length === 0;
     }
-
     if (t === "influencer" || t === "thrifter" || t === "designer") {
-      if (!form.instagram.trim()) {
-        e.instagram = "Please fill in this field.";
-      }
+      if (!form.instagram.trim()) e.instagram = "Please fill in this field.";
     }
-
     if (t === "influencer" || t === "thrifter") {
-      if (!form.otpSent) {
-        e.otp = "Please request an OTP, then fill in this field.";
-      } else if (!/^\d{6}$/.test(form.otp.trim())) {
-        e.otp = "Please fill in this field.";
-      }
+      if (!form.instagramVerified) e.otp = "Please verify with the code sent to your phone.";
     }
-
-    setModalErrors(e);
+    setFieldErrors(e);
     return Object.keys(e).length === 0;
   };
 
-  const handleContinueToListing = async (ev) => {
+  const handleContinue = async (ev) => {
     ev.preventDefault();
-    if (!modalType) return;
-    if (!validateModal()) {
+    if (!expandedId) return;
+    if (!validate()) {
       toast.warn("Please complete the required fields.");
       return;
     }
 
-    const sellerType = modalType.id;
+    const sellerType = expandedId;
     const profile = {
       fullName: form.fullName.trim(),
       businessName: "",
@@ -179,258 +265,209 @@ export default function SellerTypePage() {
     }
 
     toast.success("Profile saved. Continue with your listing.");
-    closeModal();
     router.push("/seller/products/new");
   };
 
   return (
-    <>
-      <div className="min-h-[calc(100dvh-80px)] bg-brand-light flex items-center justify-center p-4 font-roboto">
-        <div className="w-full max-w-md bg-white rounded-3xl shadow-lg border border-gray-100 overflow-hidden p-6 sm:p-8 animate-slideUp">
-          <div className="flex flex-col gap-8 sm:gap-10">
-            <div>
-              <div className="flex items-center gap-4 mb-3 sm:mb-4 -ml-2">
-                <button
-                  type="button"
-                  onClick={() => router.back()}
-                  className="w-10 h-10 rounded-full hover:bg-gray-50 flex items-center justify-center text-brand-dark transition-all"
-                >
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
+    <div className="min-h-[calc(100dvh-80px)] w-full bg-brand-light px-4 pb-12 pt-10 font-sans sm:flex sm:items-center sm:justify-center sm:px-4 sm:pb-10 sm:pt-4">
+      <div className="mx-auto w-full max-w-md animate-fadeIn py-3 sm:py-4">
+        <div className="relative mb-5 px-1 text-center sm:mb-6 sm:px-0 sm:text-left sm:pl-1">
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className="absolute left-1 top-0 inline-flex h-10 w-10 items-center justify-center rounded-full text-brand-dark transition hover:bg-white/80 sm:static sm:mb-4"
+            aria-label="Back"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <path d="M19 12H5M12 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <h1 className="px-10 pt-1 text-[22px] font-extrabold leading-tight text-brand-dark sm:px-0 sm:pt-0 sm:text-[28px]">
+            Pick your selling style
+          </h1>
+          <p className="mt-2 px-3 text-[13px] font-medium text-gray-500 sm:px-0 sm:text-[14px]">
+            Create your shop — tap a category to continue
+          </p>
+        </div>
+
+        <div className="flex flex-col gap-3">
+          {SELLER_TYPES.map((type) => {
+            const open = expandedId === type.id;
+            const infoOpen = infoOpenId === type.id;
+            return (
+              <div
+                key={type.id}
+                className={clsx(
+                  "rounded-2xl border bg-white shadow-sm transition-[box-shadow,border-color]",
+                  open ? "border-brand-pink/40 shadow-md shadow-brand-pink/10" : "border-gray-200"
+                )}
+              >
+                <div className="flex w-full items-start gap-3 px-3.5 py-3.5 sm:px-5 sm:py-4">
+                  <button
+                    type="button"
+                    onClick={() => toggleExpand(type.id)}
+                    className="flex min-w-0 flex-1 items-start gap-3 text-left"
                   >
-                    <path d="M19 12H5" />
-                    <path d="M12 19l-7-7 7-7" />
-                  </svg>
-                </button>
-                <span className="text-[12px] font-bold text-brand-pink uppercase tracking-widest">
-                  Step 1 of 6
-                </span>
-              </div>
+                    <span className="text-xl leading-none pt-0.5" aria-hidden>
+                      {type.emoji}
+                    </span>
+                    <span className="block min-w-0 text-[14px] font-bold leading-snug text-brand-dark sm:text-[16px]">
+                      {type.title}
+                    </span>
+                  </button>
+                  <InfoButton
+                    open={infoOpen}
+                    onToggle={() =>
+                      setInfoOpenId((id) => (id === type.id ? null : type.id))
+                    }
+                  >
+                    {type.tooltip}
+                  </InfoButton>
+                </div>
 
-              <h2 className="text-[26px] sm:text-[28px] font-extrabold text-brand-dark leading-tight">
-                Seller Type
-              </h2>
-
-              <p className="text-[13px] sm:text-[14px] text-gray-500 font-medium">
-                Tap a category to continue — a form will open for your details
-              </p>
-            </div>
-
-            <div className="flex flex-col gap-3 sm:gap-4">
-              {SELLER_TYPES.map((type) => (
-                <button
-                  key={type.id}
-                  type="button"
-                  onClick={() => openModal(type)}
-                  className="w-full h-[60px] sm:h-[64px] rounded-[24px] text-[15px] sm:text-[16px] font-bold transition-all duration-300 border-2 flex items-center justify-center px-6 sm:px-8 text-left hover:scale-[1.01] active:scale-[0.99]"
-                  style={{
-                    backgroundColor: type.colorLight,
-                    borderColor: type.colorBorder,
-                    color: "#2F2F2F",
-                    boxShadow: "0 4px 14px rgba(247,36,110,0.08)",
-                  }}
+                <div
+                  className={clsx(
+                    "grid transition-[grid-template-rows] duration-300 ease-out",
+                    open ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+                  )}
                 >
-                  {type.label}
-                </button>
-              ))}
-            </div>
-          </div>
+                  <div className="overflow-hidden">
+                    {open ? (
+                    <div className="border-t border-gray-100 px-4 pb-5 pt-2 sm:px-5">
+                      <form onSubmit={handleContinue} className="flex flex-col gap-4 pt-2">
+                        <Input
+                          id={`fullName-${type.id}`}
+                          label="Full Name"
+                          placeholder="As per your ID"
+                          value={form.fullName}
+                          onChange={(e) => {
+                            setForm((f) => ({ ...f, fullName: e.target.value }));
+                            setFieldErrors((er) => {
+                              const n = { ...er };
+                              delete n.fullName;
+                              return n;
+                            });
+                          }}
+                          error={fieldErrors.fullName}
+                        />
+
+                        {(type.id === "influencer" ||
+                          type.id === "thrifter" ||
+                          type.id === "designer") && (
+                          <Input
+                            id={`instagram-${type.id}`}
+                            label="Instagram Handle"
+                            placeholder="@username"
+                            value={form.instagram}
+                            onChange={(e) => {
+                              setForm((f) => ({
+                                ...f,
+                                instagram: e.target.value,
+                                instagramVerified: false,
+                                otp: "",
+                                otpSent: false,
+                              }));
+                              setFieldErrors((er) => {
+                                const n = { ...er };
+                                delete n.instagram;
+                                delete n.otp;
+                                return n;
+                              });
+                            }}
+                            error={fieldErrors.instagram}
+                          />
+                        )}
+
+                        {type.id === "designer" && (
+                          <Input
+                            id={`gst-${type.id}`}
+                            label="GST (optional)"
+                            placeholder="GSTIN if registered"
+                            value={form.gst}
+                            onChange={(e) =>
+                              setForm((f) => ({ ...f, gst: e.target.value }))
+                            }
+                          />
+                        )}
+
+                        {(type.id === "influencer" || type.id === "thrifter") && (
+                          <div className="flex flex-col gap-2">
+                            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                              <Button
+                                type="button"
+                                variant="outlined"
+                                className="shrink-0 rounded-xl px-4 font-bold"
+                                onClick={handleVerifyInstagram}
+                                disabled={form.instagramVerified}
+                              >
+                                Verify
+                              </Button>
+                              {form.instagramVerified ? (
+                                <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-600">
+                                  <svg
+                                    className="h-5 w-5 shrink-0"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    aria-hidden
+                                  >
+                                    <circle cx="12" cy="12" r="10" fill="#10b981" />
+                                    <path
+                                      d="M8 12.5l2.5 2.5L16 9"
+                                      stroke="white"
+                                      strokeWidth="2"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                    />
+                                  </svg>
+                                  Verified
+                                </span>
+                              ) : null}
+                            </div>
+
+                            {form.otpSent && !form.instagramVerified ? (
+                              <div className="relative isolate pt-1">
+                                <p className="mb-2 text-[12px] font-medium text-gray-600">
+                                  Enter the 4-digit code
+                                </p>
+                                <OtpFourBoxes
+                                  value={form.otp}
+                                  onChange={(otp) =>
+                                    setForm((f) => ({ ...f, otp }))
+                                  }
+                                  disabled={form.instagramVerified}
+                                  onFilled={() => completeOtp()}
+                                  hasError={Boolean(fieldErrors.otp)}
+                                />
+                                {fieldErrors.otp ? (
+                                  <p className="mt-2 text-[12px] font-medium text-red-600" role="alert">
+                                    {fieldErrors.otp}
+                                  </p>
+                                ) : null}
+                              </div>
+                            ) : null}
+                          </div>
+                        )}
+
+                        <Button
+                          type="submit"
+                          fullWidth
+                          disabled={submitting}
+                          className="mt-2 h-12 rounded-full font-bold"
+                        >
+                          {submitting
+                            ? "Saving..."
+                            : "Continue to Product Listing"}
+                        </Button>
+                      </form>
+                    </div>
+                    ) : null}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
-
-      {modalType && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          style={{
-            opacity: modalOpen ? 1 : 0,
-            transition: "opacity 0.2s ease",
-            pointerEvents: modalOpen ? "auto" : "none",
-          }}
-        >
-          <div
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-            aria-hidden
-          />
-
-          <div
-            className="relative w-full max-w-md max-h-[90vh] overflow-y-auto bg-white rounded-2xl shadow-2xl"
-            style={{
-              transform: modalOpen ? "scale(1)" : "scale(0.95)",
-              transition: "transform 0.2s ease",
-            }}
-          >
-            <div
-              className="h-1.5 w-full sticky top-0 z-10"
-              style={{ backgroundColor: modalType.color }}
-            />
-
-            <form
-              onSubmit={handleContinueToListing}
-              className="p-6 pb-8 flex flex-col gap-5"
-            >
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div
-                    className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                    style={{
-                      backgroundColor: modalType.colorLight,
-                      color: modalType.color,
-                    }}
-                  >
-                    <svg
-                      width="20"
-                      height="20"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                    >
-                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                      <circle cx="12" cy="7" r="4" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3
-                      className="text-lg font-bold leading-tight"
-                      style={{ color: modalType.color }}
-                    >
-                      {modalType.label}
-                    </h3>
-                    <p className="text-[12px] text-gray-500 mt-1 leading-snug">
-                      {modalType.guideline}
-                    </p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={closeModal}
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-brand-pink transition hover:bg-brand-pink/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-pink"
-                >
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                  >
-                    <path d="M18 6L6 18" />
-                    <path d="M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-
-              <Input
-                id="modal-fullName"
-                label="Full Name"
-                placeholder="As per your ID"
-                value={form.fullName}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, fullName: e.target.value }))
-                }
-                error={modalErrors.fullName}
-                tooltipError
-              />
-
-              {(modalType.id === "influencer" ||
-                modalType.id === "thrifter" ||
-                modalType.id === "designer") && (
-                <Input
-                  id="modal-instagram"
-                  label="Instagram Handle"
-                  placeholder="@username"
-                  value={form.instagram}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, instagram: e.target.value }))
-                  }
-                  error={modalErrors.instagram}
-                  tooltipError
-                />
-              )}
-
-              {(modalType.id === "influencer" ||
-                modalType.id === "thrifter") && (
-                <div className="flex w-full flex-col gap-1.5">
-                  <label
-                    htmlFor="modal-otp"
-                    className="text-[14px] font-medium text-brand-dark"
-                  >
-                    OTP verification
-                  </label>
-                  <div className="relative isolate w-full">
-                    <div className="flex w-full flex-col gap-2 md:flex-row md:items-center md:gap-3">
-                      <input
-                        id="modal-otp"
-                        type="text"
-                        inputMode="numeric"
-                        autoComplete="one-time-code"
-                        maxLength={6}
-                        placeholder="6-digit code"
-                        value={form.otp}
-                        onChange={(e) => {
-                          setForm((f) => ({
-                            ...f,
-                            otp: e.target.value.replace(/\D/g, "").slice(0, 6),
-                          }));
-                          setModalErrors((prev) => {
-                            if (!prev.otp) return prev;
-                            const next = { ...prev };
-                            delete next.otp;
-                            return next;
-                          });
-                        }}
-                        className="min-h-[52px] w-full flex-1 rounded-xl border border-gray-200 bg-brand-light px-4 py-3.5 text-[15px] text-brand-dark outline-none transition-all placeholder:text-gray-400 focus:border-brand-pink focus:shadow-[0_0_0_3px_rgba(247,36,110,0.1)] md:min-w-0"
-                      />
-                      <Button
-                        type="button"
-                        variant="outlined"
-                        className="h-[52px] w-full shrink-0 rounded-xl px-5 font-bold whitespace-nowrap md:mt-0 md:w-auto md:min-w-[132px]"
-                        onClick={handleSendOtp}
-                      >
-                        Send OTP
-                      </Button>
-                    </div>
-                    {modalErrors.otp && (
-                      <ValidationTooltip message={modalErrors.otp} floating />
-                    )}
-                  </div>
-                  <p className="text-[11px] text-gray-500">
-                    Tap Send OTP, then enter the code you receive on your phone.
-                  </p>
-                </div>
-              )}
-
-              {modalType.id === "designer" && (
-                <Input
-                  id="modal-gst"
-                  label="GST (optional)"
-                  placeholder="GSTIN if registered"
-                  value={form.gst}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, gst: e.target.value }))
-                  }
-                />
-              )}
-
-              <Button
-                type="submit"
-                fullWidth
-                disabled={submitting}
-                className="h-[50px] rounded-full font-bold text-[15px] mt-2"
-              >
-                {submitting ? "Saving..." : "Continue to Product Listing"}
-              </Button>
-            </form>
-          </div>
-        </div>
-      )}
-    </>
+    </div>
   );
 }

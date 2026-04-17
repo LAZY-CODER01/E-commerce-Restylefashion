@@ -1,7 +1,7 @@
 import "./globals.css";
 import "react-toastify/dist/ReactToastify.css";
 import Navbar from "@/components/Navigastion";
-import { Footer7 } from "@/components/ui/footer-7";
+import ConditionalFooter from "@/components/ConditionalFooter";
 import { AuthProvider } from "@/context/AuthContext";
 import { SearchProvider } from "@/context/SearchContext";
 import { CartProvider } from "@/context/CartContext";
@@ -21,7 +21,7 @@ export default function RootLayout({ children }) {
             <CartProvider>
               <Navbar />
               {children}
-              <Footer7 />
+              <ConditionalFooter />
               <ToastContainer 
                 position="bottom-right"
                 autoClose={3000}

@@ -46,6 +46,13 @@ body {
   [role="button"][aria-disabled="true"] {
     cursor: not-allowed;
   }
+
+  /* Light-themed form fields: body uses light foreground in dark OS mode, so inherit makes text invisible on pale inputs */
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="hidden"]),
+  textarea,
+  select {
+    color: rgb(17 24 39);
+  }
 }
 
 @keyframes fadeIn {

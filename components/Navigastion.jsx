@@ -59,10 +59,8 @@ export default function Navigation() {
   return (
     <>
       <header className="sticky top-0 z-40 bg-brand-light border-b border-gray-200 pb-4 pt-3 w-full">
-        {/* Row 1: Navigation & Actions */}
-        <div className="flex items-center justify-between h-14 max-w-[1400px] mx-auto px-4 md:px-9 mb-3">
-
-          {/* Left Side: Hamburger & Logo */}
+        {/* Row 1: mobile = logo centered; md+ = hamburger + logo left (classic) */}
+        <div className="relative flex items-center justify-between h-14 max-w-[1400px] mx-auto px-4 md:px-9 mb-3">
           <div className="flex items-center gap-2 sm:gap-4">
             <button
               aria-label="Open Menu"
@@ -71,17 +69,23 @@ export default function Navigation() {
             >
               <MenuOutlinedIcon />
             </button>
-
             <Link
               href="/"
-              className="absolute left-[35%] -translate-x-1/2 md:static md:translate-x-0 font-extrabold text-[26px] sm:text-[28px] tracking-tight bg-gradient-to-b from-black to-[#F7246E] bg-clip-text text-transparent"
+              className="hidden md:inline font-extrabold text-[26px] sm:text-[28px] tracking-tight bg-gradient-to-b from-black to-[#F7246E] bg-clip-text text-transparent"
             >
               Restyle
             </Link>
           </div>
 
+          <Link
+            href="/"
+            className="absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 font-extrabold text-[26px] sm:text-[28px] tracking-tight bg-gradient-to-b from-black to-[#F7246E] bg-clip-text text-transparent md:hidden"
+          >
+            Restyle
+          </Link>
+
           {/* Right Actions */}
-          <div className="flex items-center gap-1 sm:gap-2">
+          <div className="relative z-10 flex min-w-0 flex-nowrap items-center justify-end gap-1 sm:gap-2">
             {pathname.startsWith("/admin") ? (
               <button className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 transition rounded-full pl-2 pr-4 py-1.5 shadow-sm">
                  <div className="w-7 h-7 bg-brand-pink text-white rounded-full flex items-center justify-center">
@@ -103,7 +107,7 @@ export default function Navigation() {
                 <button
                   type="button"
                   onClick={() => router.push("/sell")}
-                  className="bg-[#F7246E] hover:bg-magenta-300 text-white font-bold py-1.5 px-2.5 sm:px-4 rounded-full text-[13px] sm:text-[14px] transition-colors shadow-sm cursor-pointer" 
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-1.5 px-2.5 sm:px-4 rounded-full text-[13px] sm:text-[14px] transition-colors shadow-sm cursor-pointer shrink-0"
                 >
                   Sell
                 </button>
@@ -141,12 +145,12 @@ export default function Navigation() {
                   )}
                 </Link>
 
-                {/* Wishlist — active state is color only (no circle / ring on click) */}
+                {/* Wishlist hidden on mobile (available in drawer) */}
                 <Link
                   href="/wishlist"
                   aria-label="Wishlist"
                   aria-current={pathname === "/wishlist" ? "page" : undefined}
-                  className={`relative inline-flex items-center justify-center p-1.5 text-brand-dark outline-none transition [-webkit-tap-highlight-color:transparent] focus-visible:outline-none active:opacity-90 sm:p-2 ${
+                  className={`relative hidden sm:inline-flex items-center justify-center p-1.5 text-brand-dark outline-none transition [-webkit-tap-highlight-color:transparent] focus-visible:outline-none active:opacity-90 sm:p-2 ${
                     pathname === "/wishlist" ? "text-brand-pink" : "hover:text-brand-pink"
                   }`}
                 >

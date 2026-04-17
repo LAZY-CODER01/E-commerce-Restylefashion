@@ -1,12 +1,16 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import Input from "@/components/Input";
+import Input, {
+  formFieldErrorClass,
+  formFieldInputBase,
+  formFieldTextareaBase,
+} from "@/components/Input";
 import Button from "@/components/Button";
 import { useRouter, usePathname } from "next/navigation";
 import { toast } from "react-toastify";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
+import { Camera, X, Loader, Check, Sparkles, Rocket, ShieldCheck } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import api from "@/lib/api";
 import {
@@ -15,9 +19,9 @@ import {
   dataUrlsToFiles,
   fileToDataUrl,
   clearDraftListing,
+  isDraftStorageFullError,
 } from "@/lib/draftListing";
 import clsx from "clsx";
-import ValidationTooltip from "@/components/ValidationTooltip";
 import { SELLER_PRODUCT_CATEGORY_OPTIONS } from "@/data/categories";
 
 const SOCIAL_SELLER_TYPES = new Set(["influencer", "designer", "thrifter"]);
@@ -177,11 +181,15 @@ export default function NewProductPage() {
   const [imagePreviews, setImagePreviews] = useState([]);
   const [submitting, setSubmitting] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
+  const [uploadingMap, setUploadingMap] = useState({});
   const [isSizeChartOpen, setIsSizeChartOpen] = useState(false);
+  const [guidelinesOpen, setGuidelinesOpen] = useState(false);
+  const [liveModalOpen, setLiveModalOpen] = useState(false);
   const [isConditionDropdownOpen, setIsConditionDropdownOpen] = useState(false);
   const [isSellingPriceInfoOpen, setIsSellingPriceInfoOpen] = useState(false);
   const sellingInfoRef = useRef(null);
   const conditionDropdownRef = useRef(null);
+  const uploadTimersRef = useRef(new Map());
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -217,6 +225,13 @@ export default function NewProductPage() {
   }, []);
 
   useEffect(() => {
+    return () => {
+      uploadTimersRef.current.forEach((timerId) => window.clearTimeout(timerId));
+      uploadTimersRef.current.clear();
+    };
+  }, []);
+
+  useEffect(() => {
     if (!draftRehydrated) return;
     mergeDraftListing({ product: formData });
   }, [formData, draftRehydrated]);
@@ -232,8 +247,16 @@ export default function NewProductPage() {
       try {
         const urls = await Promise.all(imageFiles.map((f) => fileToDataUrl(f)));
         if (!cancelled) mergeDraftListing({ imageDataUrls: urls });
-      } catch {
-        if (!cancelled) toast.error("Could not save photos to draft.");
+      } catch (err) {
+        if (!cancelled) {
+          toast.error(
+            isDraftStorageFullError(err)
+              ? "Photos exceed browser storage. Use fewer or smaller images, or log in so uploads skip this step."
+              : err?.message === "Image decode failed"
+                ? "One image could not be read. Try JPG or PNG."
+                : "Could not save photos to draft."
+          );
+        }
       }
     }
     sync();
@@ -283,6 +306,15 @@ export default function NewProductPage() {
     document.addEventListener("mousedown", onClickOutside);
     return () => document.removeEventListener("mousedown", onClickOutside);
   }, [isConditionDropdownOpen]);
+
+  useEffect(() => {
+    if (!guidelinesOpen && !liveModalOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [guidelinesOpen, liveModalOpen]);
 
   const setPriceField = (key, raw) => {
     const cleaned = sanitizePriceDigits(raw);
@@ -350,15 +382,44 @@ export default function NewProductPage() {
 
   const handleImageUpload = (e) => {
     if (e.target.files) {
-      const newFiles = Array.from(e.target.files);
-      setImageFiles((prev) => [...prev, ...newFiles].slice(0, 5));
-      const newPreviews = newFiles.map((f) => URL.createObjectURL(f));
-      setImagePreviews((prev) => [...prev, ...newPreviews].slice(0, 5));
+      const selectedFiles = Array.from(e.target.files);
+      const slotsLeft = Math.max(0, 5 - imageFiles.length);
+      const filesToAdd = selectedFiles.slice(0, slotsLeft);
+      if (filesToAdd.length === 0) {
+        e.target.value = "";
+        return;
+      }
+
+      const newPreviews = filesToAdd.map((file) => URL.createObjectURL(file));
+      setImageFiles((prev) => [...prev, ...filesToAdd]);
+      setImagePreviews((prev) => [...prev, ...newPreviews]);
+      setUploadingMap((prev) => {
+        const next = { ...prev };
+        newPreviews.forEach((previewUrl) => {
+          next[previewUrl] = true;
+        });
+        return next;
+      });
+
+      newPreviews.forEach((previewUrl) => {
+        const delayMs = 1200 + Math.floor(Math.random() * 1100);
+        const timerId = window.setTimeout(() => {
+          setUploadingMap((prev) => {
+            const next = { ...prev };
+            next[previewUrl] = false;
+            return next;
+          });
+          uploadTimersRef.current.delete(previewUrl);
+        }, delayMs);
+        uploadTimersRef.current.set(previewUrl, timerId);
+      });
+
       setFieldErrors((prev) => {
         const next = { ...prev };
         delete next.photos;
         return next;
       });
+      e.target.value = "";
     }
   };
 
@@ -380,6 +441,16 @@ export default function NewProductPage() {
     setImageFiles((prev) => prev.filter((_, i) => i !== index));
     setImagePreviews((prev) => {
       const removed = prev[index];
+      const timerId = uploadTimersRef.current.get(removed);
+      if (timerId) {
+        window.clearTimeout(timerId);
+        uploadTimersRef.current.delete(removed);
+      }
+      setUploadingMap((prevMap) => {
+        const next = { ...prevMap };
+        delete next[removed];
+        return next;
+      });
       if (removed && removed.startsWith("blob:")) URL.revokeObjectURL(removed);
       return prev.filter((_, i) => i !== index);
     });
@@ -404,8 +475,14 @@ export default function NewProductPage() {
         const next =
           pathname && pathname.startsWith("/") ? pathname : "/sell";
         router.push(`/login?redirect=${encodeURIComponent(next)}`);
-      } catch {
-        toast.error("Could not save your photos. Try again.");
+      } catch (err) {
+        toast.error(
+          isDraftStorageFullError(err)
+            ? "Could not save photos in your browser (storage full). Try fewer or smaller images, or log in first — photos then upload directly to our servers."
+            : err?.message === "Image decode failed"
+              ? "One image could not be read. Try JPG or PNG."
+              : "Could not save your photos. Try again."
+        );
       } finally {
         setSubmitting(false);
       }
@@ -460,10 +537,7 @@ export default function NewProductPage() {
       setImagePreviews([]);
       setFieldErrors({});
 
-      toast.success("Product listed! Awaiting admin review 🚀", {
-        style: { borderRadius: "16px" },
-      });
-      router.replace("/verification");
+      setLiveModalOpen(true);
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to list product");
     } finally {
@@ -481,8 +555,8 @@ export default function NewProductPage() {
   return (
     <div className="min-h-screen bg-brand-light flex items-center justify-center p-4 font-roboto">
       <div className="w-full max-w-2xl bg-white rounded-[32px] shadow-sm overflow-hidden animate-fadeIn pb-12">
-        <div className="p-8 border-b border-gray-100 flex items-center justify-between">
-          <div className="flex items-center gap-4">
+        <div className="relative p-8 border-b border-gray-100 flex items-center justify-center">
+          <div className="absolute left-8 top-1/2 -translate-y-1/2">
             <button
               type="button"
               onClick={() => router.back()}
@@ -490,94 +564,107 @@ export default function NewProductPage() {
             >
               <ArrowBackIcon sx={{ fontSize: 20 }} />
             </button>
-            <div className="flex flex-col">
-              <h2 className="text-[20px] font-bold text-brand-dark">Product Listing</h2>
-              <p className="text-[12px] font-bold text-gray-400 uppercase tracking-widest">
-                Create New Submission
-              </p>
-            </div>
           </div>
-          <div className="p-2.5 px-3 bg-brand-pink/5 rounded-full flex items-center gap-2 text-brand-pink">
+          <div className="flex flex-col items-center text-center">
+            <h2 className="text-[20px] font-bold text-brand-dark">Create Listing</h2>
+          </div>
+          {/* <div className="p-2.5 px-3 bg-brand-pink/5 rounded-full flex items-center gap-2 text-brand-pink">
             <span className="text-[11px] font-bold uppercase tracking-tight">
               Step 3 of 6: Product
             </span>
-          </div>
+          </div> */}
         </div>
 
-        <form onSubmit={handleSubmit} className="p-10 flex flex-col gap-8">
-          <div id="field-photos" className="flex flex-col gap-4">
+        <form onSubmit={handleSubmit} className="p-10 flex flex-col gap-5">
+          <div id="field-photos" className="flex flex-col gap-2.5">
             <h3 className="text-[14px] font-bold text-brand-dark uppercase tracking-widest pl-3 border-l-4 border-brand-pink">
-              Visuals
+            Visuals
             </h3>
-            <div className="relative isolate">
-            <div className="grid grid-cols-3 md:grid-cols-5 gap-4">
-              {imagePreviews.map((img, index) => (
-                <div
-                  key={index}
-                  className="aspect-square bg-gray-50 rounded-[24px] border border-gray-100 relative overflow-hidden group"
-                >
-                  <img src={img} alt={`Preview ${index}`} className="w-full h-full object-cover" />
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveImage(index)}
-                    className="absolute top-2 right-2 w-7 h-7 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    &times;
-                  </button>
-                </div>
-              ))}
+            <div className="relative isolate space-y-4">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="mx-auto flex aspect-square w-full max-w-[130px] flex-col items-center justify-center rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50/30 px-4 text-center transition hover:border-gray-400"
+              >
+                <Camera className="h-5 w-5 text-gray-500" />
+                <p className="mt-1.5 text-[15px] font-bold text-gray-700">Add Photos</p>
+                <p className="mt-0.5 text-[10px] font-medium text-gray-400">
+                  Add Pictures from your device
+                </p>
+              </button>
+              <input
+                type="file"
+                multiple
+                accept="image/*"
+                ref={fileInputRef}
+                onChange={handleImageUpload}
+                className="hidden"
+              />
 
-              {imagePreviews.length < 5 && (
-                <label
-                  className={clsx(
-                    "aspect-square bg-white border-2 border-dashed rounded-[24px] flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-brand-pink hover:bg-brand-pink/5 transition-all text-gray-400 hover:text-brand-pink relative overflow-hidden border-gray-300"
-                  )}
-                >
-                  <AddPhotoAlternateIcon sx={{ fontSize: 28 }} />
-                  <span className="text-[11px] font-bold uppercase tracking-tight text-center px-2 z-10">
-                    Add Photos
-                    <br />
-                    (Max 5)
-                  </span>
-                  <input
-                    type="file"
-                    multiple
-                    accept="image/*"
-                    ref={fileInputRef}
-                    onChange={handleImageUpload}
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                  />
-                </label>
-              )}
+              <div className="flex items-center gap-3 overflow-x-auto pb-1">
+                {imagePreviews.map((img, index) => {
+                  const isUploading = Boolean(uploadingMap[img]);
+                  return (
+                    <div
+                      key={img}
+                      className="relative h-16 w-16 shrink-0 overflow-visible rounded-xl bg-gray-200"
+                    >
+                      <img
+                        src={img}
+                        alt={`Preview ${index + 1}`}
+                        className="h-full w-full rounded-xl object-cover"
+                      />
+                      {isUploading ? (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center rounded-xl bg-black/55">
+                          <div className="flex h-8 w-8 items-center justify-center rounded-full border border-white/40">
+                            <Loader className="h-4 w-4 animate-spin text-white" />
+                          </div>
+                          <span className="absolute bottom-1 text-[8px] font-medium text-white">
+                            Uploading...
+                          </span>
+                        </div>
+                      ) : null}
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveImage(index)}
+                        className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 shadow-sm transition hover:text-black"
+                        aria-label="Remove photo"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
 
-              {[...Array(Math.max(0, 4 - imagePreviews.length))].map((_, i) => (
-                <div
-                  key={`empty-${i}`}
-                  className="aspect-square bg-gray-50 rounded-[24px] border border-gray-100 opacity-50 flex items-center justify-center text-gray-300"
-                >
-                  <AddPhotoAlternateIcon sx={{ fontSize: 20 }} />
-                </div>
-              ))}
+              <div className="min-h-[18px]">
+                {fieldErrors.photos ? (
+                  <span className="text-[12px] text-red-600 font-medium">{fieldErrors.photos}</span>
+                ) : null}
+              </div>
             </div>
-            {fieldErrors.photos && (
-              <ValidationTooltip message={fieldErrors.photos} floating />
-            )}
-            </div>
-            <div className="flex w-full items-start justify-start gap-2 px-1 sm:px-2">
+            {/* <div className="flex w-full items-start justify-start gap-2 px-1 sm:px-2">
               <span className="mt-0.5 inline-flex shrink-0" aria-hidden>
                 <InlineInfoGlyph tone="orange" size={17} />
-              </span>
-              <p className="min-w-0 text-left text-[13px] font-medium italic leading-snug text-orange-800">
+              </span> */}
+              {/* <p className="min-w-0 text-left text-[13px] font-medium italic leading-snug text-orange-800">
                 Fill the correct details. Once the product is listed it cannot be edited.
-              </p>
-            </div>
+              </p> */}
+            {/* </div> */}
+            <button
+              type="button"
+              onClick={() => setGuidelinesOpen(true)}
+              className="w-full px-1 text-left text-[13px] font-medium text-red-500 underline underline-offset-2 hover:text-red-600 sm:px-2"
+            >
+              Read our Picture Guidelines
+            </button>
           </div>
 
-          <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-2.5">
             <h3 className="text-[14px] font-bold text-brand-dark uppercase tracking-widest pl-3 border-l-4 border-brand-pink">
               Product Detail
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-y-2 gap-x-4 md:grid-cols-2">
               <div id="field-name">
                 <Input
                   label="Product Name"
@@ -592,7 +679,6 @@ export default function NewProductPage() {
                     });
                   }}
                   error={fieldErrors.name}
-                  tooltipError
                 />
               </div>
 
@@ -611,7 +697,11 @@ export default function NewProductPage() {
                         return n;
                       });
                     }}
-                    className="h-[54px] w-full cursor-pointer appearance-none rounded-full border border-gray-300 bg-gray-50/50 py-0 pl-6 pr-12 text-[14px] font-bold text-brand-dark outline-none transition-all focus:border-brand-pink focus:bg-white"
+                    className={clsx(
+                      "cursor-pointer appearance-none py-0 pl-4 pr-12",
+                      formFieldInputBase,
+                      fieldErrors.category && formFieldErrorClass
+                    )}
                   >
                     <option value="">Select Category</option>
                     {SELLER_PRODUCT_CATEGORY_OPTIONS.map(({ id, label }) => (
@@ -621,9 +711,11 @@ export default function NewProductPage() {
                     ))}
                   </select>
                   <SelectChevron />
-                  {fieldErrors.category && (
-                    <ValidationTooltip message={fieldErrors.category} floating />
-                  )}
+                </div>
+                <div className="min-h-[18px]">
+                  {fieldErrors.category ? (
+                    <span className="text-[12px] text-red-600 font-medium">{fieldErrors.category}</span>
+                  ) : null}
                 </div>
               </div>
 
@@ -632,7 +724,7 @@ export default function NewProductPage() {
                 className={`flex flex-col gap-1 ${isConditionDropdownOpen ? "relative z-30" : ""}`}
               >
                 <div className="flex items-center justify-start gap-1 pl-1">
-                  <label className="text-[12px] font-bold text-brand-dark uppercase tracking-widest">
+                  <label className="text-[12px] font-semibold text-brand-dark uppercase tracking-widest">
                     Condition
                   </label>
                 </div>
@@ -640,7 +732,11 @@ export default function NewProductPage() {
                   <button
                     type="button"
                     onClick={() => setIsConditionDropdownOpen((prev) => !prev)}
-                    className="h-[54px] w-full cursor-pointer rounded-full border border-gray-300 bg-gray-50/50 py-0 pl-6 pr-12 text-left text-[14px] font-bold text-brand-dark outline-none transition-all focus:border-brand-pink focus:bg-white"
+                    className={clsx(
+                      "cursor-pointer py-0 pl-4 pr-12 text-left",
+                      formFieldInputBase,
+                      fieldErrors.condition && formFieldErrorClass
+                    )}
                     aria-haspopup="listbox"
                     aria-expanded={isConditionDropdownOpen}
                   >
@@ -650,7 +746,7 @@ export default function NewProductPage() {
                   {isConditionDropdownOpen ? (
                     <div
                       role="listbox"
-                      className="absolute left-0 right-0 z-40 mt-1 max-h-80 overflow-y-auto rounded-2xl border border-gray-200 bg-white p-1.5 shadow-xl"
+                      className="absolute left-0 right-0 z-40 mt-1 max-h-80 overflow-y-auto rounded-none border border-gray-200 bg-white p-1.5 shadow-xl"
                     >
                       {CONDITION_OPTIONS.map((option) => {
                         const selected = formData.condition === option.title;
@@ -687,8 +783,8 @@ export default function NewProductPage() {
                                 />
                               </span>
                               <span className="min-w-0">
-                                <p className="text-[16px] font-bold text-brand-dark">{option.title}</p>
-                                <p className="mt-0.5 text-xs leading-snug text-gray-500">{option.description}</p>
+                                <p className="text-[15px] font-medium leading-snug text-brand-dark">{option.title}</p>
+                                <p className="mt-0.5 text-xs font-normal leading-snug text-gray-500">{option.description}</p>
                               </span>
                             </div>
                           </button>
@@ -696,9 +792,11 @@ export default function NewProductPage() {
                       })}
                     </div>
                   ) : null}
-                  {fieldErrors.condition && (
-                    <ValidationTooltip message={fieldErrors.condition} floating />
-                  )}
+                </div>
+                <div className="min-h-[18px]">
+                  {fieldErrors.condition ? (
+                    <span className="text-[12px] text-red-600 font-medium">{fieldErrors.condition}</span>
+                  ) : null}
                 </div>
               </div>
 
@@ -718,15 +816,20 @@ export default function NewProductPage() {
                       });
                     }}
                     placeholder="Share your story about this product..."
-                    className="min-h-[120px] w-full p-6 border border-gray-200 rounded-[28px] bg-gray-50/50 text-[14px] text-brand-dark font-medium outline-none focus:border-brand-pink focus:bg-white transition-all resize-none"
+                    className={clsx(
+                      formFieldTextareaBase,
+                      fieldErrors.description && formFieldErrorClass
+                    )}
                   />
-                  {fieldErrors.description && (
-                    <ValidationTooltip message={fieldErrors.description} floating />
-                  )}
+                </div>
+                <div className="min-h-[18px]">
+                  {fieldErrors.description ? (
+                    <span className="text-[12px] text-red-600 font-medium">{fieldErrors.description}</span>
+                  ) : null}
                 </div>
               </div>
 
-              <div id="field-sizes" className="flex flex-col gap-2 md:col-span-2">
+              <div id="field-sizes" className="flex flex-col gap-1.5 md:col-span-2">
                 <div className="flex items-center justify-start gap-0.1 pl-1">
                   <span className="text-[12px] font-bold text-brand-dark uppercase tracking-widest">
                     Select Size * 
@@ -757,17 +860,19 @@ export default function NewProductPage() {
                       </button>
                     ))}
                   </div>
-                  {fieldErrors.sizes && (
-                    <ValidationTooltip message={fieldErrors.sizes} floating />
-                  )}
+                </div>
+                <div className="min-h-[18px]">
+                  {fieldErrors.sizes ? (
+                    <span className="text-[12px] text-red-600 font-medium">{fieldErrors.sizes}</span>
+                  ) : null}
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 gap-2 md:col-span-2">
+              <div className="grid grid-cols-1 gap-1 md:col-span-2">
                 {/* <p className="text-[11px] font-medium text-gray-500 pl-1"> */}
                   {/* Selling price auto-fills at <span className="font-bold text-brand-dark">30% off MRP</span> (max 70% of MRP). You can lower it further; raising it above that shows an error. */}
                 {/* </p> */}
-                <div className="grid grid-cols-2 items-end gap-3 sm:gap-4">
+                <div className="grid grid-cols-1 items-start gap-x-3 gap-y-2 sm:grid-cols-2">
                   <div id="field-retailPrice" className="min-w-0">
                     <Input
                       label="Retail Price (MRP)"
@@ -776,7 +881,6 @@ export default function NewProductPage() {
                       value={formData.retailPrice}
                       onChange={(e) => handleRetailPriceChange(e.target.value)}
                       error={fieldErrors.retailPrice}
-                      tooltipError
                     />
                   </div>
                   <div id="field-sellingPrice" className="min-w-0">
@@ -795,7 +899,7 @@ export default function NewProductPage() {
                             <InlineInfoGlyph />
                           </button>
                           {isSellingPriceInfoOpen && (
-                            <div className="absolute right-0 top-7 z-20 w-64 rounded-xl border border-brand-pink/20 bg-white p-3 text-[12px] font-medium leading-relaxed text-brand-dark shadow-xl">
+                            <div className="absolute right-0 top-7 z-20 w-64 rounded-none border border-brand-pink/20 bg-white p-3 text-[12px] font-medium leading-relaxed text-brand-dark shadow-xl">
                               The selling price of a product cannot exceed its original price.
                             </div>
                           )}
@@ -808,11 +912,23 @@ export default function NewProductPage() {
                           value={formData.sellingPrice}
                           onChange={(e) => handleSellingPriceChange(e.target.value)}
                           placeholder={recommendedPlaceholder}
-                          className="w-full rounded-xl border border-gray-200 bg-brand-light px-4 py-3.5 text-[15px] text-brand-dark outline-none transition-all duration-200 placeholder:text-gray-400 focus:border-brand-pink focus:shadow-[0_0_0_3px_rgba(247,36,110,0.1)]"
+                          className={clsx(
+                            formFieldInputBase,
+                            fieldErrors.sellingPrice && formFieldErrorClass
+                          )}
                         />
-                        {fieldErrors.sellingPrice && (
-                          <ValidationTooltip message={fieldErrors.sellingPrice} floating />
+                      </div>
+                      <div
+                        className={clsx(
+                          "min-h-[18px]",
+                          fieldErrors.sellingPrice && "pt-0.5"
                         )}
+                      >
+                        {fieldErrors.sellingPrice ? (
+                          <span className="block text-[12px] leading-snug text-red-600 font-medium">
+                            {fieldErrors.sellingPrice}
+                          </span>
+                        ) : null}
                       </div>
                     </div>
                   </div>
@@ -824,9 +940,9 @@ export default function NewProductPage() {
               type="submit"
               fullWidth
               disabled={submitting}
-              className="h-[54px] rounded-full font-bold text-[16px] mt-8 shadow-xl shadow-brand-pink/20 transition-all"
+              className="mt-4 h-[54px] rounded-xl border border-emerald-700 bg-emerald-600 font-bold text-[16px] text-white shadow-lg shadow-emerald-600/20 transition-all hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {submitting ? "Listing product..." : "Start Listing"}
+              {submitting ? "Listing product..." : "Start Selling"}
             </Button>
           </div>
         </form>
@@ -841,7 +957,7 @@ export default function NewProductPage() {
         >
           <div className="absolute inset-0 cursor-default bg-black/45" aria-hidden />
           <div
-            className="relative z-[101] max-h-[min(90vh,720px)] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl sm:p-8"
+            className="relative z-[101] max-h-[min(90vh,720px)] w-full max-w-2xl overflow-y-auto rounded-none bg-white p-6 shadow-2xl sm:p-8"
             onClick={(e) => e.stopPropagation()}
           >
             <button
@@ -864,7 +980,7 @@ export default function NewProductPage() {
               on brand, fabric and design.
             </p>
 
-            <div className="mt-4 overflow-x-auto rounded-xl border border-gray-100">
+            <div className="mt-4 overflow-x-auto rounded-none border border-gray-100">
               <table className="w-full min-w-[520px] border-collapse text-left text-[12px] sm:text-[13px]">
                 <thead>
                   <tr className="bg-brand-pink text-white">
@@ -895,13 +1011,184 @@ export default function NewProductPage() {
             </div>
 
             <div className="mt-8">
-              <div className="overflow-hidden rounded-xl p-1 sm:p-2">
+              <div className="overflow-hidden rounded-none p-1 sm:p-2">
                 <img
                   src="/size-measure-guide.png"
                   alt="How to measure size guide"
                   className="mx-auto h-auto w-full max-w-[920px] scale-[1.04] object-contain"
                 />
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {guidelinesOpen && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="picture-guidelines-title"
+        >
+          <div
+            className="absolute inset-0 bg-black/45 backdrop-blur-[2px]"
+            aria-hidden
+            onClick={() => setGuidelinesOpen(false)}
+          />
+          <div
+            className="relative z-[101] max-h-[min(88vh,680px)] w-full max-w-[620px] overflow-y-auto rounded-none bg-white p-6 shadow-2xl sm:p-8"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => setGuidelinesOpen(false)}
+              className="absolute right-4 top-4 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-gray-400 transition hover:bg-gray-100 hover:text-brand-dark"
+              aria-label="Close"
+            >
+              <span className="text-2xl font-light leading-none">&times;</span>
+            </button>
+
+            <h2
+              id="picture-guidelines-title"
+              className="pr-10 text-[17px] font-bold tracking-tight text-brand-dark sm:text-xl"
+            >
+              Picture guidelines
+            </h2>
+
+            <div className="mt-6 space-y-6 text-left text-[13px] leading-relaxed text-gray-700 sm:text-[14px]">
+              <section>
+                <p className="font-bold text-brand-dark">✅ PRODUCT CRITERIA</p>
+              </section>
+              <section className="space-y-2">
+                <p className="font-bold text-brand-dark">📸 IMAGE QUALITY</p>
+                <ul className="list-disc space-y-1 pl-5">
+                  <li>Clear, sharp (no blur/noise)</li>
+                  <li>Bright, even lighting</li>
+                  <li>No filters (real colors)</li>
+                </ul>
+              </section>
+              <section className="space-y-2">
+                <p className="font-bold text-brand-dark">🎨 BACKGROUND</p>
+                <ul className="list-disc space-y-1 pl-5">
+                  <li>Plain white/light background</li>
+                  <li>No clutter or distractions</li>
+                </ul>
+              </section>
+              <section className="space-y-2">
+                <p className="font-bold text-brand-dark">👗 PRESENTATION</p>
+                <ul className="list-disc space-y-1 pl-5">
+                  <li>Clean & wrinkle-free</li>
+                  <li>No misleading styling</li>
+                </ul>
+              </section>
+              <section className="space-y-2">
+                <p className="font-bold text-brand-dark">🔄 MUST-HAVE ANGLES</p>
+                <ul className="list-disc space-y-1 pl-5">
+                  <li>Front view</li>
+                  <li>Back view</li>
+                  <li>Side view</li>
+                  <li>Close-up (fabric/texture)</li>
+                  <li>Detail shots (buttons, etc.)</li>
+                </ul>
+              </section>
+              <section>
+                <p className="font-bold text-brand-dark">📝 PRODUCT DETAILS</p>
+                <p className="mt-1 text-gray-600">
+                  Type • Fabric • Color<br />
+                  Size • Condition • Fit
+                </p>
+              </section>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {liveModalOpen && (
+        <div
+          className="fixed inset-0 z-[120] flex items-center justify-center bg-black/45 p-4 backdrop-blur-[2px] sm:p-6"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="product-live-title"
+        >
+          <div className="relative z-[121] w-full max-w-[420px] overflow-hidden rounded-2xl bg-white shadow-2xl sm:max-w-[480px]">
+            {/* Top: soft gradient + success mark */}
+            <div className="relative bg-gradient-to-b from-rose-100/90 via-violet-100/50 to-white px-6 pb-2 pt-10 sm:px-8 sm:pt-12">
+              <button
+                type="button"
+                onClick={() => {
+                  setLiveModalOpen(false);
+                  router.push("/seller/dashboard");
+                }}
+                className="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 transition hover:bg-white/60 hover:text-slate-800"
+                aria-label="Close"
+              >
+                <X className="h-5 w-5" strokeWidth={2} />
+              </button>
+              <div className="flex justify-center">
+                <div className="flex h-[88px] w-[88px] items-center justify-center rounded-full bg-white shadow-lg shadow-rose-200/40 ring-1 ring-white/80 sm:h-[100px] sm:w-[100px]">
+                  <div className="flex h-[56px] w-[56px] items-center justify-center rounded-full bg-gradient-to-br from-rose-500 to-[#d23284] shadow-md sm:h-[62px] sm:w-[62px]">
+                    <Check className="h-8 w-8 text-white sm:h-9 sm:w-9" strokeWidth={3} />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="px-6 pb-6 pt-2 sm:px-8 sm:pb-8">
+              <h2
+                id="product-live-title"
+                className="text-center font-manrope text-2xl font-extrabold tracking-tight text-slate-900 sm:text-[28px]"
+              >
+                Your Product is Live!
+              </h2>
+              <p className="mt-3 text-center font-inter text-sm leading-relaxed text-slate-500 sm:text-base">
+                Your listing has been successfully live and is now visible to buyers on the platform.
+              </p>
+
+              <div className="relative mt-6 overflow-hidden rounded-2xl bg-slate-50 p-5 sm:p-6">
+                <Rocket
+                  className="pointer-events-none absolute -right-1 -top-1 h-24 w-24 text-rose-200/35 sm:h-28 sm:w-28"
+                  strokeWidth={1.25}
+                  aria-hidden
+                />
+                <div className="relative z-[1] flex items-center gap-2">
+                  <Sparkles className="h-5 w-5 shrink-0 text-[#d23284]" strokeWidth={2} />
+                  <p className="font-manrope text-base font-bold text-slate-900 sm:text-lg">
+                    Maximize your reach
+                  </p>
+                </div>
+                <p className="relative z-[1] mt-3 font-inter text-sm leading-relaxed text-slate-600 sm:text-[15px]">
+                  Want to reach more buyers faster? Boost your listing to increase visibility, appear
+                  higher in search results and attract more views.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setLiveModalOpen(false);
+                  router.push("/seller/boost");
+                }}
+                className="mt-6 h-12 w-full rounded-xl bg-gradient-to-r from-rose-500 to-[#d23284] font-inter text-sm font-semibold text-white shadow-md shadow-rose-500/25 transition hover:brightness-105 active:scale-[0.98] sm:h-14 sm:text-base"
+              >
+                Boost Listing
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setLiveModalOpen(false);
+                  router.push("/seller/dashboard");
+                }}
+                className="mt-6 w-full text-center font-inter text-sm font-medium text-slate-500 transition hover:text-slate-800"
+              >
+                Maybe Later
+              </button>
+            </div>
+
+            <div className="flex items-center justify-center gap-2 border-t border-slate-100 bg-slate-50/90 px-4 py-3">
+              <ShieldCheck className="h-4 w-4 shrink-0 text-emerald-600" strokeWidth={2.25} />
+              <p className="text-center font-inter text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-700">
+                Verified marketplace transaction
+              </p>
             </div>
           </div>
         </div>

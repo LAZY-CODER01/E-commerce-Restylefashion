@@ -21,7 +21,7 @@ import { DRAWER_CATEGORY_ITEMS } from "@/data/categories";
 
 const SECONDARY_ITEMS = [
   {
-    name: "Account",
+    name: "My Account",
     icon: <PersonOutlineOutlinedIcon />,
     link: "/profile"
   },
@@ -120,6 +120,19 @@ export default function DrawerMenu({ open, onClose, drawerRef }) {
 
         {/* Scrollable Nav */}
         <nav className="flex-1 overflow-y-auto pb-8">
+          {!isAdminRoute && !user && (
+            <div className="px-6 pt-6 pb-4 border-b border-gray-100">
+              <div className="flex items-center justify-center gap-3 text-[17px] font-semibold text-brand-dark">
+                <Link href="/login" onClick={onClose} className="hover:text-brand-pink transition-colors">
+                  Login
+                </Link>
+                <span className="text-gray-300 font-light">|</span>
+                <Link href="/signup" onClick={onClose} className="hover:text-brand-pink transition-colors">
+                  Sign up
+                </Link>
+              </div>
+            </div>
+          )}
 
           {/* Categories/Admin Section */}
           <div className="px-6 py-6 border-b border-gray-100">
@@ -153,14 +166,22 @@ export default function DrawerMenu({ open, onClose, drawerRef }) {
                   <button
                     key={item.id}
                     onClick={() => handleCategoryClick(item.id)}
-                    className={`group flex items-center justify-between text-[17px] font-semibold transition-colors ${
-                      activeCategory === item.id ? "text-brand-pink" : "text-brand-dark hover:text-brand-pink"
+                    className={`group flex items-center justify-between text-left text-[17px] font-semibold transition-colors ${
+                      item.labelAccent === "hot"
+                        ? activeCategory === item.id
+                          ? "text-red-600"
+                          : "text-red-600 hover:text-red-700"
+                        : activeCategory === item.id
+                          ? "text-brand-pink"
+                          : "text-brand-dark hover:text-brand-pink"
                     }`}
                   >
                     {item.label}
-                    <KeyboardArrowRightOutlinedIcon className={`${
-                      activeCategory === item.id ? "text-brand-pink" : "text-gray-300"
-                    } transition-colors group-hover:text-brand-pink`} />
+                    <KeyboardArrowRightOutlinedIcon
+                      className={`${
+                        activeCategory === item.id ? (item.labelAccent === "hot" ? "text-red-500" : "text-brand-pink") : "text-gray-300"
+                      } transition-colors shrink-0 group-hover:text-brand-pink`}
+                    />
                   </button>
                 ))
               )}
@@ -210,18 +231,7 @@ export default function DrawerMenu({ open, onClose, drawerRef }) {
                   </span>
                   Logout ({user.fullName?.split(" ")[0]})
                 </button>
-              ) : (
-                <Link
-                  href="/login"
-                  onClick={onClose}
-                  className="flex items-center gap-4 text-[17px] font-medium text-brand-pink hover:text-brand-pink transition-colors mt-4"
-                >
-                  <span className="text-brand-pink">
-                    <PersonOutlineOutlinedIcon />
-                  </span>
-                  Login / Sign Up
-                </Link>
-              )}
+              ) : null}
 
               {/* Start Selling Link for Mobile */}
               {/* <Link
