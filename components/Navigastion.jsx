@@ -9,7 +9,7 @@ import { useSearch } from "@/context/SearchContext";
 import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
 import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined';
 import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlined';
-import ShoppingBagOutlinedIcon from '@mui/icons-material/ShoppingBagOutlined';
+import OrderBagIcon from "@/components/navigation/OrderBagIcon";
 import MenuOutlinedIcon from '@mui/icons-material/MenuOutlined';
 import Image from "next/image";
 import { useAuth } from "@/context/AuthContext";
@@ -79,7 +79,7 @@ export default function Navigation() {
 
           <Link
             href="/"
-            className="absolute left-[50%] top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 font-extrabold text-[26px] sm:text-[28px] tracking-tight bg-gradient-to-b from-black to-[#F7246E] bg-clip-text text-transparent md:hidden"
+            className="absolute left-[48%] top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 font-extrabold text-[26px] sm:text-[28px] tracking-tight bg-gradient-to-b from-black to-[#F7246E] bg-clip-text text-transparent md:hidden"
           >
             Restyle
           </Link>
@@ -171,7 +171,7 @@ export default function Navigation() {
                     pathname === "/orders" ? "text-brand-pink" : "hover:text-brand-pink"
                   }`}
                 >
-                  <ShoppingBagOutlinedIcon sx={{ fontSize: 24 }} />
+                  <OrderBagIcon className="h-6 w-6" />
                   {!!cartCount && (
                     <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-[#F7246E] text-white text-[11px] font-bold flex items-center justify-center">
                       {cartCount > 99 ? "99+" : cartCount}
