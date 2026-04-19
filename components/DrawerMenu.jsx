@@ -169,8 +169,8 @@ export default function DrawerMenu({ open, onClose, drawerRef }) {
                     className={`group flex items-center justify-between text-left text-[17px] font-semibold transition-colors ${
                       item.labelAccent === "hot"
                         ? activeCategory === item.id
-                          ? "text-red-600"
-                          : "text-red-600 hover:text-red-700"
+                          ? "text-red-500"
+                          : "text-red-400 hover:text-red-500"
                         : activeCategory === item.id
                           ? "text-brand-pink"
                           : "text-brand-dark hover:text-brand-pink"
@@ -179,8 +179,8 @@ export default function DrawerMenu({ open, onClose, drawerRef }) {
                     {item.label}
                     <KeyboardArrowRightOutlinedIcon
                       className={`${
-                        activeCategory === item.id ? (item.labelAccent === "hot" ? "text-red-500" : "text-brand-pink") : "text-gray-300"
-                      } transition-colors shrink-0 group-hover:text-brand-pink`}
+                        activeCategory === item.id ? (item.labelAccent === "hot" ? "text-red-400" : "text-brand-pink") : "text-gray-300"
+                      } transition-colors shrink-0 ${item.labelAccent === "hot" ? "group-hover:text-red-400" : "group-hover:text-brand-pink"}`}
                     />
                   </button>
                 ))

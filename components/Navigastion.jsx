@@ -79,7 +79,7 @@ export default function Navigation() {
 
           <Link
             href="/"
-            className="absolute left-[46%] top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 font-extrabold text-[26px] sm:text-[28px] tracking-tight bg-gradient-to-b from-black to-[#F7246E] bg-clip-text text-transparent md:hidden"
+            className="absolute left-[50%] top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 font-extrabold text-[26px] sm:text-[28px] tracking-tight bg-gradient-to-b from-black to-[#F7246E] bg-clip-text text-transparent md:hidden"
           >
             Restyle
           </Link>
@@ -103,11 +103,11 @@ export default function Navigation() {
               </Link>
             ) : (
               <>
-                {/* Sell Button */}
+                {/* Sell — light green CTA */}
                 <button
                   type="button"
                   onClick={() => router.push("/sell")}
-                  className="shrink-0 cursor-pointer rounded-full bg-emerald-600 px-4 py-1.5 text-[14px] font-bold text-white shadow-sm transition-colors hover:bg-emerald-700"
+                  className="shrink-0 cursor-pointer rounded-full bg-gradient-to-b from-lime-400 to-emerald-500 px-3 py-1 text-[12px] font-extrabold tracking-normal text-white ring-1 ring-white/85 transition hover:from-lime-500 hover:to-emerald-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500 active:scale-[0.98] md:px-4 md:py-1.5 md:text-[14px] md:tracking-wide md:ring-2 md:ring-white/90"
                 >
                   Sell
                 </button>
