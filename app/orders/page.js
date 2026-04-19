@@ -172,6 +172,13 @@ function OrderSummaryCard({ subtotal, savings, shipping, total, checkoutEnabled 
         Proceed to checkout
       </button>
 
+      <Link
+        href="/"
+        className="mt-4 block text-center text-[14px] font-semibold text-brand-pink hover:text-brand-pink-hover hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-pink/40 focus-visible:ring-offset-2"
+      >
+        Continue shopping
+      </Link>
+
       <p className="mt-3 text-center text-[11px] font-medium text-gray-400">Secure payment · SSL encrypted</p>
     </div>
   );
@@ -213,6 +220,12 @@ export default function OrdersPage() {
                 {cartItems.length === 0 ? (
                   <div className="rounded-2xl border border-gray-200 bg-gray-50 px-6 py-12 text-center shadow-sm md:py-14">
                     <p className="text-[15px] font-medium text-gray-600">Your bag is empty. Add something you love.</p>
+                    <Link
+                      href="/"
+                      className="mt-5 inline-block text-[14px] font-bold text-brand-pink hover:text-brand-pink-hover hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-pink/40 focus-visible:ring-offset-2"
+                    >
+                      Continue shopping
+                    </Link>
                   </div>
                 ) : (
                   cartItems.map((item) => (

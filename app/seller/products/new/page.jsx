@@ -21,6 +21,7 @@ import {
   clearDraftListing,
   isDraftStorageFullError,
 } from "@/lib/draftListing";
+import { appendSellerProductFromListing } from "@/lib/sellerHubProfile";
 import clsx from "clsx";
 import { SELLER_PRODUCT_CATEGORY_OPTIONS } from "@/data/categories";
 
@@ -521,6 +522,21 @@ export default function NewProductPage() {
       if (data?.user) {
         setUser(data.user);
       }
+
+      const created = data?.product ?? data;
+      const productId = created?.id ?? created?._id ?? `local-${Date.now()}`;
+      const firstImage =
+        (Array.isArray(created?.images) && created.images[0]) ||
+        created?.imageUrl ||
+        created?.thumbnail ||
+        "";
+      appendSellerProductFromListing({
+        productId,
+        title: formData.name,
+        price: formData.sellingPrice,
+        category: formData.category,
+        image: typeof firstImage === "string" ? firstImage : "",
+      });
 
       clearDraftListing();
       try {
@@ -1117,7 +1133,7 @@ export default function NewProductPage() {
                 type="button"
                 onClick={() => {
                   setLiveModalOpen(false);
-                  router.push("/seller/dashboard");
+                  router.push("/seller/profile");
                 }}
                 className="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 transition hover:bg-white/60 hover:text-slate-800"
                 aria-label="Close"
@@ -1176,7 +1192,7 @@ export default function NewProductPage() {
                 type="button"
                 onClick={() => {
                   setLiveModalOpen(false);
-                  router.push("/seller/dashboard");
+                  router.push("/seller/profile");
                 }}
                 className="mt-6 w-full text-center font-inter text-sm font-medium text-slate-500 transition hover:text-slate-800"
               >

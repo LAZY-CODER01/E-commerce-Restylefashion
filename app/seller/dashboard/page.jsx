@@ -118,6 +118,10 @@ export default function SellerDashboard() {
             <TrendingUpIcon sx={{ fontSize: 24 }} />
             <span className="text-[10px] font-bold uppercase tracking-wider">Orders</span>
          </Link>
+         <Link href="/seller/profile" className="flex flex-col items-center gap-1 text-gray-400 hover:text-brand-pink">
+            <PersonIcon sx={{ fontSize: 24 }} />
+            <span className="text-[10px] font-bold uppercase tracking-wider">Profile</span>
+         </Link>
       </nav>
     </div>
   );

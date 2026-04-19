@@ -8,7 +8,6 @@ import ProductImageGallery from "@/components/pdp/ProductImageGallery";
 import SizeSelector from "@/components/pdp/SizeSelector";
 import ConditionTag from "@/components/pdp/ConditionTag";
 import ActionButtons from "@/components/pdp/ActionButtons";
-import QuantitySelector from "@/components/pdp/QuantitySelector";
 import RelatedProductsSection from "@/components/pdp/RelatedProductsSection";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
@@ -197,12 +196,10 @@ export default function ProductDetailsPage({ params }) {
   const product = mockProduct ?? remoteProduct;
 
   const [selectedSize, setSelectedSize] = useState("");
-  const [quantity, setQuantity] = useState(1);
   const [isDescExpanded, setIsDescExpanded] = useState(true);
 
   useEffect(() => {
     setSelectedSize("");
-    setQuantity(1);
   }, [id]);
 
   const { wishlist, toggleWishlist, addToBag } = useCart();
@@ -240,9 +237,9 @@ export default function ProductDetailsPage({ params }) {
       originalPrice: product.originalPrice,
       imageUrl: product.imageUrl,
       selectedSize,
-      qty: quantity,
+      qty: 1,
     });
-    toast.success(`${quantity} ${product.title} (${selectedSize}) added to bag!`);
+    toast.success(`${product.title} (${selectedSize}) added to bag!`);
   };
 
   const handleBuyNow = () => {
@@ -387,8 +384,6 @@ export default function ProductDetailsPage({ params }) {
                   {product.stockStatus}
                 </span>
               </div>
-
-              <QuantitySelector quantity={quantity} onChange={setQuantity} />
 
               <ActionButtons 
                 isWishlisted={isWishlisted}

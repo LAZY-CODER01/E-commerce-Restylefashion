@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { readSellerHubState, writeSellerHubState } from "@/lib/sellerHubProfile";
 import {
   ArrowLeft,
   Check,
@@ -151,6 +153,7 @@ export default function BoostListingFlow({
   initialStep = "modal",
   fullscreen = false,
 }) {
+  const router = useRouter();
   const [currentStep, setCurrentStep] = useState(initialStep);
   const [selectedPackage, setSelectedPackage] = useState(null);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("");
@@ -180,6 +183,41 @@ export default function BoostListingFlow({
     setUpiId("");
   };
 
+  const payableAmount = useMemo(() => {
+    if (selectedPaymentMethod === "wallet-topup" || currentStep === "amount_selection") {
+      return selectedAmount;
+    }
+    return selectedPackage?.price ?? 99;
+  }, [currentStep, selectedAmount, selectedPackage, selectedPaymentMethod]);
+
+  /** Mock payment success: persist boost + open seller profile. */
+  const finalizeBoostPurchase = () => {
+    const hub = readSellerHubState();
+    const prevCount =
+      typeof hub.activePremiumPlansCount === "number" ? hub.activePremiumPlansCount : 0;
+    const label =
+      selectedPaymentMethod === "wallet-topup"
+        ? `Wallet top-up ₹${selectedAmount}`
+        : selectedPackage?.name || "Boost package";
+    const prevHistory = Array.isArray(hub.boostHistory) ? hub.boostHistory : [];
+    writeSellerHubState({
+      boostLabel: label,
+      activePremiumPlansCount: prevCount + 1,
+      boostCompletedAt: Date.now(),
+      boostHistory: [
+        ...prevHistory,
+        {
+          label,
+          amount: payableAmount,
+          method: selectedPaymentMethod || "card",
+          at: Date.now(),
+        },
+      ],
+    });
+    closePaymentSubView();
+    router.push("/seller/profile");
+  };
+
   const openNetBanking = () => {
     setBankSearchQuery("");
     setActiveSubView("net_banking");
@@ -193,13 +231,6 @@ export default function BoostListingFlow({
       hasAny: matched.length > 0,
     };
   }, [bankSearchQuery]);
-
-  const payableAmount = useMemo(() => {
-    if (selectedPaymentMethod === "wallet-topup" || currentStep === "amount_selection") {
-      return selectedAmount;
-    }
-    return selectedPackage?.price ?? 99;
-  }, [currentStep, selectedAmount, selectedPackage, selectedPaymentMethod]);
 
   if (!open) return null;
 
@@ -611,7 +642,7 @@ export default function BoostListingFlow({
                       type="button"
                       onClick={() => {
                         setSelectedBank(bank.fullName);
-                        closePaymentSubView();
+                        finalizeBoostPurchase();
                       }}
                       title={bank.fullName}
                       className="flex h-14 w-14 flex-col items-center justify-center gap-0.5 rounded-2xl border border-gray-100 bg-white p-1 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-rose-200 hover:shadow-md active:scale-[0.98]"
@@ -645,7 +676,7 @@ export default function BoostListingFlow({
                       type="button"
                       onClick={() => {
                         setSelectedBank(bank.fullName);
-                        closePaymentSubView();
+                        finalizeBoostPurchase();
                       }}
                       className="flex w-full items-center justify-between gap-2 rounded-xl border border-transparent py-2 pl-1 pr-2 text-left text-sm text-gray-700 transition-all duration-200 hover:border-rose-100 hover:bg-rose-50/50 hover:shadow-sm"
                     >
@@ -687,7 +718,7 @@ export default function BoostListingFlow({
               type="button"
               onClick={() => {
                 setSelectedWallet(wallet.name);
-                closePaymentSubView();
+                finalizeBoostPurchase();
               }}
               className="flex w-full items-center justify-between gap-2 rounded-xl border border-transparent py-2 pl-1 pr-2 text-left text-sm text-gray-700 transition-all duration-200 hover:border-rose-100 hover:bg-rose-50/50 hover:shadow-sm"
             >
@@ -754,7 +785,7 @@ export default function BoostListingFlow({
           <button
             type="button"
             disabled={!canSubmitCard}
-            onClick={() => canSubmitCard && closePaymentSubView()}
+            onClick={() => canSubmitCard && finalizeBoostPurchase()}
             className={
               canSubmitCard
                 ? PRIMARY_BTN_CLASS
@@ -793,7 +824,7 @@ export default function BoostListingFlow({
         <button
           type="button"
           disabled={!canSubmitUpi}
-          onClick={() => canSubmitUpi && closePaymentSubView()}
+          onClick={() => canSubmitUpi && finalizeBoostPurchase()}
           className={
             canSubmitUpi
               ? [PRIMARY_BTN_CLASS, "mt-4"].join(" ")
