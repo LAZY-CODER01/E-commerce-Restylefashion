@@ -121,8 +121,8 @@ export default function DrawerMenu({ open, onClose, drawerRef }) {
         {/* Scrollable Nav */}
         <nav className="flex-1 overflow-y-auto pb-8">
           {!isAdminRoute && !user && (
-            <div className="px-6 pt-6 pb-4 border-b border-gray-100">
-              <div className="flex items-center justify-center gap-3 text-[17px] font-semibold text-brand-dark">
+            <div className="px-6 left-1  pt-6 pb-4 border-b border-gray-100">
+              <div className="flex items-left justify-start gap-3 text-[17px] font-semibold text-brand-dark">
                 <Link href="/login" onClick={onClose} className="hover:text-brand-pink transition-colors">
                   Login
                 </Link>
