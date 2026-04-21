@@ -55,7 +55,7 @@ const ADMIN_ITEMS = [
   { title: "Sellers", path: "/admin/sellers", icon: <PeopleIcon sx={{ fontSize: 22 }} /> },
 ];
 
-const SALE_RED = "#ff5c74";
+const SALE_RED = "#EB0010";
 
 export default function DrawerMenu({ open, onClose, drawerRef }) {
   const { user, logout } = useAuth();

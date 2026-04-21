@@ -124,11 +124,11 @@ export default function Navigation() {
                 <button
                   type="button"
                   onClick={() => router.push("/sell")}
-                  className="shrink-0 cursor-pointer rounded-full bg-gradient-to-b from-lime-400 to-emerald-500 px-3 py-1 text-[12px] font-extrabold tracking-normal text-white ring-1 ring-white/85 transition hover:from-lime-500 hover:to-emerald-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-500 active:scale-[0.98] md:px-4 md:py-1.5 md:text-[14px] md:tracking-wide md:ring-2 md:ring-white/90"
+                  className="shrink-0 cursor-pointer rounded-full bg-[#22C55E] px-3 py-1 text-[12px] font-extrabold tracking-normal text-[#FFFFFF] ring-1 ring-white/85 transition hover:bg-[#16A34A] active:bg-[#16A34A] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#16A34A] active:scale-[0.98] md:px-4 md:py-1.5 md:text-[14px] md:tracking-wide md:ring-2 md:ring-white/90"
                 >
                   Sell
                 </button>
-
+{/* 22C55E */}
                 {/* Account / Profile */}
                 <Link
                   href="/profile"
@@ -157,7 +157,6 @@ export default function Navigation() {
                   ) : (
                     <div className="relative flex items-center justify-center text-brand-dark hover:text-brand-pink transition">
                       <ProfileNavIcon />
-                      <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-brand-pink border-[1.5px] border-white rounded-full"></span>
                     </div>
                   )}
                 </Link>
