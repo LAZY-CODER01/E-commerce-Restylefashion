@@ -55,6 +55,8 @@ const ADMIN_ITEMS = [
   { title: "Sellers", path: "/admin/sellers", icon: <PeopleIcon sx={{ fontSize: 22 }} /> },
 ];
 
+const SALE_RED = "#ff5c74";
+
 export default function DrawerMenu({ open, onClose, drawerRef }) {
   const { user, logout } = useAuth();
   const pathname = usePathname();
@@ -123,11 +125,21 @@ export default function DrawerMenu({ open, onClose, drawerRef }) {
           {!isAdminRoute && !user && (
             <div className="px-6 left-1  pt-6 pb-4 border-b border-gray-100">
               <div className="flex items-left justify-start gap-3 text-[17px] font-semibold text-brand-dark">
-                <Link href="/login" onClick={onClose} className="hover:text-brand-pink transition-colors">
+                <Link
+                  href="/login"
+                  onClick={onClose}
+                  className="transition-colors"
+                  style={{ color: SALE_RED }}
+                >
                   Login
                 </Link>
                 <span className="text-gray-300 font-light">|</span>
-                <Link href="/signup" onClick={onClose} className="hover:text-brand-pink transition-colors">
+                <Link
+                  href="/signup"
+                  onClick={onClose}
+                  className="transition-colors"
+                  style={{ color: SALE_RED }}
+                >
                   Sign up
                 </Link>
               </div>
@@ -168,19 +180,19 @@ export default function DrawerMenu({ open, onClose, drawerRef }) {
                     onClick={() => handleCategoryClick(item.id)}
                     className={`group flex items-center justify-between text-left text-[17px] font-semibold transition-colors ${
                       item.labelAccent === "hot"
-                        ? activeCategory === item.id
-                          ? "text-red-500"
-                          : "text-red-400 hover:text-red-500"
+                        ? "text-[#ff1f3d]"
                         : activeCategory === item.id
                           ? "text-brand-pink"
                           : "text-brand-dark hover:text-brand-pink"
                     }`}
+                    style={item.labelAccent === "hot" ? { color: SALE_RED } : undefined}
                   >
                     {item.label}
                     <KeyboardArrowRightOutlinedIcon
                       className={`${
-                        activeCategory === item.id ? (item.labelAccent === "hot" ? "text-red-400" : "text-brand-pink") : "text-gray-300"
-                      } transition-colors shrink-0 ${item.labelAccent === "hot" ? "group-hover:text-red-400" : "group-hover:text-brand-pink"}`}
+                        activeCategory === item.id ? (item.labelAccent === "hot" ? "text-[#ff1f3d]" : "text-brand-pink") : "text-gray-300"
+                      } transition-colors shrink-0 ${item.labelAccent === "hot" ? "group-hover:text-[#ff1f3d]" : "group-hover:text-brand-pink"}`}
+                      style={item.labelAccent === "hot" ? { color: SALE_RED } : undefined}
                     />
                   </button>
                 ))
@@ -193,17 +205,22 @@ export default function DrawerMenu({ open, onClose, drawerRef }) {
             <div className="flex flex-col gap-7">
               {SECONDARY_ITEMS.map((item) => {
                 const active = pathname === item.link;
+                const isFaq = item.name === "FAQs";
                 return (
                 <Link
                   key={item.name}
                   href={item.link}
                   onClick={onClose}
                   aria-current={active ? "page" : undefined}
-                  className={`flex items-center gap-4 text-[17px] font-medium transition-colors hover:text-brand-pink ${
+                  className={`flex items-center gap-4 text-[17px] font-medium transition-colors ${
                     active || item.highlight ? "text-brand-pink" : "text-brand-dark"
                   }`}
+                  style={isFaq ? { color: SALE_RED } : undefined}
                 >
-                  <span className={active || item.highlight ? "text-brand-pink" : "text-gray-400"}>
+                  <span
+                    className={active || item.highlight ? "text-brand-pink" : "text-gray-400"}
+                    style={isFaq ? { color: SALE_RED } : undefined}
+                  >
                     {item.icon}
                   </span>
                   <span className="flex-1">{item.name}</span>
@@ -224,9 +241,10 @@ export default function DrawerMenu({ open, onClose, drawerRef }) {
                     logout();
                     onClose();
                   }}
-                  className="flex items-center gap-4 text-[17px] font-medium text-red-500 hover:text-red-600 transition-colors mt-4 text-left"
+                  className="mt-4 flex items-center gap-4 text-left text-[17px] font-medium transition-colors"
+                  style={{ color: SALE_RED }}
                 >
-                  <span className="text-red-400">
+                  <span style={{ color: SALE_RED }}>
                     <PersonOutlineOutlinedIcon />
                   </span>
                   Logout ({user.fullName?.split(" ")[0]})

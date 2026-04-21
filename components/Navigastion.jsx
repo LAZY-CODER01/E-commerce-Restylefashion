@@ -9,11 +9,28 @@ import { useSearch } from "@/context/SearchContext";
 import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
 import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined';
 import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlined';
-import OrderBagIcon from "@/components/navigation/OrderBagIcon";
 import MenuOutlinedIcon from '@mui/icons-material/MenuOutlined';
 import Image from "next/image";
 import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
+
+function ProfileNavIcon({ className = "h-6 w-6" }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" className={className} aria-hidden>
+      <circle cx="12" cy="7.5" r="3.2" />
+      <path d="M4.5 19v-1.2c0-2.7 3.2-4.9 7.5-4.9s7.5 2.2 7.5 4.9V19H4.5z" />
+    </svg>
+  );
+}
+
+function OrderBagNavIcon({ className = "h-6 w-6" }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" className={className} aria-hidden>
+      <rect x="3.5" y="7.5" width="17" height="12.5" rx="2.5" />
+      <path d="M9 7.5V6.6A3 3 0 0 1 12 3.8a3 3 0 0 1 3 2.8v.9" />
+    </svg>
+  );
+}
 
 export default function Navigation() {
   const pathname = usePathname();
@@ -99,7 +116,7 @@ export default function Navigation() {
                 aria-label="Account"
                 className="relative flex items-center justify-center text-brand-dark hover:text-brand-pink transition"
               >
-                <PersonOutlineOutlinedIcon />
+                <ProfileNavIcon />
               </Link>
             ) : (
               <>
@@ -139,7 +156,7 @@ export default function Navigation() {
                     </div>
                   ) : (
                     <div className="relative flex items-center justify-center text-brand-dark hover:text-brand-pink transition">
-                      <PersonOutlineOutlinedIcon />
+                      <ProfileNavIcon />
                       <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-brand-pink border-[1.5px] border-white rounded-full"></span>
                     </div>
                   )}
@@ -171,7 +188,7 @@ export default function Navigation() {
                     pathname === "/orders" ? "text-brand-pink" : "hover:text-brand-pink"
                   }`}
                 >
-                  <OrderBagIcon className="h-6 w-6" />
+                  <OrderBagNavIcon className="h-6 w-6" />
                   {!!cartCount && (
                     <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-[#F7246E] text-white text-[11px] font-bold flex items-center justify-center">
                       {cartCount > 99 ? "99+" : cartCount}

@@ -956,7 +956,7 @@ export default function NewProductPage() {
               type="submit"
               fullWidth
               disabled={submitting}
-              className="mt-4 h-[54px] rounded-xl border border-emerald-700 bg-emerald-600 font-bold text-[16px] text-white shadow-lg shadow-emerald-600/20 transition-all hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+              className="mt-4 h-[54px] rounded-xl border border-emerald-600 bg-gradient-to-b from-lime-400 to-emerald-500 font-bold text-[16px] text-white shadow-lg shadow-emerald-500/25 transition-all hover:from-lime-500 hover:to-emerald-600 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {submitting ? "Listing product..." : "Start Selling"}
             </Button>
