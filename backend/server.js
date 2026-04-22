@@ -9,6 +9,7 @@ dotenv.config();
 // Import routes
 const authRoutes = require("./routes/authRoutes");
 const productRoutes = require("./routes/productRoutes");
+const moderationRoutes = require("./routes/moderationRoutes");
 
 const app = express();
 
@@ -40,6 +41,7 @@ app.use(express.urlencoded({ extended: true }));
 // ---------- Routes ----------
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
+app.use("/api/moderate", moderationRoutes);
 
 // Health check
 app.get("/api/health", (req, res) => {

@@ -168,6 +168,22 @@ function getLivePriceErrors(retailStr, sellingStr) {
   return err;
 }
 
+/**
+ * Maps a moderation API reason code to a user-friendly inline message.
+ * @param {string|null} reason
+ */
+function getModerationMessage(reason) {
+  const map = {
+    email_detected: "Description cannot include email addresses.",
+    phone_detected: "Description cannot include phone numbers.",
+    url_detected: "Description cannot include website URLs or links.",
+    pii_detected: "Personal information (name, address, phone, etc.) is not allowed in descriptions.",
+    toxic_content: "Description contains prohibited content (hate speech, harassment, or explicit material).",
+    rate_limit_exceeded: "Too many requests. Please slow down.",
+  };
+  return map[reason] || "Description was flagged by our content policy. Please revise it.";
+}
+
 export default function NewProductPage() {
   const sizes = ["XS", "S", "M", "L", "XL"];
   const router = useRouter();
@@ -276,6 +292,7 @@ export default function NewProductPage() {
       return { ...next, ...pe };
     });
   }, [formData.retailPrice, formData.sellingPrice]);
+
 
   useEffect(() => {
     if (!isSizeChartOpen) return;
@@ -465,6 +482,33 @@ export default function NewProductPage() {
       toast.error("Please complete all required fields correctly.");
       return;
     }
+
+    // ── Moderation check on submit ─────────────────────────────────────────
+    const descText = formData.description.trim();
+    if (descText) {
+      setSubmitting(true);
+      try {
+        const res = await fetch("/api/moderate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: descText }),
+        });
+        const data = await res.json();
+        if (data.status === "rejected") {
+          const msg = getModerationMessage(data.reason);
+          setFieldErrors((prev) => ({ ...prev, description: msg }));
+          toast.error("Description was rejected: " + msg);
+          const el = document.getElementById("field-description");
+          el?.scrollIntoView({ behavior: "smooth", block: "center" });
+          setSubmitting(false);
+          return;
+        }
+      } catch {
+        // Moderation API unreachable — degrade gracefully, allow submission
+      }
+      setSubmitting(false);
+    }
+    // ──────────────────────────────────────────────────────────────────────
 
     mergeDraftListing({ product: formData });
 

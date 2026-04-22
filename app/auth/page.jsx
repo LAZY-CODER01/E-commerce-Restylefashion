@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, Suspense } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 
 const EMAIL_RE = /\S+@\S+\.\S+/;
 const PHONE_RE = /^[6-9]\d{9}$/;
@@ -230,10 +232,12 @@ function AuthCardSkeleton() {
   );
 }
 
-function SignupView({ onSwitchToLogin }) {
+function SignupView({ onSwitchToLogin, onAuthSuccess }) {
+  const { register } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [globalError, setGlobalError] = useState("");
   const [showOtpModal, setShowOtpModal] = useState(false);
   const [signupOtp, setSignupOtp] = useState("");
   const [signupOtpError, setSignupOtpError] = useState("");
@@ -274,7 +278,6 @@ function SignupView({ onSwitchToLogin }) {
     setErrors((prev) => ({ ...prev, phone: "" }));
     setIsOtpSending(true);
     window.setTimeout(() => {
-      console.log("Signup OTP sent to:", form.phone);
       setSignupOtp("");
       setSignupOtpError("");
       setShowOtpModal(true);
@@ -294,7 +297,6 @@ function SignupView({ onSwitchToLogin }) {
     setSignupOtp("");
     setSignupOtpError("");
     window.setTimeout(() => {
-      console.log("Signup OTP resent to:", form.phone);
       setIsResendingOtp(false);
     }, 500);
   };
@@ -315,10 +317,18 @@ function SignupView({ onSwitchToLogin }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
+    setGlobalError("");
     setSubmitting(true);
-    await new Promise((r) => setTimeout(r, 900));
-    console.log("Signup submit payload:", form);
+    const result = await register(
+      { fullName: form.fullName, email: form.email, mobile: form.phone, password: form.password },
+      { skipRedirect: true }
+    );
     setSubmitting(false);
+    if (!result.success) {
+      setGlobalError(result.message || "Registration failed. Please try again.");
+      return;
+    }
+    onAuthSuccess();
   };
 
   const handleSocialLogin = (provider) => {
@@ -330,6 +340,12 @@ function SignupView({ onSwitchToLogin }) {
       <div className="mb-6 text-center sm:mb-8">
         <RestyleLogoMark />
       </div>
+
+      {globalError && (
+        <div className="mb-4 rounded-[10px] bg-red-50 px-4 py-3 font-sans text-[13px] font-medium text-red-600 border border-red-100">
+          {globalError}
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4" noValidate>
         <div>
@@ -499,7 +515,8 @@ function formatIndiaMobileDisplay(digits) {
   return `+91 ${d.slice(0, 5)} ${d.slice(5)}`;
 }
 
-function LoginView({ onSwitchToSignup }) {
+function LoginView({ onSwitchToSignup, onAuthSuccess }) {
+  const { login } = useAuth();
   const [method, setMethod] = useState("email");
   const [step, setStep] = useState(1);
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -511,6 +528,7 @@ function LoginView({ onSwitchToSignup }) {
   const [otpSuccess, setOtpSuccess] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [globalError, setGlobalError] = useState("");
   const [form, setForm] = useState({
     email: "",
     password: "",
@@ -518,27 +536,6 @@ function LoginView({ onSwitchToSignup }) {
     rememberMe: false,
   });
   const [errors, setErrors] = useState({});
-
-  const sessionPayload = useMemo(
-    () => ({
-      token: null,
-      refreshToken: null,
-      rememberMe: form.rememberMe,
-      expiresAt: null,
-      autoLogoutTimer: null,
-    }),
-    [form.rememberMe]
-  );
-
-  useEffect(() => {
-    if (!sessionPayload.token || !sessionPayload.expiresAt) return;
-    const ms = new Date(sessionPayload.expiresAt).getTime() - Date.now();
-    if (ms <= 0) return;
-    const timerId = window.setTimeout(() => {
-      console.log("Auto logout triggered.");
-    }, ms);
-    return () => window.clearTimeout(timerId);
-  }, [sessionPayload]);
 
   useEffect(() => {
     if (method !== "phone" || step !== 2 || resendCountdown <= 0) return;
@@ -571,6 +568,7 @@ function LoginView({ onSwitchToSignup }) {
   const handleMethodChange = (id) => {
     setMethod(id);
     setErrors({});
+    setGlobalError("");
     if (id === "phone") {
       resetPhoneOtpFlow();
     }
@@ -587,7 +585,6 @@ function LoginView({ onSwitchToSignup }) {
     setErrors({});
     setStep(2);
     setResendCountdown(60);
-    console.log("Request OTP for:", form.phone);
   };
 
   const handleVerifyOtp = () => {
@@ -598,7 +595,7 @@ function LoginView({ onSwitchToSignup }) {
       if (otp === "123456") {
         setOtpSuccess(true);
         setIsLoading(false);
-        console.log("Phone OTP login success for:", phoneNumber);
+        onAuthSuccess();
       } else {
         setError("Incorrect OTP");
         setIsLoading(false);
@@ -613,7 +610,6 @@ function LoginView({ onSwitchToSignup }) {
     setOtpSuccess(false);
     setOtp("");
     window.setTimeout(() => {
-      console.log("Resend login OTP for:", phoneNumber);
       setResendCountdown(60);
       setIsResendingOtp(false);
     }, 500);
@@ -623,14 +619,19 @@ function LoginView({ onSwitchToSignup }) {
     e.preventDefault();
     if (method !== "email") return;
     if (!validateEmail()) return;
+    setGlobalError("");
     setSubmitting(true);
-    await new Promise((r) => setTimeout(r, 900));
-    console.log("Login submit payload:", form);
+    const result = await login(form.email, form.password, { skipRedirect: true });
     setSubmitting(false);
+    if (!result.success) {
+      setGlobalError(result.message || "Login failed. Please check your credentials.");
+      return;
+    }
+    onAuthSuccess();
   };
 
   const handleSocialLogin = (provider) => {
-    console.log("Login social login:", provider);
+    console.log("Social login:", provider);
   };
 
   const tabId = method === "email" ? "login-panel-email" : "login-panel-phone";
@@ -643,6 +644,12 @@ function LoginView({ onSwitchToSignup }) {
       <div className="mb-6 text-center sm:mb-8">
         <RestyleLogoMark />
       </div>
+
+      {globalError && (
+        <div className="mb-4 rounded-[10px] bg-red-50 px-4 py-3 font-sans text-[13px] font-medium text-red-600 border border-red-100">
+          {globalError}
+        </div>
+      )}
 
       {method === "email" ? (
         <form
@@ -820,14 +827,31 @@ function LoginView({ onSwitchToSignup }) {
   );
 }
 
-export default function RestyleAuthStandalone() {
+function AuthPageInner() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { user, loading } = useAuth();
   const [activeScreen, setActiveScreen] = useState("login");
   const [showSkeleton, setShowSkeleton] = useState(true);
+
+  // Where to go after successful auth (default: home)
+  const nextPath = searchParams.get("next") || "/";
+
+  // If already logged in, redirect immediately
+  useEffect(() => {
+    if (!loading && user) {
+      router.replace(nextPath);
+    }
+  }, [user, loading, nextPath, router]);
 
   useEffect(() => {
     const t = window.setTimeout(() => setShowSkeleton(false), 380);
     return () => window.clearTimeout(t);
   }, []);
+
+  const handleAuthSuccess = () => {
+    router.replace(nextPath);
+  };
 
   return (
     <div
@@ -838,11 +862,25 @@ export default function RestyleAuthStandalone() {
         {showSkeleton ? (
           <AuthCardSkeleton />
         ) : activeScreen === "signup" ? (
-          <SignupView onSwitchToLogin={() => setActiveScreen("login")} />
+          <SignupView
+            onSwitchToLogin={() => setActiveScreen("login")}
+            onAuthSuccess={handleAuthSuccess}
+          />
         ) : (
-          <LoginView onSwitchToSignup={() => setActiveScreen("signup")} />
+          <LoginView
+            onSwitchToSignup={() => setActiveScreen("signup")}
+            onAuthSuccess={handleAuthSuccess}
+          />
         )}
       </div>
     </div>
+  );
+}
+
+export default function RestyleAuthStandalone() {
+  return (
+    <Suspense fallback={<div className="flex min-h-[100dvh] items-center justify-center"><AuthCardSkeleton /></div>}>
+      <AuthPageInner />
+    </Suspense>
   );
 }

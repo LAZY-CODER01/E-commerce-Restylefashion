@@ -24,7 +24,7 @@ export default function ProductCard({
       <Link href={`/product/${id}`} className="absolute inset-0 z-10" aria-label={`View ${title}`} />
       
       {/* Image Container */}
-      <div className="relative aspect-[3/4] w-full overflow-hidden rounded-lg bg-gray-100">
+      <div className="relative aspect-[2/3] w-full overflow-hidden rounded-lg bg-gray-100">
         <Image
           src={imageUrl}
           alt={title}

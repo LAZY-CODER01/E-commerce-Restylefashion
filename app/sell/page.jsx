@@ -24,6 +24,12 @@ export default function SellPage() {
   useEffect(() => {
     if (loading) return;
 
+    // ── Auth gate: must be logged in before anything sell-related ──
+    if (!user) {
+      router.replace("/auth?next=/sell");
+      return;
+    }
+
     if (user?.hasCompletedSellerSetup) {
       router.replace("/seller/products/new");
       return;

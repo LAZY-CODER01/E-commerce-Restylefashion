@@ -30,7 +30,7 @@ const HOME_CATEGORIES = [
 function SkeletonCard() {
   return (
     <div className="flex flex-col gap-3 animate-pulse">
-      <div className="aspect-[3/4] w-full bg-gray-200 rounded-lg" />
+      <div className="aspect-[2/3] w-full bg-gray-200 rounded-lg" />
       <div className="h-3 bg-gray-200 rounded w-1/2" />
       <div className="h-4 bg-gray-200 rounded w-3/4" />
       <div className="h-4 bg-gray-100 rounded w-1/3" />
@@ -164,8 +164,8 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* ── All Listings (live from backend) ── */}
-        <section className="flex flex-col gap-5 min-h-[400px]">
+        {/* ── Product Catalogue (first 4) ── */}
+        <section className="flex flex-col gap-5 min-h-[200px]">
           <div className="flex items-end justify-between">
             <div>
               <h3 className="text-[20px] font-bold text-brand-dark tracking-tight">
@@ -185,24 +185,35 @@ export default function HomePage() {
           </div>
 
           {listingsLoading ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-6">
-              {Array.from({ length: 10 }).map((_, i) => <SkeletonCard key={i} />)}
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">
+              {Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)}
             </div>
           ) : filteredListings.length > 0 ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-6 animate-fadeIn">
-              {filteredListings.map((product) => (
-                <ProductCard
-                  key={product._id}
-                  id={product._id}
-                  title={product.title}
-                  brand={product.brand}
-                  price={product.price}
-                  originalPrice={product.originalPrice}
-                  imageUrl={product.imageUrl || product.images?.[0]}
-                  rating={product.rating}
-                />
-              ))}
-            </div>
+            <>
+              <div className="grid grid-cols-2 gap-3 sm:gap-4 animate-fadeIn">
+                {filteredListings.slice(0, 4).map((product) => (
+                  <ProductCard
+                    key={product._id}
+                    id={product._id}
+                    title={product.title}
+                    brand={product.brand}
+                    price={product.price}
+                    originalPrice={product.originalPrice}
+                    imageUrl={product.imageUrl || product.images?.[0]}
+                    rating={product.rating}
+                  />
+                ))}
+              </div>
+              {/* View All CTA */}
+              {filteredListings.length > 4 && (
+                <button
+                  onClick={() => {}}
+                  className="w-full mt-1 py-3.5 rounded-2xl border-2 border-brand-pink text-brand-pink text-[14px] font-bold tracking-wide hover:bg-brand-pink hover:text-white transition-all duration-200"
+                >
+                  View All {filteredListings.length} Listings →
+                </button>
+              )}
+            </>
           ) : (
             <div className="flex flex-col items-center justify-center py-20 bg-white rounded-card border border-dashed border-gray-200">
               <p className="text-gray-400 font-medium italic">No listings in this category yet.</p>
@@ -213,10 +224,13 @@ export default function HomePage() {
           )}
         </section>
 
-        {/* ── Top Influencers ── */}
+        {/* ── Shop by Influencer ── */}
         <section id="influencers" className="flex flex-col gap-3">
-          <h3 className="text-[18px] font-bold text-brand-dark tracking-tight">Our Top Influencers</h3>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-6">
+          <div className="flex items-center justify-between px-1">
+            <h3 className="text-[20px] font-bold text-brand-dark tracking-tight">Shop by Influencer</h3>
+            <span className="text-[12px] font-bold text-brand-pink uppercase tracking-widest cursor-pointer hover:underline">See all</span>
+          </div>
+          <div className="grid grid-cols-2 gap-3 sm:gap-4">
             <InfluencerCard id="1" name="Sarah Style" handle="@sarahstyle" />
             <InfluencerCard id="2" name="Jane Doe"    handle="@janedoe" />
           </div>

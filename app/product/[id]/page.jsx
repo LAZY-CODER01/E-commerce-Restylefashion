@@ -292,7 +292,7 @@ export default function ProductDetailsPage({ params }) {
   }
 
   return (
-    <div className="min-h-screen bg-white pb-24">
+    <div className="min-h-screen bg-white pb-36 lg:pb-24">
       <main className="max-w-[1440px] mx-auto px-4 md:px-9 pt-0 md:pt-9">
         <div className="flex flex-col lg:flex-row gap-9 lg:gap-9 relative">
           
@@ -367,8 +367,8 @@ export default function ProductDetailsPage({ params }) {
               ))}
             </div>
           </div>
-          {/* 3. Right Column: Checkout Card (Amazon Style) */}
-          <div className="w-full lg:w-[320px]">
+          {/* 3. Right Column: Checkout Card — desktop only */}
+          <div className="hidden lg:block w-full lg:w-[320px]">
             <article className="sticky top-32 bg-white border border-[#EEEEEE] rounded-[24px] p-9 shadow-sm flex flex-col gap-6">
               <div className="flex flex-col">
                 <div className="flex items-start">
@@ -412,6 +412,73 @@ export default function ProductDetailsPage({ params }) {
           />
         </div>
       </main>
+
+      {/* ── Sticky Bottom Bar — mobile only (hidden on lg+) ── */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 lg:hidden">
+        {/* Size chips row — shown only when no size selected */}
+        {!selectedSize && (
+          <div className="flex items-center gap-2 overflow-x-auto bg-white/95 px-4 py-2 border-t border-gray-100 backdrop-blur-sm">
+            <span className="shrink-0 text-[11px] font-bold text-gray-500 uppercase tracking-wider">Size:</span>
+            {product.sizes.map((size) => (
+              <button
+                key={size}
+                type="button"
+                onClick={() => setSelectedSize(size)}
+                className="shrink-0 h-9 min-w-[44px] px-2 rounded-xl border border-gray-200 text-[13px] font-bold text-brand-dark transition-all active:scale-95 hover:border-brand-pink hover:text-brand-pink"
+              >
+                {size}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Main CTA bar */}
+        <div className="flex items-center gap-3 bg-white border-t border-gray-100 px-4 py-3 shadow-[0_-4px_20px_rgba(0,0,0,0.07)]">
+          {/* Selected size chip (tap to change) */}
+          {selectedSize && (
+            <button
+              type="button"
+              onClick={() => setSelectedSize("")}
+              className="flex-shrink-0 flex items-center gap-1 rounded-xl border border-brand-pink/40 bg-brand-pink/5 px-3 py-2 text-[12px] font-bold text-brand-pink"
+            >
+              <span>{selectedSize}</span>
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+          )}
+
+          {/* Add to Bag */}
+          <button
+            type="button"
+            onClick={handleAddToCart}
+            className="flex-1 h-[50px] rounded-2xl bg-[#F7246E] text-white text-[15px] font-bold tracking-wide shadow-[0_4px_14px_rgba(247,36,110,0.35)] active:scale-[0.97] transition-all duration-150"
+          >
+            Add to Bag
+          </button>
+
+          {/* Buy Now */}
+          <button
+            type="button"
+            onClick={handleBuyNow}
+            className="flex-1 h-[50px] rounded-2xl border-2 border-[#F7246E] bg-white text-[#F7246E] text-[15px] font-bold tracking-wide active:scale-[0.97] transition-all duration-150"
+          >
+            Buy Now
+          </button>
+
+          {/* Wishlist icon */}
+          <button
+            type="button"
+            onClick={handleWishlistToggle}
+            aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+            className="flex-shrink-0 flex h-[50px] w-[50px] items-center justify-center rounded-2xl border border-gray-200 bg-white transition-all active:scale-[0.97]"
+          >
+            {isWishlisted ? (
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="#F7246E" stroke="#F7246E" strokeWidth="1.5" aria-hidden><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+            ) : (
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="1.75" aria-hidden><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+            )}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
