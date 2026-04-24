@@ -13,6 +13,7 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import EarningsChart from "../EarningsChart";
+import SellerProcessBottomNav from "@/components/SellerProcessBottomNav";
 
 const SUMMARY_CARDS = [
   { label: "Total Earnings", value: "₹1,12,880", icon: <TrendingUpIcon />, color: "bg-brand-pink/5 text-brand-pink" },
@@ -30,7 +31,6 @@ const MOST_SELLING = [
 ];
 
 export default function SellerDashboard() {
-  const [activeTab, setActiveTab] = useState("dashboard");
   const [listings, setListings] = useState([]);
 
   React.useEffect(() => {
@@ -104,25 +104,7 @@ export default function SellerDashboard() {
         </div>
       </main>
 
-      {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-100 h-[72px] flex items-center justify-around px-4 z-[100] shadow-[0_-8px_32px_rgba(0,0,0,0.03)]">
-         <button onClick={() => setActiveTab("dashboard")} className={`flex flex-col items-center gap-1 transition-all ${activeTab === "dashboard" ? "text-brand-pink" : "text-gray-400"}`}>
-            <DashboardIcon sx={{ fontSize: 24 }} />
-            <span className="text-[10px] font-bold uppercase tracking-wider">Dashboard</span>
-         </button>
-         <Link href="/seller/products/new" className="flex flex-col items-center gap-1 text-gray-400">
-            <ShoppingBagIcon sx={{ fontSize: 24 }} />
-            <span className="text-[10px] font-bold uppercase tracking-wider">Products</span>
-         </Link>
-         <Link href="/seller/orders" className="flex flex-col items-center gap-1 text-gray-400">
-            <TrendingUpIcon sx={{ fontSize: 24 }} />
-            <span className="text-[10px] font-bold uppercase tracking-wider">Orders</span>
-         </Link>
-         <Link href="/seller/profile" className="flex flex-col items-center gap-1 text-gray-400 hover:text-brand-pink">
-            <PersonIcon sx={{ fontSize: 24 }} />
-            <span className="text-[10px] font-bold uppercase tracking-wider">Profile</span>
-         </Link>
-      </nav>
+      <SellerProcessBottomNav />
     </div>
   );
 }

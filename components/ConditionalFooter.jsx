@@ -8,9 +8,12 @@ export default function ConditionalFooter() {
   if (
     pathname === "/seller/onboarding/type" ||
     pathname === "/seller/products/new" ||
-    pathname === "/seller/boost" ||
+    pathname.startsWith("/seller/boost") ||
     pathname === "/seller/profile" ||
-    pathname === "/seller/dashboard"
+    pathname === "/seller/dashboard" ||
+    pathname === "/seller/orders" ||
+    pathname === "/seller/wallet" ||
+    pathname === "/seller/store"
   ) {
     return null;
   }

@@ -4,11 +4,9 @@ import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import SearchIcon from "@mui/icons-material/Search";
-import DashboardIcon from "@mui/icons-material/Dashboard";
-import ShoppingBagIcon from "@mui/icons-material/ShoppingBag";
-import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
+import SellerProcessBottomNav from "@/components/SellerProcessBottomNav";
 
 const ORDER_STATS = [
   { label: "Pending Orders", count: 120, color: "bg-orange-50 text-orange-600" },
@@ -28,7 +26,6 @@ const MOCK_ORDERS = [
 ];
 
 export default function SellerOrdersPage() {
-  const [activeTab, setActiveTab] = useState("orders");
   const [activeFilter, setActiveFilter] = useState("All Orders");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -147,21 +144,7 @@ export default function SellerOrdersPage() {
          </div>
       </main>
 
-      {/* Bottom Navigation (Consistent with Dashboard) */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-gray-100 h-[72px] flex items-center justify-around px-4 z-[100] shadow-[0_-8px_32px_rgba(0,0,0,0.03)]">
-         <Link href="/seller/dashboard" className={`flex flex-col items-center gap-1 transition-all ${activeTab === "dashboard" ? "text-brand-pink" : "text-gray-400"}`}>
-            <DashboardIcon sx={{ fontSize: 24 }} />
-            <span className="text-[10px] font-bold uppercase tracking-wider">Dashboard</span>
-         </Link>
-         <Link href="/seller/products/new" className="flex flex-col items-center gap-1 text-gray-400">
-            <ShoppingBagIcon sx={{ fontSize: 24 }} />
-            <span className="text-[10px] font-bold uppercase tracking-wider">Products</span>
-         </Link>
-         <button onClick={() => setActiveTab("orders")} className={`flex flex-col items-center gap-1 transition-all ${activeTab === "orders" ? "text-brand-pink" : "text-gray-400"}`}>
-            <TrendingUpIcon sx={{ fontSize: 24 }} />
-            <span className="text-[10px] font-bold uppercase tracking-wider">Orders</span>
-         </button>
-      </nav>
+      <SellerProcessBottomNav />
     </div>
   );
 }

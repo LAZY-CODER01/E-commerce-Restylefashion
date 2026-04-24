@@ -9,6 +9,7 @@ import {
   mergeSellerProfileFromStorage,
   readSellerProductsForStore,
 } from "@/lib/sellerHubProfile";
+import SellerProcessBottomNav from "@/components/SellerProcessBottomNav";
 
 export default function SellerStorePreviewPage() {
   const [mounted, setMounted] = useState(false);
@@ -40,7 +41,7 @@ export default function SellerStorePreviewPage() {
   }, [mounted, tick]);
 
   return (
-    <div className="min-h-screen bg-neutral-100 px-4 py-8 font-sans text-neutral-900">
+    <div className="min-h-screen bg-neutral-100 px-4 py-8 pb-24 font-sans text-neutral-900">
       <div className="mx-auto flex max-w-4xl flex-col gap-6">
         <div className="flex items-center gap-4">
           <Link
@@ -124,6 +125,7 @@ export default function SellerStorePreviewPage() {
           </ul>
         )}
       </div>
+      <SellerProcessBottomNav />
     </div>
   );
 }

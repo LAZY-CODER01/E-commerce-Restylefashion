@@ -24,6 +24,7 @@ import {
 import { appendSellerProductFromListing } from "@/lib/sellerHubProfile";
 import clsx from "clsx";
 import { SELLER_PRODUCT_CATEGORY_OPTIONS } from "@/data/categories";
+import SellerProcessBottomNav from "@/components/SellerProcessBottomNav";
 
 const SOCIAL_SELLER_TYPES = new Set(["influencer", "designer", "thrifter"]);
 
@@ -613,7 +614,7 @@ export default function NewProductPage() {
       : "Enter price";
 
   return (
-    <div className="min-h-screen bg-brand-light flex items-center justify-center p-4 font-roboto">
+    <div className="min-h-screen bg-brand-light flex items-center justify-center p-4 pb-24 font-roboto">
       <div className="w-full max-w-2xl bg-white rounded-[32px] shadow-sm overflow-hidden animate-fadeIn pb-12">
         <div className="relative p-8 border-b border-gray-100 flex items-center justify-center">
           <div className="absolute left-8 top-1/2 -translate-y-1/2">
@@ -1254,6 +1255,7 @@ export default function NewProductPage() {
         </div>
       )}
 
+      <SellerProcessBottomNav />
     </div>
   );
 }

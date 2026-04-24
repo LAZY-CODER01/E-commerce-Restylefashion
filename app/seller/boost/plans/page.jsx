@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Layers } from "lucide-react";
 import { readSellerHubState } from "@/lib/sellerHubProfile";
+import SellerProcessBottomNav from "@/components/SellerProcessBottomNav";
 
 function formatRupee(n) {
   if (n == null || Number.isNaN(Number(n))) return "—";
@@ -28,7 +29,7 @@ export default function SellerBoostPlansPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-neutral-100 px-4 py-8 font-sans text-neutral-900">
+    <div className="min-h-screen bg-neutral-100 px-4 py-8 pb-24 font-sans text-neutral-900">
       <div className="mx-auto max-w-2xl">
         <div className="mb-6 flex items-center gap-4">
           <Link
@@ -88,6 +89,7 @@ export default function SellerBoostPlansPage() {
           </Link>
         </p>
       </div>
+      <SellerProcessBottomNav />
     </div>
   );
 }

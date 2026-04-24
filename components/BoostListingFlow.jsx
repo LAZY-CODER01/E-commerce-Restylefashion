@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
 import { readSellerHubState, writeSellerHubState } from "@/lib/sellerHubProfile";
 import {
   ArrowLeft,
@@ -120,14 +121,14 @@ const PRIMARY_BTN_CLASS =
   "h-12 w-full rounded-xl flex items-center justify-center text-sm font-medium text-white shadow-sm transition-all hover:bg-rose-600 hover:shadow-md active:scale-[0.98] md:text-base bg-rose-500";
 /** Backdrop for embedded modal mode (non-fullscreen) */
 const OVERLAY_CLASS = "fixed inset-0 z-[100] flex bg-black/40 backdrop-blur-sm";
-/**
- * Mobile: bottom sheet (items-end). Desktop: centered modal (md:items-center).
- */
+/** Payment detail popups: centered on all viewports, with dimmed backdrop. */
 const SUBVIEW_BACKDROP_CLASS =
-  "fixed inset-0 z-[110] flex items-end justify-center bg-black/40 backdrop-blur-sm md:items-center md:p-4";
-/** Panel: mobile sheet / desktop centered card */
+  "fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm";
+/** Centered card with max height; scrolls if needed */
 const SUBVIEW_PANEL_CLASS =
-  "w-full max-h-[min(88vh,800px)] overflow-y-auto rounded-t-3xl border border-gray-100 bg-white p-6 shadow-2xl md:m-auto md:max-h-[min(90vh,720px)] md:max-w-lg md:rounded-2xl md:shadow-xl";
+  "relative w-full max-h-[min(88dvh,720px)] max-w-lg overflow-y-auto rounded-2xl border border-gray-100 bg-white p-6 shadow-2xl";
+const SUBVIEW_CLOSE_BTN_CLASS =
+  "absolute right-3 top-3 z-10 inline-flex h-9 w-9 items-center justify-center rounded-full text-gray-500 transition hover:bg-gray-100 hover:text-gray-800";
 const CENTER_MODAL_CLASS =
   "relative m-auto w-full max-w-[440px] overflow-hidden rounded-2xl bg-white shadow-2xl sm:max-w-[520px]";
 /** Main flow shell (fullscreen boost page) — slightly wider on desktop */
@@ -166,6 +167,28 @@ export default function BoostListingFlow({
   const [cardExpiry, setCardExpiry] = useState("");
   const [cardCvv, setCardCvv] = useState("");
   const [upiId, setUpiId] = useState("");
+  const [walletBalance, setWalletBalance] = useState(0);
+  const [topUpInput, setTopUpInput] = useState("500");
+  const prevStepRef = useRef("");
+
+  const refreshWalletBalance = () => {
+    const hub = readSellerHubState();
+    setWalletBalance(Math.max(0, Math.floor(Number(hub.restyleWalletBalance) || 0)));
+  };
+
+  useEffect(() => {
+    if (!open) return;
+    refreshWalletBalance();
+  }, [open, currentStep, activeSubView]);
+
+  useEffect(() => {
+    const entered =
+      prevStepRef.current !== "amount_selection" && currentStep === "amount_selection";
+    prevStepRef.current = currentStep;
+    if (entered) {
+      setTopUpInput(String(Math.max(1, Math.floor(selectedAmount) || 500)));
+    }
+  }, [currentStep, selectedAmount]);
 
   const canSubmitCard =
     cardNumber.replace(/\D/g, "").length >= 12 &&
@@ -190,15 +213,11 @@ export default function BoostListingFlow({
     return selectedPackage?.price ?? 99;
   }, [currentStep, selectedAmount, selectedPackage, selectedPaymentMethod]);
 
-  /** Mock payment success: persist boost + open seller profile. */
-  const finalizeBoostPurchase = () => {
+  const completePackagePurchaseAfterExternalPayment = () => {
     const hub = readSellerHubState();
     const prevCount =
       typeof hub.activePremiumPlansCount === "number" ? hub.activePremiumPlansCount : 0;
-    const label =
-      selectedPaymentMethod === "wallet-topup"
-        ? `Wallet top-up ₹${selectedAmount}`
-        : selectedPackage?.name || "Boost package";
+    const label = selectedPackage?.name || "Boost package";
     const prevHistory = Array.isArray(hub.boostHistory) ? hub.boostHistory : [];
     writeSellerHubState({
       boostLabel: label,
@@ -215,6 +234,64 @@ export default function BoostListingFlow({
       ],
     });
     closePaymentSubView();
+    router.push("/seller/profile");
+  };
+
+  /** After UPI / card / net banking / third-party wallet — add money or complete boost. */
+  const handlePaymentSuccess = () => {
+    if (selectedPaymentMethod === "wallet-topup") {
+      const hub = readSellerHubState();
+      const bal = Math.max(0, Math.floor(Number(hub.restyleWalletBalance) || 0));
+      const add = Math.max(0, Math.floor(selectedAmount) || 0);
+      if (add < 1) return;
+      const prevHistory = Array.isArray(hub.boostHistory) ? hub.boostHistory : [];
+      const label = `Wallet top-up ₹${add}`;
+      writeSellerHubState({
+        restyleWalletBalance: bal + add,
+        boostHistory: [
+          ...prevHistory,
+          { label, amount: add, method: "wallet-topup", at: Date.now() },
+        ],
+      });
+      setWalletBalance(bal + add);
+      closePaymentSubView();
+      setCurrentStep("select_package");
+      toast.success(`₹${add.toLocaleString("en-IN")} added to your Restyle wallet.`);
+      return;
+    }
+    completePackagePurchaseAfterExternalPayment();
+  };
+
+  const payWithRestyleWallet = () => {
+    if (selectedPaymentMethod === "wallet-topup" || !selectedPackage) return;
+    const hub = readSellerHubState();
+    const bal = Math.max(0, Math.floor(Number(hub.restyleWalletBalance) || 0));
+    const cost = Math.floor(Number(payableAmount) || 0);
+    if (bal < cost || cost < 1) {
+      toast.error("Not enough wallet balance.");
+      return;
+    }
+    const prevCount =
+      typeof hub.activePremiumPlansCount === "number" ? hub.activePremiumPlansCount : 0;
+    const prevHistory = Array.isArray(hub.boostHistory) ? hub.boostHistory : [];
+    const label = selectedPackage.name;
+    writeSellerHubState({
+      restyleWalletBalance: bal - cost,
+      boostLabel: label,
+      activePremiumPlansCount: prevCount + 1,
+      boostCompletedAt: Date.now(),
+      boostHistory: [
+        ...prevHistory,
+        {
+          label,
+          amount: cost,
+          method: "restyle_wallet",
+          at: Date.now(),
+        },
+      ],
+    });
+    setWalletBalance(bal - cost);
+    toast.success("Boost purchased using your Restyle wallet.");
     router.push("/seller/profile");
   };
 
@@ -430,46 +507,84 @@ export default function BoostListingFlow({
       </div>
 
       <div className="px-4 pb-6 pt-2 md:px-6 md:pb-8 md:pt-4">
-      <p className="mt-2 text-center text-sm text-gray-500 md:text-base">Available Balance : ₹0</p>
-      <p className="my-4 text-center text-4xl font-bold text-gray-900 md:text-5xl">₹{selectedAmount}</p>
+        <p className="mt-2 text-center text-sm text-gray-500 md:text-base">
+          Available balance:{" "}
+          <span className="font-semibold text-gray-800">₹{walletBalance.toLocaleString("en-IN")}</span>
+        </p>
+        <p className="my-4 text-center text-4xl font-bold text-gray-900 md:text-5xl">
+          ₹{Math.max(0, selectedAmount).toLocaleString("en-IN")}
+        </p>
 
-      <div className="flex flex-wrap justify-center gap-3">
-        {TOP_UP_AMOUNTS.map((amount) => {
-          const active = selectedAmount === amount;
-          return (
-            <button
-              key={amount}
-              type="button"
-              onClick={() => setSelectedAmount(amount)}
-              className={[
-                "relative rounded-lg border py-2 px-4 text-sm transition-all duration-200",
-                active
-                  ? "border-rose-500 bg-rose-50 text-rose-700 shadow-sm"
-                  : "border-gray-200 text-gray-600 hover:border-rose-300 hover:bg-rose-50/50 hover:shadow-sm",
-              ].join(" ")}
-            >
-              {amount === 500 ? (
-                <span className="absolute -top-2 left-1/2 -translate-x-1/2 rounded-full bg-rose-500 px-1.5 py-0.5 text-[8px] font-bold text-white">
-                  POPULAR
-                </span>
-              ) : null}
-              ₹{amount}
-            </button>
-          );
-        })}
-      </div>
+        <div className="flex flex-wrap justify-center gap-3">
+          {TOP_UP_AMOUNTS.map((amount) => {
+            const active = selectedAmount === amount;
+            return (
+              <button
+                key={amount}
+                type="button"
+                onClick={() => {
+                  setSelectedAmount(amount);
+                  setTopUpInput(String(amount));
+                }}
+                className={[
+                  "relative rounded-lg border py-2 px-4 text-sm transition-all duration-200",
+                  active
+                    ? "border-rose-500 bg-rose-50 text-rose-700 shadow-sm"
+                    : "border-gray-200 text-gray-600 hover:border-rose-300 hover:bg-rose-50/50 hover:shadow-sm",
+                ].join(" ")}
+              >
+                {amount === 500 ? (
+                  <span className="absolute -top-2 left-1/2 -translate-x-1/2 rounded-full bg-rose-500 px-1.5 py-0.5 text-[8px] font-bold text-white">
+                    POPULAR
+                  </span>
+                ) : null}
+                ₹{amount}
+              </button>
+            );
+          })}
+        </div>
 
-      <button type="button" className="mt-5 w-full text-center text-sm text-gray-500 underline">
-        Have a coupon code?
-      </button>
+        <label className="mt-5 block text-center">
+          <span className="text-xs font-semibold text-gray-500">Or enter any amount (₹)</span>
+          <input
+            type="text"
+            name="topUpCustom"
+            inputMode="numeric"
+            autoComplete="off"
+            value={topUpInput}
+            onChange={(e) => {
+              const raw = e.target.value.replace(/\D/g, "");
+              setTopUpInput(raw);
+              if (raw === "") {
+                setSelectedAmount(0);
+                return;
+              }
+              const n = Math.min(999_999, Math.max(0, parseInt(raw, 10) || 0));
+              if (n > 0) setSelectedAmount(n);
+            }}
+            className="mt-2 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-center text-base font-semibold text-gray-900 shadow-sm transition focus:border-rose-300 focus:outline-none focus:ring-2 focus:ring-rose-200"
+            placeholder="e.g. 750"
+          />
+        </label>
 
-      <button
-        type="button"
-        onClick={() => setCurrentStep("payment_options")}
-        className={[PRIMARY_BTN_CLASS, "mt-6"].join(" ")}
-      >
-        Continue
-      </button>
+        <button type="button" className="mt-4 w-full text-center text-sm text-gray-500 underline">
+          Have a coupon code?
+        </button>
+
+        <button
+          type="button"
+          disabled={selectedAmount < 1}
+          onClick={() => {
+            if (selectedAmount < 1) return;
+            setCurrentStep("payment_options");
+          }}
+          className={[
+            selectedAmount < 1 ? "cursor-not-allowed bg-gray-200 text-gray-500" : PRIMARY_BTN_CLASS,
+            "mt-6",
+          ].join(" ")}
+        >
+          Continue
+        </button>
       </div>
     </div>
   );
@@ -512,8 +627,33 @@ export default function BoostListingFlow({
         <span>To Pay</span>
         <span className="text-base font-semibold text-gray-900">₹{payableAmount}</span>
       </div>
+      {selectedPaymentMethod !== "wallet-topup" && walletBalance > 0 ? (
+        <div className="border-b border-gray-100 bg-rose-50/40 px-4 py-2 text-center text-xs text-gray-600 md:px-6">
+          Restyle wallet:{" "}
+          <span className="font-semibold text-rose-700">₹{walletBalance.toLocaleString("en-IN")}</span>
+        </div>
+      ) : null}
 
       <div className="px-4 py-6 md:px-6 md:py-8">
+        {selectedPaymentMethod !== "wallet-topup" &&
+        selectedPackage &&
+        walletBalance >= Math.floor(Number(payableAmount) || 0) &&
+        (payableAmount || 0) > 0 ? (
+          <section className="mb-6">
+            <button
+              type="button"
+              onClick={payWithRestyleWallet}
+              className="w-full rounded-2xl border-2 border-rose-300 bg-gradient-to-b from-rose-50 to-white p-4 text-left shadow-sm transition hover:border-rose-400 hover:shadow-md"
+            >
+              <p className="text-base font-bold text-rose-600">Pay with Restyle wallet</p>
+              <p className="mt-0.5 text-sm text-gray-500">
+                Uses ₹{Math.floor(Number(payableAmount) || 0).toLocaleString("en-IN")} from your balance (no
+                UPI or card)
+              </p>
+            </button>
+          </section>
+        ) : null}
+
         <section>
           <p className="text-sm font-semibold text-gray-700">Pay via any UPI app</p>
           <div className="mt-2 flex flex-wrap items-center gap-2.5">
@@ -608,15 +748,33 @@ export default function BoostListingFlow({
   const OverlayRadio = ({ checked }) =>
     checked ? <CircleDot className="h-4 w-4 text-pink-500" /> : <Circle className="h-4 w-4 text-gray-400" />;
 
+  const subviewBackdropProps = (onBgClick) => ({
+    onClick: (e) => {
+      if (e.target === e.currentTarget) onBgClick();
+    },
+    role: "presentation",
+  });
+
   const renderNetBanking = () => (
-    <div className={SUBVIEW_BACKDROP_CLASS}>
-      <div className={SUBVIEW_PANEL_CLASS}>
-        <div className="mb-3 flex items-center justify-between">
-          <h3 className="text-xl font-semibold text-gray-900">Net Banking</h3>
-          <button type="button" onClick={closePaymentSubView} className="p-1 text-gray-500">
-            <X className="h-4 w-4" />
-          </button>
-        </div>
+    <div className={SUBVIEW_BACKDROP_CLASS} {...subviewBackdropProps(closePaymentSubView)}>
+      <div
+        className={SUBVIEW_PANEL_CLASS}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="boost-net-banking-title"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          type="button"
+          onClick={closePaymentSubView}
+          className={SUBVIEW_CLOSE_BTN_CLASS}
+          aria-label="Close"
+        >
+          <X className="h-5 w-5" />
+        </button>
+        <h3 id="boost-net-banking-title" className="mb-3 pr-10 text-xl font-semibold text-gray-900">
+          Net Banking
+        </h3>
         <label className="flex items-center gap-2 rounded-xl border border-gray-200 bg-gray-50/50 px-3 py-2">
           <Search className="h-4 w-4 shrink-0 text-gray-400" />
           <input
@@ -642,7 +800,7 @@ export default function BoostListingFlow({
                       type="button"
                       onClick={() => {
                         setSelectedBank(bank.fullName);
-                        finalizeBoostPurchase();
+                        handlePaymentSuccess();
                       }}
                       title={bank.fullName}
                       className="flex h-14 w-14 flex-col items-center justify-center gap-0.5 rounded-2xl border border-gray-100 bg-white p-1 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-rose-200 hover:shadow-md active:scale-[0.98]"
@@ -676,7 +834,7 @@ export default function BoostListingFlow({
                       type="button"
                       onClick={() => {
                         setSelectedBank(bank.fullName);
-                        finalizeBoostPurchase();
+                        handlePaymentSuccess();
                       }}
                       className="flex w-full items-center justify-between gap-2 rounded-xl border border-transparent py-2 pl-1 pr-2 text-left text-sm text-gray-700 transition-all duration-200 hover:border-rose-100 hover:bg-rose-50/50 hover:shadow-sm"
                     >
@@ -703,14 +861,25 @@ export default function BoostListingFlow({
   );
 
   const renderWallet = () => (
-    <div className={SUBVIEW_BACKDROP_CLASS}>
-      <div className={SUBVIEW_PANEL_CLASS}>
-        <div className="mb-2 flex items-center justify-between">
-          <h3 className="text-xl font-semibold text-gray-900">Wallet</h3>
-          <button type="button" onClick={closePaymentSubView} className="p-1 text-gray-500">
-            <X className="h-4 w-4" />
-          </button>
-        </div>
+    <div className={SUBVIEW_BACKDROP_CLASS} {...subviewBackdropProps(closePaymentSubView)}>
+      <div
+        className={SUBVIEW_PANEL_CLASS}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="boost-wallet-psp-title"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          type="button"
+          onClick={closePaymentSubView}
+          className={SUBVIEW_CLOSE_BTN_CLASS}
+          aria-label="Close"
+        >
+          <X className="h-5 w-5" />
+        </button>
+        <h3 id="boost-wallet-psp-title" className="mb-3 pr-10 text-xl font-semibold text-gray-900">
+          Wallet
+        </h3>
         <div className="space-y-1">
           {WALLET_OPTIONS.map((wallet) => (
             <button
@@ -718,7 +887,7 @@ export default function BoostListingFlow({
               type="button"
               onClick={() => {
                 setSelectedWallet(wallet.name);
-                finalizeBoostPurchase();
+                handlePaymentSuccess();
               }}
               className="flex w-full items-center justify-between gap-2 rounded-xl border border-transparent py-2 pl-1 pr-2 text-left text-sm text-gray-700 transition-all duration-200 hover:border-rose-100 hover:bg-rose-50/50 hover:shadow-sm"
             >
@@ -741,14 +910,25 @@ export default function BoostListingFlow({
   );
 
   const renderAddCard = () => (
-    <div className={SUBVIEW_BACKDROP_CLASS}>
-      <div className={SUBVIEW_PANEL_CLASS}>
-        <div className="mb-3 flex items-center justify-between">
-          <h3 className="text-xl font-semibold text-gray-900">Add Card</h3>
-          <button type="button" onClick={closePaymentSubView} className="p-1 text-gray-500">
-            <X className="h-4 w-4" />
-          </button>
-        </div>
+    <div className={SUBVIEW_BACKDROP_CLASS} {...subviewBackdropProps(closePaymentSubView)}>
+      <div
+        className={SUBVIEW_PANEL_CLASS}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="boost-add-card-title"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          type="button"
+          onClick={closePaymentSubView}
+          className={SUBVIEW_CLOSE_BTN_CLASS}
+          aria-label="Close"
+        >
+          <X className="h-5 w-5" />
+        </button>
+        <h3 id="boost-add-card-title" className="mb-3 pr-10 text-xl font-semibold text-gray-900">
+          Add Card
+        </h3>
         <div className="flex flex-col gap-4">
           <label className="relative block">
             <input
@@ -785,7 +965,7 @@ export default function BoostListingFlow({
           <button
             type="button"
             disabled={!canSubmitCard}
-            onClick={() => canSubmitCard && finalizeBoostPurchase()}
+            onClick={() => canSubmitCard && handlePaymentSuccess()}
             className={
               canSubmitCard
                 ? PRIMARY_BTN_CLASS
@@ -800,14 +980,25 @@ export default function BoostListingFlow({
   );
 
   const renderUpiId = () => (
-    <div className={SUBVIEW_BACKDROP_CLASS}>
-      <div className={SUBVIEW_PANEL_CLASS}>
-        <div className="mb-3 flex items-center justify-between">
-          <h3 className="text-xl font-semibold text-gray-900">Pay via UPI ID</h3>
-          <button type="button" onClick={closePaymentSubView} className="p-1 text-gray-500">
-            <X className="h-4 w-4" />
-          </button>
-        </div>
+    <div className={SUBVIEW_BACKDROP_CLASS} {...subviewBackdropProps(closePaymentSubView)}>
+      <div
+        className={SUBVIEW_PANEL_CLASS}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="boost-upi-id-title"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          type="button"
+          onClick={closePaymentSubView}
+          className={SUBVIEW_CLOSE_BTN_CLASS}
+          aria-label="Close"
+        >
+          <X className="h-5 w-5" />
+        </button>
+        <h3 id="boost-upi-id-title" className="mb-3 pr-10 text-xl font-semibold text-gray-900">
+          Pay via UPI ID
+        </h3>
         <input
           type="text"
           inputMode="email"
@@ -824,7 +1015,7 @@ export default function BoostListingFlow({
         <button
           type="button"
           disabled={!canSubmitUpi}
-          onClick={() => canSubmitUpi && finalizeBoostPurchase()}
+          onClick={() => canSubmitUpi && handlePaymentSuccess()}
           className={
             canSubmitUpi
               ? [PRIMARY_BTN_CLASS, "mt-4"].join(" ")

@@ -110,14 +110,34 @@ export default function Navigation() {
                  </div>
                  <span className="text-[13px] font-bold text-gray-800 tracking-wide hidden sm:block">Admin 1</span>
               </button>
-            ) : pathname.startsWith("/seller") ? (
+            ) : pathname.startsWith("/seller") &&
+              !pathname.startsWith("/seller/login") &&
+              !pathname.startsWith("/seller/onboarding") ? (
               <Link
-                href="/seller/dashboard"
-                aria-label="Account"
-                className="relative flex items-center justify-center text-brand-dark hover:text-brand-pink transition"
+                href="/seller/wallet"
+                aria-label="Wallet"
+                className="relative flex h-7 w-7 items-center justify-center text-brand-dark transition hover:opacity-90"
               >
-                <ProfileNavIcon />
+                <Image
+                  src="/seller-wallet.png"
+                  alt=""
+                  width={26}
+                  height={26}
+                  className="h-6 w-6 object-contain"
+                />
               </Link>
+            ) : pathname.startsWith("/seller") ? (
+              pathname === "/seller/onboarding/type" ? (
+                <span className="inline-block h-7 w-7 shrink-0" aria-hidden />
+              ) : (
+                <Link
+                  href="/seller/dashboard"
+                  aria-label="Account"
+                  className="relative flex items-center justify-center text-brand-dark hover:text-brand-pink transition"
+                >
+                  <ProfileNavIcon />
+                </Link>
+              )
             ) : (
               <>
                 {/* Sell — light green CTA */}
@@ -136,7 +156,7 @@ export default function Navigation() {
                   className="group relative flex items-center justify-center transition-all duration-300"
                 >
                   {user ? (
-                    <div className="relative w-9 h-9 md:w-10 md:h-10 rounded-full border-2 border-white shadow-sm overflow-hidden group-hover:shadow-md group-hover:scale-105 transition-all bg-gray-100">
+                    <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded-full border border-white/90 bg-gray-100 shadow-sm transition group-hover:shadow group-hover:ring-1 group-hover:ring-white/50">
                       {user.profileImage ? (
                         <Image 
                           src={user.profileImage} 
@@ -149,8 +169,10 @@ export default function Navigation() {
                           }}
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-brand-pink/5 text-brand-pink text-[14px] font-bold">
-                          {user.name?.charAt(0) || <PersonOutlineOutlinedIcon />}
+                        <div className="flex h-full w-full items-center justify-center bg-brand-pink/5 text-[11px] font-bold text-brand-pink">
+                          {user.name?.charAt(0) || (
+                            <PersonOutlineOutlinedIcon sx={{ fontSize: 18 }} />
+                          )}
                         </div>
                       )}
                     </div>

@@ -335,7 +335,7 @@ export default function SellerProfile({
             </div>
 
             <div className="flex w-full min-w-0 flex-col gap-3 lg:max-w-xl">
-              {/* Share + Store Preview: one row, side-by-side on all breakpoints */}
+              {/* Share + Store Preview: one row */}
               <div className="flex w-full min-w-0 flex-row items-stretch gap-2 lg:justify-end">
                 <button
                   type="button"
