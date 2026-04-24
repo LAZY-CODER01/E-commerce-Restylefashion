@@ -76,7 +76,7 @@ export default function HomePage() {
 
   const categorySectionTitle =
     activeCategory === "all"
-      ? "All Listings"
+      ? "New Arrivals "
       : activeCategory === "new-arrivals"
         ? "New Arrivals"
         : activeCategory === "dresses-jumpsuits"
