@@ -69,7 +69,7 @@ function ToggleSwitch({ checked, onChange, disabled, labelledBy }) {
       onClick={() => onChange(!checked)}
       className={clsx(
         "relative inline-flex h-7 w-11 shrink-0 rounded-full transition-colors focus-visible:outline focus-visible:ring-2 focus-visible:ring-neutral-400 focus-visible:ring-offset-2",
-        checked ? "bg-neutral-900" : "bg-neutral-400"
+        checked ? "bg-[#F7246E]" : "bg-neutral-400"
       )}
     >
       <span
@@ -348,7 +348,7 @@ export default function SellerProfile({
                 <button
                   type="button"
                   onClick={openStorePreview}
-                  className="inline-flex h-11 min-h-[44px] min-w-0 flex-1 items-center justify-center gap-2 rounded-xl bg-neutral-900 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-neutral-800 focus-visible:outline focus-visible:ring-2 focus-visible:ring-neutral-400 lg:flex-initial lg:min-w-[168px] lg:px-5"
+                  className="inline-flex h-11 min-h-[44px] min-w-0 flex-1 items-center justify-center gap-2 rounded-xl bg-[#F7246E] px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-[#E0105D] focus-visible:outline focus-visible:ring-2 focus-visible:ring-[#F7246E]/40 lg:flex-initial lg:min-w-[168px] lg:px-5"
                 >
                   <Eye className="h-4 w-4 shrink-0" />
                   <span className="truncate">Store Preview</span>
@@ -356,11 +356,11 @@ export default function SellerProfile({
               </div>
 
               {/* Holiday Mode: label, info, and toggle grouped — no space-between */}
-              <div className="flex w-full justify-start lg:justify-end">
+              <div className="flex w-full justify-end lg:justify-end">
                 <div className="inline-flex items-center gap-2">
                   <span
                     id={toggleLabelId}
-                    className="whitespace-nowrap text-sm font-medium tracking-tight text-neutral-900"
+                    className="whitespace-nowrap text-sm font-medium tracking-tight text-[#2F2F2F]"
                   >
                     Holiday Mode
                   </span>
@@ -392,14 +392,14 @@ export default function SellerProfile({
               className={clsx(
                 "relative flex items-center gap-2 px-1 pb-3 text-sm font-semibold transition",
                 isActive
-                  ? "text-neutral-950"
-                  : "text-neutral-500 hover:text-neutral-800"
+                  ? "text-[#F7246E]"
+                  : "text-neutral-500 hover:text-[#913CFF]"
               )}
             >
               <Icon className="h-4 w-4 shrink-0" strokeWidth={2} />
               {label}
               {isActive && (
-                <span className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full bg-neutral-950" />
+                <span className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full bg-[#F7246E]" />
               )}
             </button>
           );
@@ -703,7 +703,7 @@ export default function SellerProfile({
           <div className="flex justify-end gap-3 border-t border-neutral-100 pt-6">
             <button
               type="submit"
-              className="inline-flex h-11 min-w-[140px] items-center justify-center rounded-xl bg-neutral-900 px-6 text-sm font-semibold text-white shadow-sm transition hover:bg-neutral-800"
+              className="inline-flex h-11 min-w-[140px] items-center justify-center rounded-xl bg-[#F7246E] px-6 text-sm font-semibold text-white shadow-sm transition hover:bg-[#E0105D]"
             >
               Save changes
             </button>
