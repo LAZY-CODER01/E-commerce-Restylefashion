@@ -110,7 +110,7 @@ function BaseInput({ type = "text", value, onChange, placeholder, rightSlot, nam
         onChange={onChange}
         placeholder={placeholder}
         autoComplete={autoComplete}
-        className="h-12 w-full rounded-[11px] border border-gray-200 bg-white px-3.5 py-2.5 pr-24 font-sans text-[15px] font-normal text-gray-600 outline-none transition-[border-color,box-shadow] duration-200 placeholder:text-gray-400 focus:border-brand-pink focus:shadow-[0_0_0_3px_var(--auth-focus)]"
+        className="h-12 w-full rounded-[11px] border border-gray-200 bg-white px-3.5 py-2.5 pr-24 font-sans text-[15px] font-normal text-gray-600 outline-none transition-[border-color,box-shadow] duration-200 placeholder:text-gray-400 focus:border-gray-300 focus:shadow-none"
         style={{ "--auth-focus": PRIMARY_RING }}
       />
       {rightSlot ? (
@@ -484,7 +484,7 @@ function SignupView({ onSwitchToLogin, onAuthSuccess }) {
               value={signupOtp}
               onChange={(e) => setSignupOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
               placeholder="Enter 6-digit OTP"
-              className="mt-4 h-12 w-full rounded-[11px] border border-gray-200 px-3 text-center font-sans text-lg tracking-[0.2em] text-gray-800 outline-none transition-[border-color,box-shadow] duration-200 placeholder:text-gray-300 focus:border-brand-pink focus:shadow-[0_0_0_3px_var(--auth-focus)]"
+              className="mt-4 h-12 w-full rounded-[11px] border border-gray-200 px-3 text-center font-sans text-lg tracking-[0.2em] text-gray-800 outline-none transition-[border-color,box-shadow] duration-200 placeholder:text-gray-300 focus:border-gray-300 focus:shadow-none"
               style={{ "--auth-focus": PRIMARY_RING }}
             />
             {signupOtpError ? (
@@ -769,7 +769,7 @@ function LoginView({ onSwitchToSignup, onAuthSuccess }) {
               onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
               placeholder="••••••"
               aria-label="One-time password"
-              className="h-14 w-full rounded-[11px] border border-gray-200 bg-white px-3 text-center font-sans text-2xl font-semibold tracking-[0.35em] text-gray-800 outline-none transition-[border-color,box-shadow] duration-200 placeholder:text-gray-300 placeholder:tracking-normal focus:border-brand-pink focus:shadow-[0_0_0_3px_var(--auth-focus)] disabled:opacity-60 sm:h-[52px] sm:text-[26px]"
+              className="h-14 w-full rounded-[11px] border border-gray-200 bg-white px-3 text-center font-sans text-2xl font-semibold tracking-[0.35em] text-gray-800 outline-none transition-[border-color,box-shadow] duration-200 placeholder:text-gray-300 placeholder:tracking-normal focus:border-gray-300 focus:shadow-none disabled:opacity-60 sm:h-[52px] sm:text-[26px]"
               style={{ "--auth-focus": PRIMARY_RING }}
               disabled={isLoading || otpSuccess}
             />

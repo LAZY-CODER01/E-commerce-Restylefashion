@@ -175,7 +175,7 @@ function SignupForm() {
           <div className="flex flex-col gap-2 p-3 bg-gray-50 rounded-xl mt-2 border border-brand-pink/20">
             <p className="text-[12px] font-semibold text-brand-pink uppercase">Select Account Type</p>
             <select
-              className="w-full bg-white border border-gray-200 rounded-lg p-2 text-[14px] text-brand-dark outline-none focus:border-brand-pink"
+              className="w-full bg-white border border-gray-200 rounded-lg p-2 text-[14px] text-brand-dark outline-none focus:border-gray-300"
               value={formData.role}
               onChange={(e) => setFormData({ ...formData, role: e.target.value })}
             >

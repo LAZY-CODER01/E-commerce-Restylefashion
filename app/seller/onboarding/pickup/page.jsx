@@ -74,7 +74,7 @@ export default function PickupDetailsPage() {
                         <select 
                           value={formData.state}
                           onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                          className="h-[54px] px-6 border border-gray-200 rounded-full outline-none focus:border-brand-pink transition-all bg-gray-50/50 appearance-none text-[14px] font-bold text-brand-dark cursor-pointer"
+                          className="h-[54px] px-6 border border-gray-200 rounded-full outline-none focus:border-gray-300 transition-all bg-gray-50/50 appearance-none text-[14px] font-bold text-brand-dark cursor-pointer"
                         >
                            <option value="">Select State</option>
                            <option value="MH">Maharashtra</option>
@@ -87,7 +87,7 @@ export default function PickupDetailsPage() {
                         <select 
                           value={formData.city}
                           onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                          className="h-[54px] px-6 border border-gray-200 rounded-full outline-none focus:border-brand-pink transition-all bg-gray-50/50 appearance-none text-[14px] font-bold text-brand-dark cursor-pointer"
+                          className="h-[54px] px-6 border border-gray-200 rounded-full outline-none focus:border-gray-300 transition-all bg-gray-50/50 appearance-none text-[14px] font-bold text-brand-dark cursor-pointer"
                         >
                            <option value="">Select City</option>
                            <option value="Mumbai">Mumbai</option>

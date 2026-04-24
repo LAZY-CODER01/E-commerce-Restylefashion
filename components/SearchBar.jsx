@@ -3,11 +3,11 @@ import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 
 export default function SearchBar({ className }) {
   return (
-    <div className={`relative w-full shadow-sm rounded-full bg-white transition-all duration-300 focus-within:shadow-md focus-within:ring-1 focus-within:ring-brand-pink/20 ${className || ""}`}>
+    <div className={`relative w-full shadow-sm rounded-full bg-white transition-all duration-300 focus-within:shadow-md focus-within:ring-0 ${className || ""}`}>
       <input
         type="text"
         placeholder="Search &quot;Puffer Jackets&quot;"
-        className="w-full h-[52px] rounded-full border border-gray-200 bg-transparent pl-4 pr-12 text-[15px] text-brand-dark placeholder:text-gray-400 outline-none focus:border-brand-pink transition-colors"
+        className="w-full h-[52px] rounded-full border border-gray-200 bg-transparent pl-4 pr-12 text-[15px] text-brand-dark placeholder:text-gray-400 outline-none focus:border-gray-300 transition-colors"
       />
       <button
         aria-label="Search"

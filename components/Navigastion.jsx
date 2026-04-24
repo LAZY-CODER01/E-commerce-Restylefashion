@@ -75,9 +75,9 @@ export default function Navigation() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 bg-brand-light border-b border-gray-200 pb-4 pt-3 w-full">
+      <header className="sticky top-0 z-40 w-full border-b border-gray-200 bg-brand-light pt-2 pb-2.5">
         {/* Row 1: mobile = logo centered; md+ = hamburger + logo left (classic) */}
-        <div className="relative flex items-center justify-between h-14 max-w-[1400px] mx-auto px-4 md:px-9 mb-3">
+        <div className="relative mx-auto mb-2.5 flex h-12 max-w-[1400px] items-center justify-between px-4 md:px-9">
           <div className="flex items-center gap-2 sm:gap-4">
             <button
               aria-label="Open Menu"
@@ -96,13 +96,13 @@ export default function Navigation() {
 
           <Link
             href="/"
-            className="absolute left-[48%] top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 font-extrabold text-[26px] sm:text-[28px] tracking-tight bg-gradient-to-b from-black to-[#F7246E] bg-clip-text text-transparent md:hidden"
+            className="absolute left-[50%] top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 font-extrabold text-[26px] sm:text-[28px] tracking-tight bg-gradient-to-b from-black to-[#F7246E] bg-clip-text text-transparent md:hidden"
           >
             Restyle
           </Link>
 
           {/* Right Actions */}
-          <div className="relative z-10 flex min-w-0 flex-nowrap items-center justify-end gap-1 sm:gap-2">
+          <div className="relative z-10 flex min-w-0 flex-nowrap items-center justify-end gap-1 sm:gap-1.5">
             {pathname.startsWith("/admin") ? (
               <button className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 transition rounded-full pl-2 pr-4 py-1.5 shadow-sm">
                  <div className="w-7 h-7 bg-brand-pink text-white rounded-full flex items-center justify-center">
@@ -201,16 +201,16 @@ export default function Navigation() {
 
         {/* Row 2 - Search (Visible on Home and Influencer pages) */}
         {(pathname === "/" || pathname.startsWith("/influencer")) && (
-          <div className="px-4 md:px-9 max-w-[1400px] mx-auto">
-            <div className="flex items-center gap-3 bg-white rounded-full px-5 py-3.5 border border-gray-200 focus-within:border-brand-pink focus-within:shadow-[0_0_0_3px_rgba(247,36,110,0.07)] shadow-sm transition-all duration-200">
+          <div className="mx-auto max-w-[1400px] px-4 md:px-9">
+            <div className="ml-auto flex w-full max-w-[300px] items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2 shadow-[0_1px_2px_rgba(16,24,40,0.06)] transition-all duration-200 focus-within:border-gray-300 focus-within:shadow-[0_0_0_2px_rgba(148,163,184,0.12)]">
               <input
                 type="text"
-                placeholder='Search "Puffer Jackets"'
-                className="flex-1 bg-transparent text-[15px] text-brand-dark placeholder:text-gray-400 outline-none"
+                placeholder="What are you looking for?"
+                className="flex-1 bg-transparent text-[13px] text-brand-dark placeholder:text-gray-400 outline-none"
                 value={searchQuery}
                 onChange={handleSearchChange}
               />
-              <SearchOutlinedIcon className="text-gray-400" />
+              <SearchOutlinedIcon className="shrink-0 text-[20px] text-gray-400" />
             </div>
           </div>
         )}

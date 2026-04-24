@@ -14,39 +14,39 @@ const SELLER_TYPES = [
   {
     id: "individual",
     title: "Individual",
-    description:
-      "• Sell from your personal Wadrobe\n• preowned personal items",
+    description: "Sell from your personal Wadrobe\npreowned personal items",
     icon: "person",
+    iconImage: "/seller-individual-person.png",
+    iconImageTint: "#C9417A",
     iconWrapClass: "bg-[#FCEFF5]",
     iconClass: "text-[#C9417A]",
   },
   {
     id: "influencer",
     title: "Influencer Shop",
-    description:
-      "• Pass on your looks to yours fans!\n• Public Fashion Creator\n• Minimum ~10K followers",
-    icon: "star",
-    iconWrapClass: "bg-[#F3EEFF]",
-    iconClass: "text-[#6E4BC9]",
+    description: "Pass on your looks to your fans!\nFashion creator with min. 10K followers",
+    icon: "camera",
+    iconWrapClass: "bg-[#FFF0E5]",
+    iconClass: "text-[#E07A3A]",
   },
   {
     id: "thrifter",
     title: "Thrifters",
     description:
-      "• Sell your sourced drops!\n• medium to high inventory\n• regular restocking patterns",
-    icon: "hanger",
-    iconImage: "/thrifter-hanger.png",
+      "Sell your sourced drops!\nmedium to high inventory with regular restocking",
+    icon: "person",
+    iconImage: "/seller-thrifter-hanger.png",
     iconWrapClass: "bg-[#EBFBEF]",
     iconClass: "text-[#22A057]",
   },
   {
     id: "designer",
-    title: "Designer / Brand",
-    description:
-      "• Sell your own designs and new collection !\n• Own brand or label",
-    icon: "crown",
-    iconWrapClass: "bg-[#FFF8E8]",
-    iconClass: "text-[#D5A22A]",
+    title: "Designer",
+    description: "Sell your own designs and new collection !\nOwn brand or label",
+    icon: "briefcase",
+    iconImage: "/seller-designer-dress.png",
+    iconWrapClass: "bg-[#F0EBFF]",
+    iconClass: "text-[#7C5CDB]",
   },
 ];
 
@@ -96,7 +96,7 @@ function SellerTypeIcon({ icon, iconClass }) {
       fill="none"
       stroke="currentColor"
       strokeWidth="1.9"
-      className={clsx("h-7 w-7", iconClass)}
+      className={clsx("shrink-0", iconClass)}
       aria-hidden
     >
       {icon === "person" ? (
@@ -105,46 +105,50 @@ function SellerTypeIcon({ icon, iconClass }) {
           <path d="M6 18.2c.8-2.9 3.1-4.4 6-4.4s5.2 1.5 6 4.4" />
         </>
       ) : null}
-      {icon === "star" ? (
-        <>
-          <rect x="5" y="6" width="14" height="13" rx="2.8" />
-          <path d="M12 9.1l1.15 2.3 2.55.37-1.85 1.8.44 2.54L12 14.9l-2.29 1.2.44-2.54-1.85-1.8 2.55-.37L12 9.1z" />
-        </>
-      ) : null}
-      {icon === "hanger" ? (
+      {icon === "camera" ? (
         <>
           <path
-            d="M12 9.3v-1.1a2.2 2.2 0 1 0-2.2-2.2"
-            strokeWidth="2.6"
+            d="M3 9a2 2 0 0 1 2-2h.93a2 2 0 0 0 1.664-.89l.812-1.22A2 2 0 0 1 10.07 4h3.86a2 2 0 0 1 1.664.89l.812 1.22A2 2 0 0 0 17.07 7H19a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9Z"
             strokeLinecap="round"
             strokeLinejoin="round"
           />
           <path
-            d="M12 8.2 5.1 12.2a2.2 2.2 0 0 0 1.1 4.1h11.6a2.2 2.2 0 0 0 1.1-4.1L12 8.2z"
-            strokeWidth="2.6"
+            d="M15 13a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
             strokeLinecap="round"
             strokeLinejoin="round"
           />
         </>
       ) : null}
-      {icon === "crown" ? (
+      {icon === "briefcase" ? (
         <>
-          <path d="M4.8 18.5h14.4l-1.4-8-4.1 3.4L12 8.7l-1.7 5.2-4.1-3.4-1.4 8z" />
-          <path d="M4.8 18.5h14.4" />
+          <path
+            d="M6.1 0.2H17.0V2.3H6.1V0.2Z"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <rect
+            x="2.2"
+            y="2.3"
+            width="19.6"
+            height="18.6"
+            rx="1.2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
         </>
       ) : null}
     </svg>
   );
 }
 
-function BenefitIcon({ icon }) {
+function BenefitIcon({ icon, className }) {
   return (
     <svg
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
       strokeWidth="1.9"
-      className="h-7 w-7 text-[#121212]"
+      className={clsx("shrink-0 text-[#121212]", className || "h-7 w-7")}
       aria-hidden
     >
       {icon === "headset" ? (
@@ -229,7 +233,7 @@ function OtpFourBoxes({ value, onChange, onFilled, disabled, hasError }) {
             "h-12 w-11 shrink-0 rounded-xl border bg-gray-50/50 text-center text-base font-semibold text-gray-900 outline-none transition-all sm:h-12 sm:w-12",
             hasError
               ? formFieldErrorClass
-              : "border-gray-200 focus:border-rose-500 focus:ring-1 focus:ring-rose-500",
+              : "border-gray-200 focus:border-gray-300 focus:ring-0",
             disabled && "opacity-50"
           )}
         />
@@ -304,7 +308,7 @@ export default function SellerTypePage() {
     if (t === "influencer" || t === "thrifter" || t === "designer") {
       if (!form.instagram.trim()) e.instagram = "Please fill in this field.";
     }
-    if (t === "influencer" || t === "thrifter") {
+    if (t === "influencer" || t === "thrifter" || t === "designer") {
       if (!form.instagramVerified) e.otp = "Please verify with the code sent to your phone.";
     }
     setFieldErrors(e);
@@ -331,7 +335,11 @@ export default function SellerTypePage() {
           : "",
       gstNumber: sellerType === "designer" ? form.gst.trim() : "",
       otpVerified:
-        sellerType === "influencer" || sellerType === "thrifter" ? true : false,
+        sellerType === "influencer" ||
+        sellerType === "thrifter" ||
+        sellerType === "designer"
+          ? true
+          : false,
     };
 
     mergeDraftListing({ sellerType, sellerProfile: profile });
@@ -364,7 +372,7 @@ export default function SellerTypePage() {
   };
 
   return (
-    <div className="min-h-[calc(100dvh-80px)] w-full bg-[#F7F7F8] px-4 py-8 font-sans sm:px-6">
+    <div className="min-h-[calc(100dvh-80px)] w-full bg-[#F7F7F8] px-4 py-4 font-sans sm:px-6 sm:py-8">
       <div className="mx-auto w-full max-w-5xl animate-fadeIn">
         <div className="space-y-6">
           <div className="relative h-[220px] overflow-hidden rounded-3xl bg-[#FCE9F2] shadow-sm sm:h-[290px]">
@@ -393,19 +401,19 @@ export default function SellerTypePage() {
             <p className="mt-3 text-[12px] font-normal leading-[1.45] text-slate-600 sm:mt-4 sm:max-w-[540px] sm:text-[17px] sm:leading-[1.3]">
               Tell us what best describes you.
               <br />
-              We&apos;ll customize your shop experience
+              We&apos;ll customize your store experience
             </p>
           </div>
         </div>
 
-        <div className="flex flex-col gap-4 px-0">
+        <div className="flex max-sm:min-h-0 flex-col gap-4 px-0 sm:gap-4">
           {SELLER_TYPES.map((type) => {
             const open = expandedId === type.id;
             return (
               <div
                 key={type.id}
                 className={clsx(
-                  "overflow-hidden rounded-2xl border bg-white shadow-sm transition-all duration-300 transform-gpu",
+                  "overflow-hidden rounded-xl border bg-white shadow-sm transition-all duration-300 transform-gpu sm:rounded-2xl",
                   open
                     ? "border-brand-pink/40 shadow-md shadow-brand-pink/10"
                     : "border-gray-200 hover:-translate-y-1 hover:border-brand-pink/20 hover:shadow-md"
@@ -414,29 +422,57 @@ export default function SellerTypePage() {
                 <button
                   type="button"
                   onClick={() => toggleExpand(type.id)}
-                  className="flex min-h-[118px] w-full items-center gap-3 px-3.5 py-3.5 text-left sm:px-5 sm:py-4"
+                  className="flex min-h-0 w-full items-center gap-2 px-2.5 py-2 text-left sm:min-h-[118px] sm:gap-3 sm:px-5 sm:py-4"
                 >
                   <span
                     className={clsx(
-                      "flex h-12 w-12 shrink-0 items-center justify-center rounded-xl sm:h-14 sm:w-14",
+                      "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg sm:h-14 sm:w-14 sm:rounded-xl",
                       type.iconWrapClass
                     )}
                   >
                     {type.iconImage ? (
-                      <img
-                        src={type.iconImage}
-                        alt={`${type.title} icon`}
-                        className="h-7 w-7 object-contain"
-                      />
+                      <span className="grid size-5 shrink-0 place-items-center sm:size-7">
+                        {type.iconImageTint ? (
+                          <span
+                            className="h-full w-full"
+                            style={{
+                              backgroundColor: type.iconImageTint,
+                              WebkitMaskImage: `url(${type.iconImage})`,
+                              WebkitMaskSize: "contain",
+                              WebkitMaskPosition: "center",
+                              WebkitMaskRepeat: "no-repeat",
+                              maskImage: `url(${type.iconImage})`,
+                              maskSize: "contain",
+                              maskPosition: "center",
+                              maskRepeat: "no-repeat",
+                            }}
+                            aria-hidden
+                          />
+                        ) : (
+                          <img
+                            src={type.iconImage}
+                            alt={`${type.title} icon`}
+                            className="!h-full !w-full !max-h-full !max-w-full !object-contain !object-center"
+                          />
+                        )}
+                      </span>
                     ) : (
-                      <SellerTypeIcon icon={type.icon} iconClass={type.iconClass} />
+                      <span className="grid size-5 shrink-0 place-items-center sm:size-7">
+                        <SellerTypeIcon
+                          icon={type.icon}
+                          iconClass={clsx(
+                            "!h-full !w-full !min-h-0 !min-w-0",
+                            type.iconClass
+                          )}
+                        />
+                      </span>
                     )}
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block text-[14px] font-bold leading-snug text-brand-dark sm:text-[16px]">
+                    <span className="block text-[12px] font-bold leading-tight text-brand-dark sm:text-[16px] sm:leading-snug">
                       {type.title}
                     </span>
-                    <span className="mt-1 block whitespace-pre-line text-[12px] font-medium leading-relaxed text-slate-500 sm:text-[13px]">
+                    <span className="mt-0.5 block whitespace-pre-line text-[10px] font-medium leading-snug text-slate-500 sm:mt-1 sm:text-[13px] sm:leading-relaxed">
                       {type.description}
                     </span>
                   </span>
@@ -462,7 +498,7 @@ export default function SellerTypePage() {
                   <div className="overflow-hidden">
                     {open ? (
                       <div className="border-t border-gray-100 px-4 pb-5 pt-2 sm:px-5">
-                      <form onSubmit={handleContinue} className="flex flex-col gap-4 pt-2">
+                      <form onSubmit={handleContinue} className="flex flex-col gap-2.5 pt-1">
                         <Input
                           id={`fullName-${type.id}`}
                           placeholder="Full Name"
@@ -504,27 +540,29 @@ export default function SellerTypePage() {
                                   });
                                 }}
                                 className={clsx(
-                                  "h-12 w-full rounded-xl border border-gray-200 bg-gray-50/50 pl-4 pr-24 text-sm font-normal text-gray-900 placeholder:text-gray-500 outline-none transition-all focus:border-rose-500 focus:ring-1 focus:ring-rose-500",
+                                  "h-12 w-full rounded-xl border border-gray-200 bg-gray-50/50 pl-4 pr-24 text-sm font-normal text-gray-900 placeholder:text-gray-500 outline-none transition-all focus:border-gray-300 focus:ring-0",
                                   fieldErrors.instagram && formFieldErrorClass
                                 )}
                               />
-                              {(type.id === "influencer" || type.id === "thrifter") && (
+                              {(type.id === "influencer" ||
+                                type.id === "thrifter" ||
+                                type.id === "designer") && (
                                 <button
                                   type="button"
                                   onClick={handleVerifyInstagram}
                                   disabled={form.instagramVerified}
                                   className={clsx(
-                                    "absolute right-1.5 top-1.5 h-9 rounded-lg px-3 text-xs font-semibold transition",
+                                    "absolute right-2 top-1/2 -translate-y-1/2 h-auto rounded-lg px-1 text-xs font-semibold transition bg-transparent",
                                     form.instagramVerified
-                                      ? "cursor-not-allowed bg-emerald-100 text-emerald-600"
-                                      : "bg-[#FCEFF5] text-[#C9417A] hover:bg-[#FBE4EF]"
+                                      ? "cursor-not-allowed text-emerald-600"
+                                      : "text-[#D95C95] hover:text-[#C94F88]"
                                   )}
                                 >
                                   {form.instagramVerified ? "Verified" : "Verify"}
                                 </button>
                               )}
                             </div>
-                            <div className="min-h-[18px]">
+                            <div className="min-h-[12px]">
                               {fieldErrors.instagram ? (
                                 <span className="text-[12px] text-red-600 font-medium">
                                   {fieldErrors.instagram}
@@ -534,18 +572,9 @@ export default function SellerTypePage() {
                           </div>
                         )}
 
-                        {type.id === "designer" && (
-                          <Input
-                            id={`gst-${type.id}`}
-                            placeholder="GST (optional)"
-                            value={form.gst}
-                            onChange={(e) =>
-                              setForm((f) => ({ ...f, gst: e.target.value }))
-                            }
-                          />
-                        )}
-
-                        {(type.id === "influencer" || type.id === "thrifter") && (
+                        {(type.id === "influencer" ||
+                          type.id === "thrifter" ||
+                          type.id === "designer") && (
                           <div className="flex flex-col gap-2">
                             {form.otpSent && !form.instagramVerified ? (
                               <div className="relative isolate pt-1">
@@ -568,11 +597,22 @@ export default function SellerTypePage() {
                           </div>
                         )}
 
+                        {type.id === "designer" && (
+                          <Input
+                            id={`gst-${type.id}`}
+                            placeholder="GST (optional)"
+                            value={form.gst}
+                            onChange={(e) =>
+                              setForm((f) => ({ ...f, gst: e.target.value }))
+                            }
+                          />
+                        )}
+
                         <Button
                           type="submit"
                           fullWidth
                           disabled={submitting}
-                          className="mt-2 h-12 rounded-full font-bold"
+                          className="mt-1 h-12 rounded-full bg-[#FFF6FA] font-bold text-[#D95C95] !shadow-none [box-shadow:none] hover:bg-[#FFF6FA] hover:!shadow-none hover:[box-shadow:none] focus:!shadow-none focus:[box-shadow:none] active:!shadow-none active:[box-shadow:none]"
                         >
                           {submitting
                             ? "Saving..."
@@ -588,44 +628,41 @@ export default function SellerTypePage() {
           })}
         </div>
         <div>
-          <div className="grid grid-cols-2 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm sm:grid-cols-4">
+          <div className="grid grid-cols-4 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm sm:grid-cols-4 sm:rounded-2xl">
             {SELLER_BENEFITS.map((item, index) => (
               <div
                 key={item.id}
                 className={clsx(
-                  "flex min-h-[132px] flex-col items-center justify-start gap-2 px-3 py-4 text-center sm:min-h-[148px]",
-                  index % 2 === 0 && "border-r border-gray-100",
-                  index < 2 && "border-b border-gray-100",
-                  index !== SELLER_BENEFITS.length - 1 && "sm:border-r sm:border-gray-100",
-                  "sm:border-b-0"
+                  "flex min-h-0 flex-col items-center justify-start gap-0.5 px-1 py-2 text-center sm:min-h-[148px] sm:gap-2 sm:px-3 sm:py-4",
+                  index % 2 === 0 && "max-sm:border-r max-sm:border-gray-100",
+                  index < 2 && "max-sm:border-b max-sm:border-gray-100",
+                  index < 3 && "sm:border-r sm:border-gray-100"
                 )}
               >
-                <span className="flex h-10 w-10 items-center justify-center">
+                <span className="flex h-6 w-6 items-center justify-center sm:h-10 sm:w-10">
                   {item.iconImage ? (
                     <img
                       src={item.iconImage}
                       alt={`${item.title} icon`}
-                      className="h-15 w-15 object-contain"
+                      className="h-5 w-5 object-contain sm:h-10 sm:w-10"
                     />
                   ) : (
-                    <BenefitIcon icon={item.icon} />
+                    <BenefitIcon
+                      icon={item.icon}
+                      className="h-4 w-4 sm:h-7 sm:w-7"
+                    />
                   )}
                 </span>
-                <p className="text-[15px] font-bold leading-snug text-[#171717]">
+                <p className="line-clamp-2 text-[9px] font-bold leading-tight text-[#171717] sm:line-clamp-none sm:text-[15px] sm:font-bold sm:leading-snug">
                   {item.title}
                 </p>
-                <p className="text-[12px] font-medium leading-relaxed text-slate-500">
+                <p className="line-clamp-2 text-[7px] font-medium leading-tight text-slate-500 sm:line-clamp-none sm:text-[12px] sm:leading-relaxed">
                   {item.description}
                 </p>
               </div>
             ))}
           </div>
         </div>
-
-          <p className="pb-2 text-center text-[13px] font-medium text-[#4A4A4A] sm:text-[13px]">
-            Not sure yet? You can{" "}
-            <span className="font-semibold text-[#D8588E]">change this later.</span>
-          </p>
         </div>
       </div>
     </div>

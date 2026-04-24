@@ -126,7 +126,7 @@ export default function DrawerMenu({ open, onClose, drawerRef }) {
             <div className="px-6 left-1  pt-6 pb-4 border-b border-gray-100">
               <div className="flex items-left justify-start gap-3 text-[17px] font-semibold text-brand-dark">
                 <Link
-                  href="/login"
+                  href="/auth"
                   onClick={onClose}
                   className="transition-colors"
                   style={{ color: SALE_RED }}
@@ -135,7 +135,7 @@ export default function DrawerMenu({ open, onClose, drawerRef }) {
                 </Link>
                 <span className="text-gray-300 font-light">|</span>
                 <Link
-                  href="/signup"
+                  href="/auth"
                   onClick={onClose}
                   className="transition-colors"
                   style={{ color: SALE_RED }}
@@ -225,10 +225,14 @@ export default function DrawerMenu({ open, onClose, drawerRef }) {
                   </span>
                   <span className="flex-1">{item.name}</span>
                   {item.name === "Wishlist" ? (
-                    <span className="text-[13px] font-bold text-brand-pink">{wishlistCount}</span>
+                    <span className="text-[13px] font-bold" style={{ color: SALE_RED }}>
+                      {wishlistCount}
+                    </span>
                   ) : null}
                   {item.name === "Orders" ? (
-                    <span className="text-[13px] font-bold text-brand-pink">{cartCount}</span>
+                    <span className="text-[13px] font-bold" style={{ color: SALE_RED }}>
+                      {cartCount}
+                    </span>
                   ) : null}
                 </Link>
               );

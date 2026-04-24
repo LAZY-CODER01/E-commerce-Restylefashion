@@ -4,14 +4,14 @@ import { twMerge } from "tailwind-merge";
 
 /** Single-line fields — same tokens as Boost “Add Card” / payment `INPUT_CLASS`. */
 export const formFieldInputBase =
-  "h-12 w-full rounded-xl border border-gray-200 bg-gray-50/50 px-4 text-sm font-normal text-gray-900 placeholder:text-gray-500 outline-none transition-all focus:border-rose-500 focus:ring-1 focus:ring-rose-500";
+  "h-12 w-full rounded-xl border border-gray-200 bg-gray-50/50 px-4 text-sm font-normal text-gray-900 placeholder:text-gray-500 outline-none transition-all focus:border-gray-300 focus:ring-0";
 
 /** Multi-line — same border/radius/focus as Add Card, taller min-height. */
 export const formFieldTextareaBase =
-  "min-h-[140px] w-full rounded-xl border border-gray-200 bg-gray-50/50 p-4 text-sm font-normal text-gray-900 placeholder:text-gray-500 outline-none transition-all resize-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500";
+  "min-h-[140px] w-full rounded-xl border border-gray-200 bg-gray-50/50 p-4 text-sm font-normal text-gray-900 placeholder:text-gray-500 outline-none transition-all resize-none focus:border-gray-300 focus:ring-0";
 
 export const formFieldErrorClass =
-  "border-red-500 focus:border-red-500 focus:ring-red-500";
+  "border-red-500 focus:border-red-500 focus:ring-0";
 
 const inputErrorClass = formFieldErrorClass;
 

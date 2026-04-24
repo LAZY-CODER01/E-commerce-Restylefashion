@@ -244,7 +244,7 @@ export default function ProductReviews({ config = DEFAULT_CONFIG }) {
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
                         placeholder={config.reviewTitle.placeholder}
-                        className="h-[54px] px-6 border border-gray-200 rounded-full outline-none focus:border-brand-pink focus:ring-1 focus:ring-brand-pink/10 transition-all text-[15px] font-medium text-brand-dark bg-gray-50/50"
+                        className="h-[54px] px-6 border border-gray-200 rounded-full outline-none focus:border-gray-300 focus:ring-0 transition-all text-[15px] font-medium text-brand-dark bg-gray-50/50"
                       />
                     </div>
 
@@ -254,7 +254,7 @@ export default function ProductReviews({ config = DEFAULT_CONFIG }) {
                         value={reviewText}
                         onChange={(e) => setReviewText(e.target.value)}
                         placeholder={config.review.placeholder}
-                        className="min-h-[140px] p-6 border border-gray-200 rounded-[28px] outline-none focus:border-brand-pink focus:ring-1 focus:ring-brand-pink/10 transition-all text-[15px] font-medium text-brand-dark bg-gray-50/50 resize-none leading-relaxed"
+                        className="min-h-[140px] p-6 border border-gray-200 rounded-[28px] outline-none focus:border-gray-300 focus:ring-0 transition-all text-[15px] font-medium text-brand-dark bg-gray-50/50 resize-none leading-relaxed"
                       />
                     </div>
 
@@ -264,7 +264,7 @@ export default function ProductReviews({ config = DEFAULT_CONFIG }) {
                         <select 
                           value={selectedRating}
                           onChange={(e) => setSelectedRating(parseInt(e.target.value))}
-                          className="w-full h-[54px] px-6 border border-gray-200 rounded-full outline-none appearance-none focus:border-brand-pink transition-all text-[15px] font-bold text-brand-dark bg-gray-50/50 cursor-pointer"
+                          className="w-full h-[54px] px-6 border border-gray-200 rounded-full outline-none appearance-none focus:border-gray-300 transition-all text-[15px] font-bold text-brand-dark bg-gray-50/50 cursor-pointer"
                         >
                           <option value="0">{config.rating.placeholder}</option>
                           <option value="5">5 Stars - Amazing</option>

@@ -652,7 +652,7 @@ export default function SellerProfile({
                 onChange={(e) =>
                   setProfileForm((f) => ({ ...f, sellerType: e.target.value }))
                 }
-                className="h-12 w-full rounded-xl border border-gray-200 bg-gray-50/50 px-4 text-sm text-neutral-900 outline-none transition focus:border-rose-500 focus:ring-1 focus:ring-rose-500"
+                className="h-12 w-full rounded-xl border border-gray-200 bg-gray-50/50 px-4 text-sm text-neutral-900 outline-none transition focus:border-gray-300 focus:ring-0"
               >
                 {SELLER_TYPE_OPTIONS.map((o) => (
                   <option key={o.value || "empty"} value={o.value}>
