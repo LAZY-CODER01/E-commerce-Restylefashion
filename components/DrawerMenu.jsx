@@ -91,7 +91,7 @@ export default function DrawerMenu({ open, onClose, drawerRef }) {
       <div
         onClick={onClose}
         aria-hidden="true"
-        className={`fixed inset-0 z-50 bg-black/40 backdrop-blur-sm transition-opacity duration-300 ${open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        className={`fixed inset-0 z-[220] bg-black/40 backdrop-blur-sm transition-opacity duration-300 ${open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
           }`}
       />
 
@@ -101,11 +101,12 @@ export default function DrawerMenu({ open, onClose, drawerRef }) {
         role="dialog"
         aria-modal="true"
         aria-label="Navigation menu"
-        className={`fixed left-0 top-0 z-50 h-[100dvh] w-[85vw] max-w-[360px] bg-white 
+        className={`fixed left-0 top-0 z-[230] h-[100dvh] w-[85vw] max-w-[360px] bg-white 
           flex flex-col overflow-hidden shadow-drawer rounded-br-3xl
           transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]
           ${open ? "translate-x-0" : "-translate-x-full"}`}
       >
+        
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-6 pt-8 border-b border-gray-100">
           <Link href="/" onClick={onClose} className="inline-block font-extrabold text-[28px] tracking-tight bg-gradient-to-b from-black to-[#F7246E] bg-clip-text text-transparent">
