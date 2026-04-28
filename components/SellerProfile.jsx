@@ -600,8 +600,18 @@ export default function SellerProfile({
       )}
 
       {activeTab === "manage" && (
-        <div className="mt-6 rounded-2xl border border-dashed border-neutral-300 bg-neutral-50/80 p-10 text-center text-sm text-neutral-500">
-          Manage tools plug in here (listings, orders, inventory).
+        <div className="mt-6 rounded-2xl border border-dashed border-neutral-300 bg-neutral-50/80 p-6 sm:p-8">
+          <div className="mx-auto flex w-full max-w-2xl flex-col items-center gap-3 text-center">
+            <p className="text-sm font-medium text-neutral-600">
+              See your listings and manage them in one place.
+            </p>
+            <Link
+              href="/profile/listings"
+              className="inline-flex h-11 items-center justify-center rounded-xl bg-[#F7246E] px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#E0105D] focus-visible:outline focus-visible:ring-2 focus-visible:ring-[#F7246E]/40"
+            >
+              See Your Listings
+            </Link>
+          </div>
         </div>
       )}
 
