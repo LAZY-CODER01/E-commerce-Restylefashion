@@ -58,10 +58,10 @@ function MailIcon({ className }) {
 function RestyleLogoMark() {
   return (
     <div className="mx-auto flex flex-col items-center justify-center ">
-      <div className="flex h-[50px] items-center justify-center">
+      <div className="flex min-h-[50px] items-center justify-center overflow-visible py-0.5">
         <Link
           href="/"
-          className="inline-block bg-gradient-to-b from-black to-brand-pink bg-clip-text font-extrabold text-[26px] leading-none tracking-tight text-transparent sm:text-[28px]"
+          className="inline-block overflow-visible bg-gradient-to-b from-black to-brand-pink bg-clip-text pb-0.5 font-extrabold text-[26px] leading-tight tracking-tight text-transparent sm:text-[28px]"
         >
           Restyle
         </Link>

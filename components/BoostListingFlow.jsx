@@ -6,7 +6,6 @@ import { toast } from "react-toastify";
 import { readSellerHubState, writeSellerHubState } from "@/lib/sellerHubProfile";
 import {
   ArrowLeft,
-  Check,
   ChevronRight,
   Circle,
   CircleDot,
@@ -16,7 +15,6 @@ import {
   Rocket,
   Search,
   ShieldCheck,
-  Sparkles,
   Wallet,
   X,
   Zap,
@@ -130,7 +128,7 @@ const SUBVIEW_PANEL_CLASS =
 const SUBVIEW_CLOSE_BTN_CLASS =
   "absolute right-3 top-3 z-10 inline-flex h-9 w-9 items-center justify-center rounded-full text-gray-500 transition hover:bg-gray-100 hover:text-gray-800";
 const CENTER_MODAL_CLASS =
-  "relative m-auto w-full max-w-[440px] overflow-hidden rounded-2xl bg-white shadow-2xl sm:max-w-[520px]";
+  "relative m-auto w-full max-w-[460px] overflow-hidden rounded-2xl bg-white shadow-2xl sm:max-w-[560px]";
 /** Main flow shell (fullscreen boost page) — slightly wider on desktop */
 const MAIN_SHELL_CLASS =
   "relative mx-auto w-full min-h-screen max-w-6xl bg-gray-50/50 p-4 md:px-10 md:py-8";
@@ -322,70 +320,79 @@ export default function BoostListingFlow({
   };
 
   const renderModalStep = () => (
-    <div className={CENTER_MODAL_CLASS}>
-      <div className="relative bg-gradient-to-b from-rose-100/90 via-violet-100/50 to-white px-6 pb-2 pt-10 sm:px-8 sm:pt-12">
-        <button
-          type="button"
-          onClick={onClose}
-          className="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 transition hover:bg-white/60 hover:text-slate-800"
-          aria-label="Close"
-        >
-          <X className="h-5 w-5" strokeWidth={2} />
-        </button>
-        <div className="flex justify-center">
-          <div className="flex h-[88px] w-[88px] items-center justify-center rounded-full bg-white shadow-lg shadow-rose-200/40 ring-1 ring-white/80 sm:h-[100px] sm:w-[100px]">
-            <div className="flex h-[56px] w-[56px] items-center justify-center rounded-full bg-gradient-to-br from-rose-500 to-[#d23284] shadow-md sm:h-[62px] sm:w-[62px]">
-              <Check className="h-8 w-8 text-white sm:h-9 sm:w-9" strokeWidth={3} />
-            </div>
-          </div>
-        </div>
-      </div>
+    <div
+      className={[
+        CENTER_MODAL_CLASS,
+        "p-6 sm:p-8 !overflow-visible",
+      ].join(" ")}
+    >
+      <button
+        type="button"
+        onClick={onClose}
+        className="absolute right-4 top-4 z-10 inline-flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"
+        aria-label="Close"
+      >
+        <X className="h-5 w-5" strokeWidth={2} />
+      </button>
 
-      <div className="px-6 pb-6 pt-2 sm:px-8 sm:pb-8">
-        <h2 className="text-center font-manrope text-2xl font-extrabold tracking-tight text-slate-900 sm:text-[28px]">
-          Your Product is Live!
-        </h2>
-        <p className="mt-3 text-center font-inter text-sm leading-relaxed text-slate-500 sm:text-base">
-          Your listing has been successfully live and is now visible to buyers on the platform.
-        </p>
+      <h2 className="pt-1 text-center font-manrope text-xl font-extrabold tracking-tight text-slate-900 sm:text-2xl">
+        Your product is live ⚡
+      </h2>
+      <p className="mt-2 text-center font-inter text-sm leading-relaxed text-slate-500 sm:text-[15px]">
+        Your product listing is now successfully active.
+      </p>
+      <div className="mt-4 border-b border-slate-200" />
 
-        <div className="relative mt-6 overflow-hidden rounded-2xl bg-slate-50 p-5 transition-shadow duration-200 hover:bg-slate-100/80 hover:shadow-md sm:p-6">
-          <Rocket
-            className="pointer-events-none absolute -right-1 -top-1 h-24 w-24 text-rose-200/35 sm:h-28 sm:w-28"
-            strokeWidth={1.25}
-            aria-hidden
+      <div className="mt-5 flex gap-3 sm:gap-4">
+        <div className="shrink-0" aria-hidden>
+          <img
+            src="/boost-growth-icon.png"
+            alt=""
+            className="h-11 w-11 object-contain sm:h-12 sm:w-12"
+            style={{
+              filter:
+                "brightness(0) saturate(100%) invert(18%) sepia(99%) saturate(5409%) hue-rotate(329deg) brightness(101%) contrast(106%)",
+            }}
           />
-          <div className="relative z-[1] flex items-center gap-2">
-            <Sparkles className="h-5 w-5 shrink-0 text-[#d23284]" strokeWidth={2} />
-            <p className="font-manrope text-base font-bold text-slate-900 sm:text-lg">Maximize your reach</p>
-          </div>
-          <p className="relative z-[1] mt-3 font-inter text-sm leading-relaxed text-slate-600 sm:text-[15px]">
-            Want to reach more buyers faster? Boost your listing to increase visibility, appear higher
-            in search results and attract more views.
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="font-manrope text-sm font-bold text-slate-900 sm:text-base">Want to sell faster?</p>
+          <p className="mt-1.5 font-inter text-[13px] leading-relaxed text-slate-600 sm:text-sm">
+            Boost your listing to increase visibility, appear higher in search results and attract more
+            views.
           </p>
         </div>
+      </div>
 
+      <button
+        type="button"
+        onClick={() => setCurrentStep("select_package")}
+        className="mt-5 h-12 w-full rounded-xl bg-[#008A45] font-inter text-sm font-bold text-white transition hover:bg-[#007A3D] active:scale-[0.99] sm:h-[52px] sm:text-base"
+      >
+        Boost Listing
+      </button>
+
+      <div className="mt-5 flex items-center gap-2">
+        <div className="h-px flex-1 bg-slate-200" />
+        <span className="shrink-0 font-inter text-xs font-medium text-slate-400">or</span>
+        <div className="h-px flex-1 bg-slate-200" />
+      </div>
+
+      <div className="mt-5 flex gap-3">
         <button
           type="button"
-          onClick={() => setCurrentStep("select_package")}
-          className="mt-6 h-12 w-full rounded-xl bg-gradient-to-r from-rose-500 to-[#d23284] font-inter text-sm font-semibold text-white shadow-md shadow-rose-500/25 transition hover:brightness-105 active:scale-[0.98] sm:h-14 sm:text-base"
+          onClick={() => router.push("/profile/listings")}
+          className="h-11 min-h-0 flex-1 rounded-xl border border-slate-200 bg-white font-inter text-sm font-medium text-slate-900 transition hover:bg-slate-50 active:scale-[0.99] sm:h-12"
         >
-          Boost Listing
+          View My Listings
         </button>
         <button
           type="button"
           onClick={onClose}
-          className="mt-6 w-full text-center font-inter text-sm font-medium text-slate-500 transition hover:text-slate-800"
+          className="h-11 min-h-0 flex-1 rounded-xl border border-slate-200 bg-white font-inter text-sm font-medium text-slate-900 transition hover:bg-slate-50 active:scale-[0.99] sm:h-12"
         >
-          Maybe Later
+          List Another Item
         </button>
-      </div>
-
-      <div className="flex items-center justify-center gap-2 border-t border-slate-100 bg-slate-50/90 px-4 py-3">
-        <ShieldCheck className="h-4 w-4 shrink-0 text-emerald-600" strokeWidth={2.25} />
-        <p className="text-center font-inter text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-700">
-          Verified marketplace transaction
-        </p>
       </div>
     </div>
   );

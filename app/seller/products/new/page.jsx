@@ -10,7 +10,7 @@ import Button from "@/components/Button";
 import { useRouter, usePathname } from "next/navigation";
 import { toast } from "react-toastify";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import { Camera, X, Loader, Check, Sparkles, Rocket, ShieldCheck } from "lucide-react";
+import { Camera, X, Loader } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import api from "@/lib/api";
 import {
@@ -49,12 +49,27 @@ const FIELD_ORDER = [
   "sellingPrice",
 ];
 
+const DESCRIPTION_MAX_CHARS = 100;
+
+function countDescriptionChars(text) {
+  return String(text ?? "").length;
+}
+
+/** Keeps at most `max` characters; extra input from paste/typing is dropped. */
+function clampDescriptionToMaxChars(text, max = DESCRIPTION_MAX_CHARS) {
+  return String(text ?? "").slice(0, max);
+}
+
 function readInitialProductForm() {
   if (typeof window === "undefined") return defaultProductForm;
   const draft = getDraftListing();
   if (draft?.product) {
     const { brand: _b, ...rest } = draft.product;
-    return { ...defaultProductForm, ...rest };
+    return {
+      ...defaultProductForm,
+      ...rest,
+      description: clampDescriptionToMaxChars(rest.description ?? ""),
+    };
   }
   return defaultProductForm;
 }
@@ -108,10 +123,13 @@ const CONDITION_OPTIONS = [
   },
 ];
 
-function SelectChevron() {
+function SelectChevron({ open = false }) {
   return (
     <span
-      className="pointer-events-none absolute right-4 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center text-brand-dark/50"
+      className={clsx(
+        "pointer-events-none absolute right-4 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center text-brand-dark/50 transition-transform duration-200",
+        open && "rotate-180"
+      )}
       aria-hidden
     >
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -217,7 +235,11 @@ export default function NewProductPage() {
       const draft = getDraftListing();
       if (draft?.product) {
         const { brand: _b, ...rest } = draft.product;
-        setFormData({ ...defaultProductForm, ...rest });
+        setFormData({
+          ...defaultProductForm,
+          ...rest,
+          description: clampDescriptionToMaxChars(rest.description ?? ""),
+        });
       }
       if (draft?.imageDataUrls?.length) {
         try {
@@ -317,13 +339,22 @@ export default function NewProductPage() {
 
   useEffect(() => {
     if (!isConditionDropdownOpen) return;
-    const onClickOutside = (e) => {
+    const onKey = (e) => {
+      if (e.key === "Escape") setIsConditionDropdownOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [isConditionDropdownOpen]);
+
+  useEffect(() => {
+    if (!isConditionDropdownOpen) return;
+    const onPointer = (e) => {
       if (conditionDropdownRef.current && !conditionDropdownRef.current.contains(e.target)) {
         setIsConditionDropdownOpen(false);
       }
     };
-    document.addEventListener("mousedown", onClickOutside);
-    return () => document.removeEventListener("mousedown", onClickOutside);
+    document.addEventListener("mousedown", onPointer);
+    return () => document.removeEventListener("mousedown", onPointer);
   }, [isConditionDropdownOpen]);
 
   useEffect(() => {
@@ -358,13 +389,83 @@ export default function NewProductPage() {
     setPriceField("sellingPrice", raw);
   };
 
+  const clearDescriptionFieldError = () => {
+    setFieldErrors((prev) => {
+      const n = { ...prev };
+      delete n.description;
+      return n;
+    });
+  };
+
+  const applyDescriptionValue = (next) => {
+    setFormData((prev) => ({ ...prev, description: clampDescriptionToMaxChars(next) }));
+  };
+
+  const descriptionInputWouldTruncate = (next) =>
+    clampDescriptionToMaxChars(next) !== next;
+
+  const handleDescriptionChange = (e) => {
+    applyDescriptionValue(e.target.value);
+    clearDescriptionFieldError();
+  };
+
+  const handleDescriptionBeforeInput = (e) => {
+    if (e.inputType?.startsWith("delete")) return;
+    if (e.inputType === "insertFromComposition" || (e.inputType && String(e.inputType).includes("Composition")))
+      return;
+    if (e.inputType === "insertFromPaste" || e.inputType === "insertFromDrop") {
+      e.preventDefault();
+      return;
+    }
+
+    const el = e.currentTarget;
+    const start = el.selectionStart;
+    const end = el.selectionEnd;
+    if (start == null || end == null) return;
+
+    let insert = e.data;
+    if (e.inputType === "insertLineBreak" || e.inputType === "insertParagraph") {
+      insert = "\n";
+    } else if (insert == null) return;
+
+    const next = el.value.slice(0, start) + insert + el.value.slice(end);
+    if (descriptionInputWouldTruncate(next)) e.preventDefault();
+  };
+
+  const handleDescriptionPaste = (e) => {
+    e.preventDefault();
+    const text = e.clipboardData.getData("text/plain");
+    const el = e.currentTarget;
+    const start = el.selectionStart ?? 0;
+    const end = el.selectionEnd ?? 0;
+    const next = el.value.slice(0, start) + text + el.value.slice(end);
+    applyDescriptionValue(next);
+    clearDescriptionFieldError();
+  };
+
+  const handleDescriptionDrop = (e) => {
+    e.preventDefault();
+    const text = e.dataTransfer.getData("text/plain");
+    if (!text) return;
+    const el = e.currentTarget;
+    const start = el.selectionStart ?? 0;
+    const end = el.selectionEnd ?? 0;
+    const next = el.value.slice(0, start) + text + el.value.slice(end);
+    applyDescriptionValue(next);
+    clearDescriptionFieldError();
+  };
+
   const validateProductForm = () => {
     const err = {};
 
     if (!formData.name.trim()) err.name = "Please fill in this field.";
     if (!formData.category) err.category = "Please fill in this field.";
     if (!formData.condition) err.condition = "Please fill in this field.";
-    if (!formData.description.trim()) err.description = "Please fill in this field.";
+    if (!formData.description.trim()) {
+      err.description = "Please fill in this field.";
+    } else if (countDescriptionChars(formData.description) > DESCRIPTION_MAX_CHARS) {
+      err.description = `Description must be ${DESCRIPTION_MAX_CHARS} characters or fewer.`;
+    }
     if (!formData.sizes.length) err.sizes = "Please fill in this field.";
     if (imageFiles.length === 0) err.photos = "Please fill in this field.";
 
@@ -615,7 +716,7 @@ export default function NewProductPage() {
 
   return (
     <div className="min-h-screen bg-brand-light flex items-center justify-center p-4 pb-24 font-roboto">
-      <div className="w-full max-w-2xl bg-white rounded-[32px] shadow-sm overflow-hidden animate-fadeIn pb-12">
+      <div className="w-full max-w-2xl overflow-visible rounded-[32px] bg-white shadow-sm animate-fadeIn pb-12">
         <div className="relative p-8 border-b border-gray-100 flex items-center justify-center">
           <div className="absolute left-8 top-1/2 -translate-y-1/2">
             <button
@@ -725,8 +826,8 @@ export default function NewProductPage() {
             <h3 className="text-[14px] font-bold text-brand-dark uppercase tracking-widest pl-3 border-l-4 border-brand-pink">
               Product Detail
             </h3>
-            <div className="grid grid-cols-1 gap-y-2 gap-x-4 md:grid-cols-2">
-              <div id="field-name">
+            <div className="grid grid-cols-1 gap-x-4 gap-y-4 md:grid-cols-2">
+              <div id="field-name" className="md:col-span-2">
                 <Input
                   label="Product Name"
                   placeholder="e.g. Vintage Denim Jacket"
@@ -740,15 +841,17 @@ export default function NewProductPage() {
                     });
                   }}
                   error={fieldErrors.name}
+                  className="!rounded-2xl"
                 />
               </div>
 
               <div id="field-category" className="flex flex-col gap-1.5">
-                <label className="text-[12px] font-bold text-brand-dark uppercase tracking-widest pl-1">
+                <label className="text-[14px] font-medium text-brand-dark" htmlFor="product-category">
                   Category
                 </label>
                 <div className="relative isolate w-full">
                   <select
+                    id="product-category"
                     value={formData.category}
                     onChange={(e) => {
                       setFormData({ ...formData, category: e.target.value });
@@ -759,7 +862,7 @@ export default function NewProductPage() {
                       });
                     }}
                     className={clsx(
-                      "cursor-pointer appearance-none py-0 pl-4 pr-12",
+                      "cursor-pointer appearance-none py-0 pl-4 pr-12 !rounded-2xl",
                       formFieldInputBase,
                       fieldErrors.category && formFieldErrorClass
                     )}
@@ -782,77 +885,93 @@ export default function NewProductPage() {
 
               <div
                 id="field-condition"
-                className={`flex flex-col gap-1 ${isConditionDropdownOpen ? "relative z-30" : ""}`}
+                className={`flex flex-col gap-1.5 ${isConditionDropdownOpen ? "relative z-[100]" : ""}`}
               >
-                <div className="flex items-center justify-start gap-1 pl-1">
-                  <label className="text-[12px] font-semibold text-brand-dark uppercase tracking-widest">
+                <div className="relative w-full" ref={conditionDropdownRef}>
+                  <label
+                    id="field-condition-label"
+                    className="block text-[14px] font-medium text-brand-dark"
+                    htmlFor={!isConditionDropdownOpen ? "product-condition-trigger" : undefined}
+                  >
                     Condition
                   </label>
-                </div>
-                <div className="relative isolate w-full" ref={conditionDropdownRef}>
-                  <button
-                    type="button"
-                    onClick={() => setIsConditionDropdownOpen((prev) => !prev)}
-                    className={clsx(
-                      "cursor-pointer py-0 pl-4 pr-12 text-left",
-                      formFieldInputBase,
-                      fieldErrors.condition && formFieldErrorClass
+
+                  <div className="relative mt-1.5 min-h-12 w-full">
+                    {!isConditionDropdownOpen && (
+                      <div className="relative isolate w-full">
+                        <button
+                          id="product-condition-trigger"
+                          type="button"
+                          onClick={() => setIsConditionDropdownOpen((prev) => !prev)}
+                          className={clsx(
+                            "h-12 w-full cursor-pointer py-0 pl-4 pr-12 text-left !rounded-2xl",
+                            formFieldInputBase,
+                            fieldErrors.condition && formFieldErrorClass
+                          )}
+                          aria-haspopup="listbox"
+                          aria-expanded={false}
+                          aria-labelledby="field-condition-label"
+                        >
+                          {formData.condition || "Select Condition"}
+                        </button>
+                        <SelectChevron open={false} />
+                      </div>
                     )}
-                    aria-haspopup="listbox"
-                    aria-expanded={isConditionDropdownOpen}
-                  >
-                    {formData.condition || "Select Condition"}
-                  </button>
-                  <SelectChevron />
-                  {isConditionDropdownOpen ? (
-                    <div
-                      role="listbox"
-                      className="absolute left-0 right-0 z-40 mt-1 max-h-80 overflow-y-auto rounded-none border border-gray-200 bg-white p-1.5 shadow-xl"
-                    >
-                      {CONDITION_OPTIONS.map((option) => {
-                        const selected = formData.condition === option.title;
-                        return (
-                          <button
-                            key={option.title}
-                            type="button"
-                            role="option"
-                            aria-selected={selected}
-                            onClick={() => {
-                              setFormData({ ...formData, condition: option.title });
-                              setFieldErrors((prev) => {
-                                const n = { ...prev };
-                                delete n.condition;
-                                return n;
-                              });
-                              setIsConditionDropdownOpen(false);
-                            }}
-                            className={`w-full rounded-xl px-3 py-2 text-left transition ${
-                              selected ? "bg-brand-pink/10" : "bg-white hover:bg-gray-50"
-                            }`}
-                          >
-                            <div className="flex items-start gap-2.5">
-                              <span
-                                className={`mt-1 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full border ${
-                                  selected ? "border-brand-pink" : "border-gray-300"
-                                }`}
-                                aria-hidden
-                              >
+                    {isConditionDropdownOpen && (
+                      <div
+                        role="listbox"
+                        aria-labelledby="field-condition-label"
+                        className="absolute left-1/2 top-0 z-50 w-[min(100%,24rem)] max-w-md -translate-x-1/2 max-h-80 overflow-y-auto rounded-2xl border border-gray-200 bg-white p-1.5 shadow-xl"
+                      >
+                        {CONDITION_OPTIONS.map((option) => {
+                          const selected = formData.condition === option.title;
+                          return (
+                            <button
+                              key={option.title}
+                              type="button"
+                              role="option"
+                              aria-selected={selected}
+                              onClick={() => {
+                                setFormData({ ...formData, condition: option.title });
+                                setFieldErrors((prev) => {
+                                  const n = { ...prev };
+                                  delete n.condition;
+                                  return n;
+                                });
+                                setIsConditionDropdownOpen(false);
+                              }}
+                              className={`w-full rounded-xl px-3 py-2 text-left transition ${
+                                selected ? "bg-brand-pink/10" : "bg-white hover:bg-gray-50"
+                              }`}
+                            >
+                              <div className="flex items-start gap-2.5">
                                 <span
-                                  className={`h-2 w-2 rounded-full ${
-                                    selected ? "bg-brand-pink" : "bg-transparent"
+                                  className={`mt-1 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full border ${
+                                    selected ? "border-brand-pink" : "border-gray-300"
                                   }`}
-                                />
-                              </span>
-                              <span className="min-w-0">
-                                <p className="text-[15px] font-medium leading-snug text-brand-dark">{option.title}</p>
-                                <p className="mt-0.5 text-xs font-normal leading-snug text-gray-500">{option.description}</p>
-                              </span>
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  ) : null}
+                                  aria-hidden
+                                >
+                                  <span
+                                    className={`h-2 w-2 rounded-full ${
+                                      selected ? "bg-brand-pink" : "bg-transparent"
+                                    }`}
+                                  />
+                                </span>
+                                <span className="min-w-0">
+                                  <p className="text-[15px] font-medium leading-snug text-brand-dark">
+                                    {option.title}
+                                  </p>
+                                  <p className="mt-0.5 text-xs font-normal leading-snug text-gray-500">
+                                    {option.description}
+                                  </p>
+                                </span>
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <div className="min-h-[18px]">
                   {fieldErrors.condition ? (
@@ -868,20 +987,30 @@ export default function NewProductPage() {
                 <div className="relative isolate w-full">
                   <textarea
                     value={formData.description}
-                    onChange={(e) => {
-                      setFormData({ ...formData, description: e.target.value });
-                      setFieldErrors((prev) => {
-                        const n = { ...prev };
-                        delete n.description;
-                        return n;
-                      });
-                    }}
+                    onChange={handleDescriptionChange}
+                    onBeforeInput={handleDescriptionBeforeInput}
+                    onPaste={handleDescriptionPaste}
+                    onDrop={handleDescriptionDrop}
                     placeholder="Share your story about this product..."
                     className={clsx(
                       formFieldTextareaBase,
+                      "pb-9",
                       fieldErrors.description && formFieldErrorClass
                     )}
+                    aria-describedby="description-count"
                   />
+                  <p
+                    id="description-count"
+                    className={clsx(
+                      "pointer-events-none absolute bottom-2.5 right-3 text-[11px] sm:text-xs tabular-nums",
+                      countDescriptionChars(formData.description) >= DESCRIPTION_MAX_CHARS
+                        ? "font-medium text-amber-800"
+                        : "text-gray-500"
+                    )}
+                    aria-label={`${countDescriptionChars(formData.description)} of ${DESCRIPTION_MAX_CHARS} characters`}
+                  >
+                    {countDescriptionChars(formData.description)}/{DESCRIPTION_MAX_CHARS}
+                  </p>
                 </div>
                 <div className="min-h-[18px]">
                   {fieldErrors.description ? (
@@ -905,16 +1034,16 @@ export default function NewProductPage() {
                   </button>
                 </div>
                 <div className="relative isolate w-full">
-                  <div className="flex gap-3 flex-wrap cursor-pointer">
+                  <div className="grid w-full grid-cols-5 gap-1.5 sm:gap-2.5">
                     {sizes.map((size) => (
                       <button
                         type="button"
                         key={size}
                         onClick={() => toggleSize(size)}
-                        className={`h-[48px] w-[60px] rounded-xl border font-bold transition-all cursor-pointer
+                        className={`flex h-9 w-full min-w-0 max-w-full items-center justify-center rounded-md border text-[12px] font-bold leading-none transition-colors sm:h-9 sm:rounded-lg sm:text-[13px]
                           ${formData.sizes.includes(size)
-                            ? "bg-brand-pink text-white border-brand-pink"
-                            : "bg-gray-50 text-brand-dark border-gray-200 hover:border-brand-pink"
+                            ? "border-brand-pink bg-brand-pink/10 text-brand-pink"
+                            : "border-gray-200 bg-white text-brand-dark hover:border-gray-300"
                           }`}
                       >
                         {size}
@@ -933,21 +1062,47 @@ export default function NewProductPage() {
                 {/* <p className="text-[11px] font-medium text-gray-500 pl-1"> */}
                   {/* Selling price auto-fills at <span className="font-bold text-brand-dark">30% off MRP</span> (max 70% of MRP). You can lower it further; raising it above that shows an error. */}
                 {/* </p> */}
-                <div className="grid grid-cols-1 items-start gap-x-3 gap-y-2 sm:grid-cols-2">
+                <div className="grid grid-cols-1 items-stretch gap-x-3 gap-y-2 sm:grid-cols-2 sm:items-start">
                   <div id="field-retailPrice" className="min-w-0">
-                    <Input
-                      label="Retail Price (MRP)"
-                      placeholder="e.g. 2999"
-                      inputMode="numeric"
-                      value={formData.retailPrice}
-                      onChange={(e) => handleRetailPriceChange(e.target.value)}
-                      error={fieldErrors.retailPrice}
-                    />
+                    <div className="flex w-full flex-col gap-1.5">
+                      <div className="flex min-h-[26px] items-center gap-1">
+                        <label
+                          htmlFor="product-retail-price"
+                          className="text-[14px] font-medium leading-none text-brand-dark"
+                        >
+                          Retail Price (MRP)
+                        </label>
+                      </div>
+                      <div className="relative isolate w-full">
+                        <input
+                          id="product-retail-price"
+                          type="text"
+                          inputMode="numeric"
+                          value={formData.retailPrice}
+                          onChange={(e) => handleRetailPriceChange(e.target.value)}
+                          placeholder="e.g. 2999"
+                          className={clsx(
+                            formFieldInputBase,
+                            fieldErrors.retailPrice && formFieldErrorClass
+                          )}
+                        />
+                      </div>
+                      <div className="min-h-[18px]">
+                        {fieldErrors.retailPrice ? (
+                          <span className="text-[12px] font-medium text-red-600">
+                            {fieldErrors.retailPrice}
+                          </span>
+                        ) : null}
+                      </div>
+                    </div>
                   </div>
                   <div id="field-sellingPrice" className="min-w-0">
                     <div className="flex w-full flex-col gap-1.5">
-                      <div className="flex items-center justify-start gap-1">
-                        <label className="text-[13px] font-medium leading-snug text-brand-dark sm:text-[14px]">
+                      <div className="flex min-h-[26px] items-center gap-1">
+                        <label
+                          htmlFor="product-selling-price"
+                          className="text-[14px] font-medium leading-none text-brand-dark"
+                        >
                           Selling Price *
                         </label>
                         <div className="relative shrink-0" ref={sellingInfoRef}>
@@ -968,6 +1123,7 @@ export default function NewProductPage() {
                       </div>
                       <div className="relative isolate w-full">
                         <input
+                          id="product-selling-price"
                           type="text"
                           inputMode="numeric"
                           value={formData.sellingPrice}
@@ -1166,90 +1322,92 @@ export default function NewProductPage() {
 
       {liveModalOpen && (
         <div
-          className="fixed inset-0 z-[120] flex items-center justify-center bg-black/45 p-4 backdrop-blur-[2px] sm:p-6"
+          className="fixed inset-0 z-[120] flex items-center justify-center bg-black/40 p-4 backdrop-blur-[1px] sm:p-6"
           role="dialog"
           aria-modal="true"
           aria-labelledby="product-live-title"
         >
-          <div className="relative z-[121] w-full max-w-[420px] overflow-hidden rounded-2xl bg-white shadow-2xl sm:max-w-[480px]">
-            {/* Top: soft gradient + success mark */}
-            <div className="relative bg-gradient-to-b from-rose-100/90 via-violet-100/50 to-white px-6 pb-2 pt-10 sm:px-8 sm:pt-12">
-              <button
-                type="button"
-                onClick={() => {
-                  setLiveModalOpen(false);
-                  router.push("/seller/profile");
-                }}
-                className="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 transition hover:bg-white/60 hover:text-slate-800"
-                aria-label="Close"
-              >
-                <X className="h-5 w-5" strokeWidth={2} />
-              </button>
-              <div className="flex justify-center">
-                <div className="flex h-[88px] w-[88px] items-center justify-center rounded-full bg-white shadow-lg shadow-rose-200/40 ring-1 ring-white/80 sm:h-[100px] sm:w-[100px]">
-                  <div className="flex h-[56px] w-[56px] items-center justify-center rounded-full bg-gradient-to-br from-rose-500 to-[#d23284] shadow-md sm:h-[62px] sm:w-[62px]">
-                    <Check className="h-8 w-8 text-white sm:h-9 sm:w-9" strokeWidth={3} />
-                  </div>
-                </div>
-              </div>
-            </div>
+          <div className="relative z-[121] w-full max-w-[460px] overflow-hidden rounded-2xl bg-white p-6 shadow-2xl sm:max-w-[520px] sm:p-8">
+            <button
+              type="button"
+              onClick={() => setLiveModalOpen(false)}
+              className="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"
+              aria-label="Close"
+            >
+              <X className="h-5 w-5" strokeWidth={2} />
+            </button>
 
-            <div className="px-6 pb-6 pt-2 sm:px-8 sm:pb-8">
-              <h2
-                id="product-live-title"
-                className="text-center font-manrope text-2xl font-extrabold tracking-tight text-slate-900 sm:text-[28px]"
-              >
-                Your Product is Live!
-              </h2>
-              <p className="mt-3 text-center font-inter text-sm leading-relaxed text-slate-500 sm:text-base">
-                Your listing has been successfully live and is now visible to buyers on the platform.
-              </p>
+            <h2
+              id="product-live-title"
+              className="pt-1 text-center font-manrope text-xl font-extrabold tracking-tight text-slate-900 sm:text-2xl"
+            >
+              Your product is live ⚡
+            </h2>
+            <p className="mt-2 text-center font-inter text-sm leading-relaxed text-slate-500 sm:text-[15px]">
+              Your product listing is now successfully active.
+            </p>
+            <div className="mt-4 border-b border-slate-200" />
 
-              <div className="relative mt-6 overflow-hidden rounded-2xl bg-slate-50 p-5 sm:p-6">
-                <Rocket
-                  className="pointer-events-none absolute -right-1 -top-1 h-24 w-24 text-rose-200/35 sm:h-28 sm:w-28"
-                  strokeWidth={1.25}
-                  aria-hidden
+            <div className="mt-5 flex gap-3 sm:gap-4">
+              <div className="shrink-0" aria-hidden>
+                <img
+                  src="/boost-growth-icon.png"
+                  alt=""
+                  className="h-11 w-11 object-contain sm:h-12 sm:w-12"
+                  style={{
+                    filter:
+                      "brightness(0) saturate(100%) invert(18%) sepia(99%) saturate(5409%) hue-rotate(329deg) brightness(101%) contrast(106%)",
+                  }}
                 />
-                <div className="relative z-[1] flex items-center gap-2">
-                  <Sparkles className="h-5 w-5 shrink-0 text-[#d23284]" strokeWidth={2} />
-                  <p className="font-manrope text-base font-bold text-slate-900 sm:text-lg">
-                    Maximize your reach
-                  </p>
-                </div>
-                <p className="relative z-[1] mt-3 font-inter text-sm leading-relaxed text-slate-600 sm:text-[15px]">
-                  Want to reach more buyers faster? Boost your listing to increase visibility, appear
-                  higher in search results and attract more views.
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="font-manrope text-sm font-bold text-slate-900 sm:text-base">
+                  Want to sell faster?
+                </p>
+                <p className="mt-1.5 font-inter text-[13px] leading-relaxed text-slate-600 sm:text-sm">
+                  Boost your listing to increase visibility, appear higher in search results and
+                  attract more views.
                 </p>
               </div>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setLiveModalOpen(false);
-                  router.push("/seller/boost");
-                }}
-                className="mt-6 h-12 w-full rounded-xl bg-gradient-to-r from-rose-500 to-[#d23284] font-inter text-sm font-semibold text-white shadow-md shadow-rose-500/25 transition hover:brightness-105 active:scale-[0.98] sm:h-14 sm:text-base"
-              >
-                Boost Listing
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setLiveModalOpen(false);
-                  router.push("/seller/profile");
-                }}
-                className="mt-6 w-full text-center font-inter text-sm font-medium text-slate-500 transition hover:text-slate-800"
-              >
-                Maybe Later
-              </button>
             </div>
 
-            <div className="flex items-center justify-center gap-2 border-t border-slate-100 bg-slate-50/90 px-4 py-3">
-              <ShieldCheck className="h-4 w-4 shrink-0 text-emerald-600" strokeWidth={2.25} />
-              <p className="text-center font-inter text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-700">
-                Verified marketplace transaction
-              </p>
+            <button
+              type="button"
+              onClick={() => {
+                setLiveModalOpen(false);
+                router.push("/seller/boost");
+              }}
+              className="mt-5 h-12 w-full rounded-xl bg-[#008A45] font-inter text-sm font-bold text-white transition hover:bg-[#007A3D] active:scale-[0.99] sm:h-[52px] sm:text-base"
+            >
+              Boost Listing
+            </button>
+
+            <div className="mt-5 flex items-center gap-2">
+              <div className="h-px flex-1 bg-slate-200" />
+              <span className="shrink-0 font-inter text-xs font-medium text-slate-400">or</span>
+              <div className="h-px flex-1 bg-slate-200" />
+            </div>
+
+            <div className="mt-5 flex gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setLiveModalOpen(false);
+                  router.push("/profile/listings");
+                }}
+                className="h-11 min-h-0 flex-1 rounded-xl border border-slate-200 bg-white font-inter text-sm font-medium text-slate-900 transition hover:bg-slate-50 active:scale-[0.99] sm:h-12"
+              >
+                View My Listings
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setLiveModalOpen(false);
+                }}
+                className="h-11 min-h-0 flex-1 rounded-xl border border-slate-200 bg-white font-inter text-sm font-medium text-slate-900 transition hover:bg-slate-50 active:scale-[0.99] sm:h-12"
+              >
+                List Another Item
+              </button>
             </div>
           </div>
         </div>
