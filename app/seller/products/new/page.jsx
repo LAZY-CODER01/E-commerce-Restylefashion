@@ -454,6 +454,7 @@ export default function NewProductPage() {
     const next = el.value.slice(0, start) + text + el.value.slice(end);
     applyDescriptionValue(next);
     clearDescriptionFieldError();
+    
   };
 
   const validateProductForm = () => {
