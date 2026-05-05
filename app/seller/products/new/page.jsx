@@ -30,6 +30,7 @@ const SOCIAL_SELLER_TYPES = new Set(["influencer", "designer", "thrifter"]);
 
 const defaultProductForm = {
   sizes: [],
+  colors: [],
   name: "",
   category: "",
   description: "",
@@ -557,6 +558,15 @@ export default function NewProductPage() {
     });
   };
 
+  const toggleColor = (color) => {
+    setFormData((prev) => {
+      const updatedColors = prev.colors.includes(color)
+        ? prev.colors.filter((c) => c !== color)
+        : [...prev.colors, color];
+      return { ...prev, colors: updatedColors };
+    });
+  };
+
   const handleRemoveImage = (index) => {
     setImageFiles((prev) => prev.filter((_, i) => i !== index));
     setImagePreviews((prev) => {
@@ -647,6 +657,7 @@ export default function NewProductPage() {
       fd.append("price", sanitizePriceDigits(formData.sellingPrice));
       fd.append("originalPrice", sanitizePriceDigits(formData.retailPrice));
       fd.append("sizes", JSON.stringify(formData.sizes));
+      fd.append("colors", JSON.stringify(formData.colors));
       imageFiles.forEach((file) => fd.append("images", file));
 
       const draft = getDraftListing();
@@ -1057,6 +1068,71 @@ export default function NewProductPage() {
                   ) : null}
                 </div>
               </div>
+
+              {/* ── Color Picker ──────────────────────────────────────────── */}
+              <div id="field-colors" className="flex flex-col gap-1.5 md:col-span-2">
+                <span className="text-[12px] font-bold text-brand-dark uppercase tracking-widest pl-1">
+                  Colour (optional)
+                </span>
+                <div className="flex flex-wrap gap-3 pl-1">
+                  {[
+                    { name: "Black",      hex: "#1C1C1E" },
+                    { name: "White",      hex: "#FFFFFF" },
+                    { name: "Red",        hex: "#E8001C" },
+                    { name: "Pink",       hex: "#F7246E" },
+                    { name: "Blue",       hex: "#2563EB" },
+                    { name: "Light Blue", hex: "#93C5FD" },
+                    { name: "Navy",       hex: "#1E3A5F" },
+                    { name: "Green",      hex: "#16A34A" },
+                    { name: "Yellow",     hex: "#FBBF24" },
+                    { name: "Orange",     hex: "#F97316" },
+                    { name: "Purple",     hex: "#7C3AED" },
+                    { name: "Brown",      hex: "#92400E" },
+                    { name: "Beige",      hex: "#D4B896" },
+                    { name: "Grey",       hex: "#9CA3AF" },
+                  ].map(({ name, hex }) => {
+                    const selected = formData.colors.includes(name);
+                    return (
+                      <button
+                        key={name}
+                        type="button"
+                        title={name}
+                        onClick={() => toggleColor(name)}
+                        className={`relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-all duration-150 ${
+                          selected
+                            ? "ring-2 ring-brand-pink ring-offset-2"
+                            : "ring-1 ring-gray-200 hover:ring-gray-300"
+                        }`}
+                        style={{ backgroundColor: hex }}
+                        aria-label={name}
+                        aria-pressed={selected}
+                      >
+                        {selected && (
+                          <svg
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke={name === "White" || name === "Beige" || name === "Light Blue" || name === "Yellow" ? "#1C1C1E" : "#FFFFFF"}
+                            strokeWidth="3"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            aria-hidden
+                          >
+                            <path d="M20 6L9 17l-5-5" />
+                          </svg>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+                {formData.colors.length > 0 && (
+                  <p className="text-[11px] font-medium text-gray-500 pl-1">
+                    Selected: {formData.colors.join(", ")}
+                  </p>
+                )}
+              </div>
+              {/* ───────────────────────────────────────────────────────────── */}
 
               <div className="grid grid-cols-1 gap-1 md:col-span-2">
                 {/* <p className="text-[11px] font-medium text-gray-500 pl-1"> */}

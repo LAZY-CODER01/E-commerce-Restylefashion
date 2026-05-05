@@ -296,6 +296,7 @@ router.post(
                 fit,
                 care,
                 sizes,
+                colors,
                 socialMediaName,
                 businessName,
                 onboardingSellerType,
@@ -387,7 +388,8 @@ router.post(
                 details: { fabric, fit, care },
                 images: imageUrls,
                 imageUrl: imageUrls[0] || "",
-                sizes: sizes ? (typeof sizes === "string" ? JSON.parse(sizes) : sizes) : undefined,
+                sizes: sizes ? (typeof sizes === "string" ? JSON.parse(sizes) : sizes) : [],
+                colors: colors ? (typeof colors === "string" ? JSON.parse(colors) : colors) : [],
                 seller: req.user._id,
                 status: "pending",
             });

@@ -109,7 +109,11 @@ const productSchema = new mongoose.Schema(
         ],
         sizes: {
             type: [String],
-            default: ["XS", "S", "M", "L", "XL"],
+            default: [],
+        },
+        colors: {
+            type: [String],
+            default: [],
         },
         seller: {
             type: mongoose.Schema.Types.ObjectId,
