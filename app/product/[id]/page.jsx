@@ -250,7 +250,18 @@ export default function ProductDetailsPage({ params }) {
 
   const handleBuyNow = () => {
     if (!selectedSize) { toast.warn("Please select a size before buying."); return; }
-    toast.info("Redirecting to checkout...");
+    addToBag({
+      id: product.id ?? product._id,
+      title: product.title,
+      brand: product.brand,
+      price: product.price,
+      originalPrice: product.originalPrice,
+      imageUrl: product.imageUrl,
+      selectedSize,
+      selectedColor: selectedColor || (product.colors?.[0] ?? ""),
+      qty: 1,
+    });
+    router.push("/checkout");
   };
 
   const handleCheckPincode = () => {

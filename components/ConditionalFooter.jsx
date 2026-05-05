@@ -13,7 +13,8 @@ export default function ConditionalFooter() {
     pathname === "/seller/dashboard" ||
     pathname === "/seller/orders" ||
     pathname === "/seller/wallet" ||
-    pathname === "/seller/store"
+    pathname === "/seller/store" ||
+    pathname === "/checkout"
   ) {
     return null;
   }

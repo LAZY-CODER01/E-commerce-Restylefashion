@@ -73,6 +73,9 @@ export default function Navigation() {
     }
   };
 
+  // Hide main nav on checkout — it has its own header
+  if (pathname === "/checkout") return null;
+
   return (
     <>
       <header className="sticky top-0 z-40 w-full border-b border-gray-200 bg-brand-light pt-2 pb-2.5">
