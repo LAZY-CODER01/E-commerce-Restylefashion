@@ -20,6 +20,7 @@ git remote -v
 git add .
 git commit -m "initial commit"
 git push --set-upstream origin maingit add .
+
 git commit -m ""
 git push origin main
 
