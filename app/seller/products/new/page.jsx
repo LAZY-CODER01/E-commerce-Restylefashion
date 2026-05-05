@@ -728,7 +728,7 @@ export default function NewProductPage() {
             </button>
           </div>
           <div className="flex flex-col items-center text-center">
-            <h2 className="text-[20px] font-bold text-brand-dark">Create Listing</h2>
+            <h1 className="text-[20px] font-bold text-brand-pink">Snap, Describe, Sell</h1>
           </div>
           {/* <div className="p-2.5 px-3 bg-brand-pink/5 rounded-full flex items-center gap-2 text-brand-pink">
             <span className="text-[11px] font-bold uppercase tracking-tight">
@@ -1135,6 +1135,11 @@ export default function NewProductPage() {
                           )}
                         />
                       </div>
+                      {Number.isFinite(retailNum) && retailNum > 0 && !fieldErrors.sellingPrice && (
+                        <p className="text-[11px] font-medium text-brand-pink pl-1">
+                          💡 Recommended price: <span className="font-bold">₹{maxSellingForRetail(retailNum)}</span> (30% off MRP)
+                        </p>
+                      )}
                       <div
                         className={clsx(
                           "min-h-[18px]",
@@ -1150,6 +1155,7 @@ export default function NewProductPage() {
                     </div>
                   </div>
                 </div>
+
               </div>
             </div>
 

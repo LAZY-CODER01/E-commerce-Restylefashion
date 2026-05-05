@@ -8,6 +8,7 @@ import LocalMallOutlinedIcon from '@mui/icons-material/LocalMallOutlined';
 import MailOutlineOutlinedIcon from '@mui/icons-material/MailOutlineOutlined';
 import HelpOutlineOutlinedIcon from '@mui/icons-material/HelpOutlineOutlined';
 import CloseOutlinedIcon from '@mui/icons-material/CloseOutlined';
+import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
 import { useAuth } from "@/context/AuthContext";
 import { usePathname, useRouter } from "next/navigation";
 import StorefrontOutlinedIcon from '@mui/icons-material/StorefrontOutlined';
@@ -21,7 +22,7 @@ import { DRAWER_CATEGORY_ITEMS } from "@/data/categories";
 
 const SECONDARY_ITEMS = [
   {
-    name: "My Account",
+    name: "My Store",
     icon: <PersonOutlineOutlinedIcon />,
     link: "/profile"
   },
@@ -123,82 +124,158 @@ export default function DrawerMenu({ open, onClose, drawerRef }) {
 
         {/* Scrollable Nav */}
         <nav className="flex-1 overflow-y-auto pb-8">
-          {!isAdminRoute && !user && (
-            <div className="px-6 left-1  pt-6 pb-4 border-b border-gray-100">
-              <div className="flex items-left justify-start gap-3 text-[17px] font-semibold text-brand-dark">
-                <Link
-                  href="/auth"
-                  onClick={onClose}
-                  className="transition-colors"
-                  style={{ color: SALE_RED }}
-                >
-                  Login
-                </Link>
-                <span className="text-gray-300 font-light">|</span>
-                <Link
-                  href="/auth"
-                  onClick={onClose}
-                  className="transition-colors"
-                  style={{ color: SALE_RED }}
-                >
-                  Sign up
-                </Link>
+          {!isAdminRoute && (
+            <div className="px-6 pt-6 pb-6 border-b border-gray-100">
+              {user ? (
+                <div className="flex items-center gap-4">
+                  <div className="w-[60px] h-[60px] rounded-full border border-brand-pink p-[2px] shrink-0">
+                    <div className="w-full h-full rounded-full bg-gray-100 flex items-center justify-center text-[22px] font-medium text-gray-500 overflow-hidden">
+                      {user.avatar ? (
+                        <img src={user.avatar} alt={user.fullName} className="w-full h-full object-cover" />
+                      ) : (
+                        user.fullName?.charAt(0)?.toUpperCase() || "U"
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex flex-col justify-center">
+                    <h2 className="text-[17px] text-gray-800 font-medium leading-snug">
+                      Hey, {user.fullName?.split(' ')[0] || "User"} <span className="inline-block ml-0.5">💕</span>
+                    </h2>
+                    <p className="text-[14px] text-gray-500 mt-0.5 leading-snug">Buy pre-loved. Style better.</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex gap-3">
+                  <Link
+                    href="/login"
+                    onClick={onClose}
+                    className="flex-1 py-2.5 text-center bg-brand-pink text-white rounded-xl font-medium text-[16px] transition-opacity hover:opacity-90"
+                  >
+                    Login
+                  </Link>
+                  <Link
+                    href="/signup"
+                    onClick={onClose}
+                    className="flex-1 py-2.5 text-center border border-brand-pink text-brand-pink bg-white rounded-xl font-medium text-[16px] transition-colors hover:bg-gray-50"
+                  >
+                    Sign up
+                  </Link>
+                </div>
+              )}
+
+              {/* Sell with us banner */}
+              <div className="mt-6 w-full rounded-[16px] bg-[#FFF5F8] overflow-hidden flex relative border border-pink-100">
+                <div className="p-4 py-5 z-10 flex flex-col justify-center w-[60%]">
+                  <h3 className="text-[17px] font-bold text-gray-900 leading-tight">Sell with us</h3>
+                  <p className="text-[13px] text-gray-600 mt-1 mb-3">Earn more. Empower style.</p>
+                  <Link href="/seller/login" onClick={onClose} className="bg-brand-pink text-white text-[13px] font-semibold px-4 py-1.5 rounded-lg self-start transition-opacity hover:opacity-90 shadow-sm shadow-brand-pink/20">
+                    Start Selling
+                  </Link>
+                </div>
+                {/* Right side decorative background */}
+                <div className="absolute right-0 top-0 bottom-0 w-[50%] overflow-hidden">
+                   <div className="w-[150%] h-[150%] bg-[#FFD6E4] rounded-l-[100px] absolute top-[-25%] right-[-15%]"></div>
+                   {/* In a real app, the specific clothing rack image would go here. We use a placeholder image for now if you add it. */}
+                </div>
               </div>
             </div>
           )}
 
           {/* Categories/Admin Section */}
           <div className="px-6 py-6 border-b border-gray-100">
-            <h3 className="text-[14px] font-bold text-gray-400 tracking-wider mb-6">
-              {isAdminRoute ? "ADMIN PANEL" : "CATEGORIES"}
-            </h3>
-            <div className="flex flex-col gap-6">
-              {isAdminRoute ? (
-                ADMIN_ITEMS.map((item) => {
-                  const isActive = pathname === item.path;
-                  return (
-                    <Link
-                      key={item.title}
-                      href={item.path}
-                      onClick={onClose}
-                      className={`group flex items-center gap-4 px-6 py-4 rounded-[20px] text-[17px] font-semibold transition-all duration-200 border border-transparent ${
-                        isActive 
-                        ? "bg-brand-pink text-white shadow-lg shadow-brand-pink/20" 
-                        : "text-brand-dark bg-transparent hover:bg-white hover:text-brand-pink hover:shadow-md hover:border-gray-100"
-                      }`}
+            {isAdminRoute ? (
+              <>
+                <h3 className="text-[14px] font-bold text-gray-400 tracking-wider mb-6">ADMIN PANEL</h3>
+                <div className="flex flex-col gap-6">
+                  {ADMIN_ITEMS.map((item) => {
+                    const isActive = pathname === item.path;
+                    return (
+                      <Link
+                        key={item.title}
+                        href={item.path}
+                        onClick={onClose}
+                        className={`group flex items-center gap-4 px-6 py-4 rounded-[20px] text-[17px] font-semibold transition-all duration-200 border border-transparent ${
+                          isActive 
+                          ? "bg-brand-pink text-white shadow-lg shadow-brand-pink/20" 
+                          : "text-brand-dark bg-transparent hover:bg-white hover:text-brand-pink hover:shadow-md hover:border-gray-100"
+                        }`}
+                      >
+                        <span className={`${isActive ? "text-white" : "text-gray-400 group-hover:text-brand-pink"} transition-colors`}>
+                          {item.icon}
+                        </span>
+                        {item.title}
+                      </Link>
+                    )
+                  })}
+                </div>
+              </>
+            ) : (
+              <div className="flex flex-col">
+                <h3 className="text-[13px] font-bold text-gray-500 tracking-widest mb-4">
+                  SHOP BY CATEGORY
+                </h3>
+                <div className="flex flex-col gap-5">
+                  {DRAWER_CATEGORY_ITEMS.filter(item => item.section === "shop").map((item) => (
+                    <button
+                      key={item.id}
+                      onClick={() => handleCategoryClick(item.id)}
+                      className="group flex items-center justify-between text-left transition-colors"
                     >
-                      <span className={`${isActive ? "text-white" : "text-gray-400 group-hover:text-brand-pink"} transition-colors`}>
-                        {item.icon}
-                      </span>
-                      {item.title}
-                    </Link>
-                  )
-                })
-              ) : (
-                DRAWER_CATEGORY_ITEMS.map((item) => (
-                  <button
-                    key={item.id}
-                    onClick={() => handleCategoryClick(item.id)}
-                    className={`group flex items-center justify-between text-left text-[17px] font-semibold transition-colors ${
-                      item.labelAccent === "hot"
-                        ? "text-[#ff1f3d]"
-                        : activeCategory === item.id
-                          ? "text-brand-pink"
-                          : "text-brand-dark hover:text-brand-pink"
-                    }`}
-                    style={item.labelAccent === "hot" ? { color: SALE_RED } : undefined}
-                  >
-                    {item.label}
-                    <KeyboardArrowRightOutlinedIcon
-                      className={`${
-                        activeCategory === item.id ? (item.labelAccent === "hot" ? "text-[#ff1f3d]" : "text-brand-pink") : "text-gray-300"
-                      } transition-colors shrink-0 ${item.labelAccent === "hot" ? "group-hover:text-[#ff1f3d]" : "group-hover:text-brand-pink"}`}
-                      style={item.labelAccent === "hot" ? { color: SALE_RED } : undefined}
-                    />
-                  </button>
-                ))
-              )}
-            </div>
+                      <div className="flex items-center gap-4">
+                        <div className="w-[52px] h-[64px] bg-gray-100 rounded-lg overflow-hidden shrink-0">
+                          {item.image && <img src={item.image} alt={item.label} className="w-full h-full object-cover" />}
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-[16px] font-semibold text-gray-800 group-hover:text-brand-pink transition-colors flex items-center">
+                            {item.label}
+                            {item.labelAccent === "new" && (
+                              <span className="ml-2 text-[11px] font-bold tracking-wider" style={{ color: SALE_RED }}>NEW</span>
+                            )}
+                          </span>
+                          <span className="text-[13px] text-gray-500 mt-0.5">{item.subtitle}</span>
+                        </div>
+                      </div>
+                      <KeyboardArrowRightOutlinedIcon className="text-gray-300 group-hover:text-brand-pink transition-colors" />
+                    </button>
+                  ))}
+                </div>
+
+                <h3 className="text-[13px] font-bold text-gray-500 tracking-widest mt-8 mb-4">
+                  DISCOVER MORE
+                </h3>
+                <div className="flex flex-col gap-5">
+                  {DRAWER_CATEGORY_ITEMS.filter(item => item.section === "discover").map((item) => (
+                    <button
+                      key={item.id}
+                      onClick={() => handleCategoryClick(item.id)}
+                      className="group flex items-center justify-between text-left transition-colors"
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="w-[52px] h-[64px] rounded-lg overflow-hidden shrink-0 flex items-center justify-center bg-gray-100">
+                          {item.image === "flame-icon" ? (
+                            <div className="w-full h-full bg-[#FFE5ED] flex items-center justify-center">
+                              <LocalFireDepartmentIcon style={{ color: SALE_RED, fontSize: 32 }} />
+                            </div>
+                          ) : (
+                            item.image && <img src={item.image} alt={item.label} className="w-full h-full object-cover" />
+                          )}
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-[16px] font-semibold transition-colors flex items-center" style={item.labelAccent === "hot" ? { color: SALE_RED } : { color: "#1F2937" }}>
+                            {item.label}
+                            {item.labelAccent === "hot" && (
+                              <span className="ml-2 text-[11px] font-bold tracking-wider" style={{ color: SALE_RED }}>HOT</span>
+                            )}
+                          </span>
+                          <span className="text-[13px] text-gray-500 mt-0.5">{item.subtitle}</span>
+                        </div>
+                      </div>
+                      <KeyboardArrowRightOutlinedIcon className="text-gray-300 group-hover:text-brand-pink transition-colors" />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Secondary Links Section */}

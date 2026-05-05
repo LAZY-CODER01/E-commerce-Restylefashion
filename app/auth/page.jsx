@@ -337,7 +337,7 @@ function SignupView({ onSwitchToLogin, onAuthSuccess }) {
 
   return (
     <div className="w-full min-w-0 max-w-[420px] rounded-2xl border border-gray-100 bg-white p-4 shadow-[0_8px_40px_rgba(0,0,0,0.06)] sm:p-9">
-      <div className="mb-6 text-center sm:mb-8">
+      <div className="mb-6 text-center sm:mb-8 p-2">
         <RestyleLogoMark />
       </div>
 
