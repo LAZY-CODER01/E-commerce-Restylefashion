@@ -152,10 +152,10 @@ export default function Navigation() {
                   Sell
                 </button>
 {/* 22C55E */}
-                {/* Account / Profile */}
+                {/* Account / Profile — guests go to login/signup then return here */}
                 <Link
-                  href="/profile"
-                  aria-label="Account"
+                  href={user ? "/profile" : "/auth?next=/profile"}
+                  aria-label={user ? "Account" : "Log in or sign up"}
                   className="group relative flex items-center justify-center transition-all duration-300"
                 >
                   {user ? (

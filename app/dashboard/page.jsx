@@ -74,7 +74,7 @@ export default function MyListingsDashboard() {
   useEffect(() => {
     if (authLoading) return;
     if (!user) {
-      router.replace("/login?redirect=/dashboard");
+      router.replace("/auth?next=/dashboard");
       return;
     }
 
