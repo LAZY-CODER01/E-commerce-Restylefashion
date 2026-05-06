@@ -13,7 +13,7 @@ function getActiveId(pathname) {
   if (pathname === "/") {
     return "home";
   }
-  if (pathname === "/seller/dashboard" || pathname === "/seller/wallet") {
+  if (pathname.startsWith("/dashboard") || pathname === "/seller/dashboard" || pathname === "/seller/wallet") {
     return "dashboard";
   }
   if (pathname.startsWith("/seller/products")) return "products";
@@ -43,11 +43,11 @@ export default function SellerProcessBottomNav() {
         <HomeIcon sx={{ fontSize: 24 }} />
         <span className="max-w-full truncate text-[9px] font-bold uppercase tracking-tight sm:text-[10px] sm:tracking-wider">Home</span>
       </Link>
-      <Link href="/seller/dashboard" className={itemClass("dashboard")}>
+      <Link href="/dashboard" className={itemClass("dashboard")}>
         <DashboardIcon sx={{ fontSize: 24 }} />
         <span className="max-w-full truncate text-[9px] font-bold uppercase tracking-tight sm:text-[10px] sm:tracking-wider">Dashboard</span>
       </Link>
-      <Link href="/seller/products/new" className={itemClass("products")}>
+      <Link href="/seller/store" className={itemClass("products")}>
         <ShoppingBagIcon sx={{ fontSize: 24 }} />
         <span className="max-w-full truncate text-[9px] font-bold uppercase tracking-tight sm:text-[10px] sm:tracking-wider">Products</span>
       </Link>

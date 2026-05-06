@@ -1,147 +1,225 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import SearchIcon from "@mui/icons-material/Search";
-import FilterListIcon from "@mui/icons-material/FilterList";
+import ArrowBackOutlinedIcon from "@mui/icons-material/ArrowBackOutlined";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import SellerProcessBottomNav from "@/components/SellerProcessBottomNav";
 
-const ORDER_STATS = [
-  { label: "Pending Orders", count: 120, color: "bg-orange-50 text-orange-600" },
-  { label: "Pickups Due", count: 118, color: "bg-blue-50 text-blue-600" },
-  { label: "In-transit", count: 101, color: "bg-purple-50 text-brand-purple" },
-  { label: "Sold", count: 109, color: "bg-green-50 text-green-600" }
-];
-
-const FILTERS = ["All Orders", "Pending Orders", "Pickups Due", "Returns", "Completed"];
+const TABS = ["All Orders", "Pending Orders", "Pickups Due", "In-transit", "Delivered"];
 
 const MOCK_ORDERS = [
-  { id: "#RT-2091", name: "Vintage Denim Jacket", detail: "Size M • Blue", price: "₹845.20", status: "In-transit", statusColor: "text-blue-600 bg-blue-50", image: "https://images.unsplash.com/photo-1542272604-787c3835535d?auto=format&fit=crop&w=100&q=80" },
-  { id: "#RT-2092", name: "Floral Summer Dress", detail: "Size S • Yellow", price: "₹1,245.00", status: "Delivered", statusColor: "text-green-600 bg-green-50", image: "https://images.unsplash.com/photo-1576995853123-5a10305d93c0?auto=format&fit=crop&w=100&q=80" },
-  { id: "#RT-2093", name: "Leather Crossbody Bag", detail: "One Size • Brown", price: "₹2,100.00", status: "Completed", statusColor: "text-gray-600 bg-gray-50", image: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=100&q=80" },
-  { id: "#RT-2094", name: "Retro Graphic T-Shirt", detail: "Size L • White", price: "₹450.00", status: "Pending", statusColor: "text-orange-600 bg-orange-50", image: "https://images.unsplash.com/photo-1512314889357-e157c22f938d?auto=format&fit=crop&w=100&q=80" },
-  { id: "#RT-2095", name: "Nike Air Max 90", detail: "Size 9 • White/Red", price: "₹4,500.00", status: "Pickup Due", statusColor: "text-purple-600 bg-purple-50", image: "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&w=100&q=80" }
+  {
+    id: "#ORD10293",
+    product: "Oversized Graphic Tee",
+    date: "31 May",
+    time: "10:24 AM",
+    price: "₹999.00",
+    status: "In-transit",
+    image:
+      "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=200&q=80",
+  },
+  {
+    id: "#ORD10292",
+    product: "Swing Bag 20 In",
+    date: "31 May",
+    time: "09:15 AM",
+    price: "₹999.00",
+    status: "Delivered",
+    image:
+      "https://images.unsplash.com/photo-1523779105320-d1cd346ff52b?auto=format&fit=crop&w=200&q=80",
+  },
+  {
+    id: "#ORD10291",
+    product: "Utility Cargo Pants",
+    date: "30 May",
+    time: "08:47 PM",
+    price: "₹999.00",
+    status: "Pending",
+    image:
+      "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&w=200&q=80",
+  },
+  {
+    id: "#ORD10290",
+    product: "Lost In Space Hoodie",
+    date: "30 May",
+    time: "07:30 PM",
+    price: "₹999.00",
+    status: "In-transit",
+    image:
+      "https://images.unsplash.com/photo-1520975958221-b5d5c8f6fcb9?auto=format&fit=crop&w=200&q=80",
+  },
+  {
+    id: "#ORD10289",
+    product: "Graffiti Denim Jacket",
+    date: "29 May",
+    time: "06:12 PM",
+    price: "₹999.00",
+    status: "Delivered",
+    image:
+      "https://images.unsplash.com/photo-1520975869013-38f7bdf1f9a3?auto=format&fit=crop&w=200&q=80",
+  },
 ];
 
+function statusPill(status) {
+  switch (status) {
+    case "Pending":
+      return "bg-orange-50 text-orange-700";
+    case "Pickups Due":
+      return "bg-violet-50 text-violet-700";
+    case "In-transit":
+      return "bg-sky-50 text-sky-700";
+    case "Delivered":
+      return "bg-emerald-50 text-emerald-700";
+    default:
+      return "bg-gray-50 text-gray-600";
+  }
+}
+
 export default function SellerOrdersPage() {
-  const [activeFilter, setActiveFilter] = useState("All Orders");
+  const [activeTab, setActiveTab] = useState("All Orders");
   const [searchQuery, setSearchQuery] = useState("");
 
-  const filteredOrders = MOCK_ORDERS.filter((order) => {
-    const searchMatch = 
-      order.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      order.detail.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      order.status.toLowerCase().includes(searchQuery.toLowerCase());
+  const stats = useMemo(() => {
+    const pendingOrders = MOCK_ORDERS.filter((o) => o.status === "Pending").length;
+    const pickupsDue = MOCK_ORDERS.filter((o) => o.status === "Pickups Due").length;
+    const inTransit = MOCK_ORDERS.filter((o) => o.status === "In-transit").length;
+    const delivered = MOCK_ORDERS.filter((o) => o.status === "Delivered").length;
+    return [
+      { label: "Pending Orders", value: pendingOrders },
+      { label: "Pickups Due", value: pickupsDue },
+      { label: "In-transit", value: inTransit },
+      { label: "Delivered", value: delivered },
+    ];
+  }, []);
 
-    if (activeFilter === "All Orders") return searchMatch;
+  const filteredOrders = useMemo(() => {
+    const q = (searchQuery || "").trim().toLowerCase();
+    return MOCK_ORDERS.filter((o) => {
+      const searchMatch =
+        !q ||
+        o.id.toLowerCase().includes(q) ||
+        o.product.toLowerCase().includes(q) ||
+        o.status.toLowerCase().includes(q);
 
-    let filterMatch = false;
-    if (activeFilter === "Pending Orders") filterMatch = order.status === "Pending" || order.status === "In-transit";
-    else if (activeFilter === "Pickups Due") filterMatch = order.status === "Pickup Due";
-    else if (activeFilter === "Returns") filterMatch = order.status === "Returned";
-    else if (activeFilter === "Completed") filterMatch = order.status === "Completed" || order.status === "Delivered";
-
-    return searchMatch && filterMatch;
-  });
+      if (!searchMatch) return false;
+      if (activeTab === "All Orders") return true;
+      if (activeTab === "Pending Orders") return o.status === "Pending";
+      if (activeTab === "Pickups Due") return o.status === "Pickups Due";
+      if (activeTab === "In-transit") return o.status === "In-transit";
+      if (activeTab === "Delivered") return o.status === "Delivered";
+      return true;
+    });
+  }, [activeTab, searchQuery]);
 
   return (
-    <div className="min-h-screen bg-brand-light pb-24 font-roboto">
-      
-      <main className="max-w-[1400px] mx-auto px-6 pt-8 flex flex-col gap-8 animate-fadeIn">
-         
-         {/* Heading */}
-         <div className="flex flex-col">
-            <h2 className="text-[32px] font-bold text-brand-dark leading-tight tracking-tight">Orders</h2>
-            <p className="text-[13px] font-bold text-gray-400 uppercase tracking-widest mt-1">Transaction History & Status</p>
-         </div>
+    <div className="min-h-[100dvh] bg-[#F5F5F5] pb-28 font-sans text-neutral-900">
+      {/* Top bar (no pink header) */}
+      <header className="sticky top-0 z-30 border-b border-gray-200 bg-white/95 px-4 py-4 backdrop-blur-md md:px-9">
+        <div className="mx-auto flex w-full max-w-[1200px] items-center justify-between">
+          <button
+            type="button"
+            onClick={() => window.history.back()}
+            className="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-700 shadow-sm transition hover:bg-gray-50"
+            aria-label="Back"
+          >
+            <ArrowBackOutlinedIcon sx={{ fontSize: 22 }} />
+          </button>
 
-         {/* Search Bar */}
-         <div className="flex items-center gap-4">
-            <div className="flex-1 max-w-xl flex items-center gap-3 bg-white border border-gray-200 rounded-full px-5 py-3.5 focus-within:border-gray-300 focus-within:shadow-[0_0_0_2px_rgba(148,163,184,0.12)] shadow-sm transition-all duration-200">
-               <SearchIcon className="text-gray-400 scale-90" />
-               <input 
-                 type="text" 
-                 value={searchQuery}
-                 onChange={(e) => setSearchQuery(e.target.value)}
-                 placeholder='Search "Shirts", "#RT-2091"...'
-                 className="flex-1 bg-transparent text-[15px] text-brand-dark placeholder:text-gray-400 outline-none"
-               />
+          <h1 className="text-[16px] font-extrabold tracking-tight text-[#000000] md:text-[18px]">
+            Orders
+          </h1>
+
+          <span className="inline-block h-10 w-10" aria-hidden />
+        </div>
+      </header>
+
+      <main className="mx-auto w-full max-w-[1200px] px-4 pb-10 md:px-9">
+        {/* Search */}
+        <div className="mt-4 md:mt-6">
+          <div className="mx-auto flex max-w-[900px] items-center rounded-2xl border border-gray-200 bg-white px-4 py-3 shadow-sm">
+            <SearchIcon className="text-gray-400" />
+            <input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search by order ID or product"
+              className="ml-2 w-full bg-transparent text-[13px] font-medium text-gray-700 outline-none placeholder:text-gray-400"
+            />
+          </div>
+        </div>
+
+        {/* Stats cards */}
+        <div className="mt-4 grid grid-cols-2 gap-3 md:mt-6 md:gap-4">
+          {stats.map((s) => (
+            <div
+              key={s.label}
+              className="rounded-2xl border border-gray-200 bg-white px-4 py-4 shadow-sm md:px-5"
+            >
+              <p className="text-[12px] font-medium text-gray-500">{s.label}</p>
+              <p className="mt-2 text-[22px] font-extrabold text-[#000000]">{s.value}</p>
             </div>
-            <button className="w-14 h-14 rounded-full bg-white border border-gray-100 hover:bg-gray-50 flex items-center justify-center text-brand-dark shadow-sm shrink-0 transition-colors">
-               <FilterListIcon />
-            </button>
-         </div>
-         
-         {/* Summary Cards */}
-         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-            {ORDER_STATS.map((stat, i) => (
-               <div key={i} className={`p-8 rounded-[28px] border border-gray-100 bg-white shadow-sm flex flex-col gap-2`}>
-                  <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">{stat.label}</span>
-                  <span className={`text-[28px] font-bold ${stat.color.split(' ')[1]}`}>{stat.count}</span>
-               </div>
+          ))}
+        </div>
+
+        {/* Tabs */}
+        <div className="mt-4 overflow-x-auto border-b border-gray-200">
+          <div className="flex min-w-max gap-6 px-1">
+            {TABS.map((t) => (
+              <button
+                key={t}
+                type="button"
+                onClick={() => setActiveTab(t)}
+                className={`relative pb-3 text-[13px] font-semibold ${
+                  activeTab === t ? "text-[#F7246E]" : "text-gray-500"
+                }`}
+              >
+                {t}
+                {activeTab === t ? (
+                  <span className="absolute inset-x-0 -bottom-[1px] h-[3px] rounded-full bg-[#F7246E]" />
+                ) : null}
+              </button>
             ))}
-         </div>
+          </div>
+        </div>
 
-         {/* Filter Tabs */}
-         <div className="flex gap-3 overflow-x-auto pb-2 -mx-2 px-2 scrollbar-none">
-            {FILTERS.map((filter) => (
-               <button
-                 key={filter}
-                 onClick={() => setActiveFilter(filter)}
-                 className={`h-[44px] px-8 rounded-full text-[13px] font-bold whitespace-nowrap transition-all border ${
-                   activeFilter === filter 
-                    ? "bg-brand-pink border-brand-pink text-white shadow-md shadow-brand-pink/20" 
-                    : "bg-white border-gray-100 text-brand-dark hover:border-brand-pink/30 hover:text-brand-pink"
-                 }`}
-               >
-                 {filter}
-               </button>
-            ))}
-         </div>
-
-         {/* Sort & List Container */}
-         <div className="flex flex-col gap-4">
-            <div className="flex justify-between items-center px-2">
-               <span className="text-[12px] font-bold text-gray-400 uppercase tracking-widest">Order Results</span>
-               <div className="flex items-center gap-1 text-brand-dark font-bold text-[13px] cursor-pointer">
-                  Sort By <KeyboardArrowRightIcon sx={{ fontSize: 18, transform: 'rotate(90deg)' }} />
-               </div>
+        {/* Orders list */}
+        <div className="mt-3 divide-y divide-gray-100 rounded-2xl border border-gray-200 bg-white shadow-sm">
+          {filteredOrders.length ? (
+            filteredOrders.map((o) => (
+              <button
+                key={o.id}
+                type="button"
+                className="flex w-full items-center gap-3 px-4 py-4 text-left hover:bg-gray-50/70 md:px-5"
+              >
+                <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-2xl bg-gray-100">
+                  <Image src={o.image} alt="" fill className="object-cover" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[13px] font-extrabold text-[#000000]">{o.id}</p>
+                  <p className="mt-0.5 line-clamp-1 text-[12px] font-medium text-gray-700">
+                    {o.product}
+                  </p>
+                  <p className="mt-1 text-[11px] font-medium text-gray-400">
+                    {o.date} • {o.time}
+                  </p>
+                  <p className="mt-1 text-[12px] font-extrabold text-[#000000]">{o.price}</p>
+                </div>
+                <div className="flex shrink-0 items-center gap-2">
+                  <span className={`rounded-full px-3 py-1 text-[11px] font-bold ${statusPill(o.status)}`}>
+                    {o.status}
+                  </span>
+                  <KeyboardArrowRightIcon className="text-gray-300" />
+                </div>
+              </button>
+            ))
+          ) : (
+            <div className="px-6 py-10 text-center">
+              <p className="text-[14px] font-bold text-gray-700">No orders found</p>
+              <p className="mt-1 text-[13px] text-gray-500">Try a different search or tab.</p>
             </div>
-
-            <div className="flex flex-col gap-5">
-               {filteredOrders.length > 0 ? (
-                 filteredOrders.map((order) => (
-                    <div key={order.id} className="p-8 bg-white border border-gray-100 rounded-[32px] shadow-sm flex items-center justify-between group hover:border-brand-pink/20 transition-all cursor-pointer">
-                       <div className="flex items-center gap-6">
-                          <div className="relative w-24 h-24 rounded-[24px] overflow-hidden border border-gray-100">
-                             <Image src={order.image} alt={order.name} fill className="object-cover" />
-                          </div>
-                          <div className="flex flex-col gap-1.5">
-                             <div className="flex items-center gap-2">
-                               <h4 className="text-[16px] font-bold text-brand-dark">{order.name}</h4>
-                               <span className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full ${order.statusColor}`}>{order.status}</span>
-                             </div>
-                             <p className="text-[12px] font-bold text-gray-400 uppercase tracking-widest opacity-80">{order.id} • {order.detail}</p>
-                             <span className="text-[16px] font-bold text-brand-pink mt-1">{order.price}</span>
-                          </div>
-                       </div>
-                       <div className="hidden sm:flex w-12 h-12 rounded-full border border-gray-100 items-center justify-center text-gray-400 group-hover:bg-brand-pink group-hover:text-white group-hover:border-brand-pink transition-all">
-                          <KeyboardArrowRightIcon />
-                       </div>
-                    </div>
-                 ))
-               ) : (
-                 <div className="col-span-full py-12 flex flex-col items-center justify-center bg-white rounded-[32px] border border-gray-100 border-dashed">
-                    <SearchIcon className="text-gray-300 scale-150 mb-4" />
-                    <h3 className="text-[18px] font-bold text-brand-dark">No orders found</h3>
-                    <p className="text-[14px] text-gray-500 font-medium mt-1 text-center">We couldn't find any orders matching your current search or filters.</p>
-                 </div>
-               )}
-            </div>
-         </div>
+          )}
+        </div>
       </main>
 
       <SellerProcessBottomNav />
