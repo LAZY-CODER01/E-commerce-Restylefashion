@@ -14,7 +14,14 @@ const nextConfig = {
       },
     ],
   },
-  /** API is proxied by `app/api/[[...path]]/route.js` (external rewrites are unreliable on Next.js 16 in prod). */
+  async rewrites() {
+    return [
+      {
+        source: "/api/:path*",
+        destination: "http://localhost:5001/api/:path*",
+      },
+    ];
+  },
 };
 
 export default nextConfig;
