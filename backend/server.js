@@ -24,16 +24,32 @@ const allowedOrigins = [
     "https://e-commerce-restylefashion-3325.vercel.app",
 ];
 
+const corsOriginsFromEnv = (process.env.CORS_ORIGINS || "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+const allAllowed = [...allowedOrigins, ...corsOriginsFromEnv];
+
 app.use(
     cors({
         origin(origin, cb) {
-            if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+            if (!origin) return cb(null, true);
+            if (allAllowed.includes(origin)) return cb(null, true);
             if (process.env.NODE_ENV !== "production" && /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin)) {
                 return cb(null, true);
+            }
+            try {
+                const host = new URL(origin).hostname;
+                if (host.endsWith(".vercel.app")) return cb(null, true);
+            } catch (_) {
+                /* ignore */
             }
             cb(null, false);
         },
         credentials: true,
+        methods: ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+        allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+        optionsSuccessStatus: 204,
     })
 );
 app.use(express.json());
