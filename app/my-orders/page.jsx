@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import api from "@/lib/api";
@@ -92,7 +92,7 @@ function OrderCard({ order }) {
   );
 }
 
-export default function MyOrdersPage() {
+function MyOrdersContent() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -181,5 +181,29 @@ export default function MyOrdersPage() {
         )}
       </div>
     </div>
+  );
+}
+
+function MyOrdersFallback() {
+  return (
+    <div className="min-h-screen bg-[#F5F5F5] pb-16">
+      <div className="sticky top-0 z-40 bg-white flex items-center gap-3 px-4 h-[56px] border-b border-gray-100 shadow-[0_1px_4px_rgba(0,0,0,0.05)]">
+        <div className="h-9 w-9 shrink-0" aria-hidden />
+        <h1 className="text-[16px] font-bold uppercase tracking-widest text-[#1C1C1E]">My Orders</h1>
+      </div>
+      <div className="flex items-center justify-center py-20">
+        <svg className="animate-spin h-8 w-8 text-[#E8001C]" viewBox="0 0 24 24" fill="none" aria-hidden>
+          <circle cx="12" cy="12" r="10" stroke="#E8001C" strokeWidth="3" strokeDasharray="32" strokeDashoffset="12" />
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+export default function MyOrdersPage() {
+  return (
+    <Suspense fallback={<MyOrdersFallback />}>
+      <MyOrdersContent />
+    </Suspense>
   );
 }
