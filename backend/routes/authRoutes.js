@@ -16,6 +16,10 @@ const generateToken = (id) => {
 // @access  Public
 router.post("/register", async (req, res) => {
     try {
+        if (!process.env.JWT_SECRET) {
+            console.error("JWT_SECRET is required for auth routes");
+            return res.status(500).json({ message: "Server configuration error" });
+        }
         const { fullName, email, mobile, password, role } = req.body;
 
         // Check if user already exists
@@ -50,6 +54,10 @@ router.post("/register", async (req, res) => {
 // @access  Public
 router.post("/login", async (req, res) => {
     try {
+        if (!process.env.JWT_SECRET) {
+            console.error("JWT_SECRET is required for auth routes");
+            return res.status(500).json({ message: "Server configuration error" });
+        }
         const { email, password } = req.body;
 
         // Find user and include password for comparison
