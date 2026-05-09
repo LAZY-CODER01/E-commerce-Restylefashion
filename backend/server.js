@@ -10,6 +10,7 @@ dotenv.config();
 const authRoutes = require("./routes/authRoutes");
 const productRoutes = require("./routes/productRoutes");
 const moderationRoutes = require("./routes/moderationRoutes");
+const paymentRoutes = require("./routes/paymentRoutes");
 
 const app = express();
 
@@ -42,6 +43,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/moderate", moderationRoutes);
+app.use("/api/payment", paymentRoutes);
 
 // Health check
 app.get("/api/health", (req, res) => {

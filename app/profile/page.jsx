@@ -25,7 +25,7 @@ const BASE_MENU_ITEMS = [
     title: "Orders",
     subtitle: "Check your order status",
     icon: <LocalShippingOutlinedIcon strokeWidth={1} sx={{ fontSize: 32 }} />,
-    path: "/orders"
+    path: "/my-orders"
   },
   {
     title: "Wishlist",

@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
+import api from "@/lib/api";
 
 // ── Icons ─────────────────────────────────────────────────────────────────────
-
 function IconBack() {
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1C1C1E" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -119,7 +119,6 @@ function Radio({ selected }) {
   );
 }
 
-// ── Section Label ─────────────────────────────────────────────────────────────
 function SectionLabel({ children }) {
   return (
     <p className="px-4 pt-5 pb-2 text-[11px] font-bold uppercase tracking-widest text-[#888]">
@@ -128,19 +127,16 @@ function SectionLabel({ children }) {
   );
 }
 
-// ── Divider ───────────────────────────────────────────────────────────────────
 function Divider() {
   return <div className="h-px bg-gray-100 mx-4" />;
 }
 
-// ── Static delivery dates ─────────────────────────────────────────────────────
 function getDeliveryDate(daysFromNow) {
   const d = new Date();
   d.setDate(d.getDate() + daysFromNow);
   return d.toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" });
 }
 
-// ── Placeholder addresses (in a real app, pulled from user.addresses) ─────────
 const MOCK_ADDRESSES = [
   {
     id: "home",
@@ -167,18 +163,31 @@ const DELIVERY_OPTIONS = [
 
 const PLATFORM_FEE = 199;
 
-// ─────────────────────────────────────────────────────────────────────────────
+// ── Load Razorpay SDK dynamically ─────────────────────────────────────────────
+function loadRazorpayScript() {
+  return new Promise((resolve) => {
+    if (document.querySelector('script[src*="razorpay"]')) {
+      resolve(true);
+      return;
+    }
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.onload  = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+}
 
+// ─────────────────────────────────────────────────────────────────────────────
 export default function CheckoutPage() {
-  const router = useRouter();
-  const { cart, cartCount } = useCart();
+  const router  = useRouter();
+  const { cart, cartCount, clearCart } = useCart();
   const { user } = useAuth();
 
-  const [selectedAddress, setSelectedAddress] = useState(MOCK_ADDRESSES[0].id);
+  const [selectedAddress,  setSelectedAddress]  = useState(MOCK_ADDRESSES[0].id);
   const [selectedDelivery, setSelectedDelivery] = useState(DELIVERY_OPTIONS[0].id);
   const [processing, setProcessing] = useState(false);
 
-  // Use real cart items; fall back to mock items so the page always looks full
   const cartItems = useMemo(() => {
     if (cart && cart.length > 0) return cart;
     return [
@@ -188,7 +197,6 @@ export default function CheckoutPage() {
         selectedSize: "S",
         selectedColor: "Light Pink",
         price: 2550,
-        originalPrice: 2550,
         qty: 1,
         imageUrl: "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?auto=format&fit=crop&w=200&q=80",
       },
@@ -198,7 +206,6 @@ export default function CheckoutPage() {
         selectedSize: "S",
         selectedColor: "Light Pink",
         price: 1790,
-        originalPrice: 1790,
         qty: 1,
         imageUrl: "https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?auto=format&fit=crop&w=200&q=80",
       },
@@ -206,31 +213,141 @@ export default function CheckoutPage() {
   }, [cart]);
 
   const deliveryFee = DELIVERY_OPTIONS.find((o) => o.id === selectedDelivery)?.price ?? 49;
-  const subtotal = cartItems.reduce((sum, item) => sum + (Number(item.price) || 0) * (Number(item.qty) || 1), 0);
-  const total = subtotal + PLATFORM_FEE + deliveryFee;
-
-  const handleProceed = async () => {
-    if (processing) return;
-    setProcessing(true);
-    await new Promise((r) => setTimeout(r, 1200));
-    toast.success("Order placed successfully!");
-    setProcessing(false);
-  };
+  const subtotal    = cartItems.reduce((sum, item) => sum + (Number(item.price) || 0) * (Number(item.qty) || 1), 0);
+  const total       = subtotal + PLATFORM_FEE + deliveryFee;
 
   const addresses = useMemo(() => {
-    // Merge real user addresses if available
     if (user?.addresses && user.addresses.length > 0) {
       return user.addresses.map((a, i) => ({
-        id: a._id || String(i),
+        id:    a._id || String(i),
         label: a.label || (i === 0 ? "Home" : "Work"),
-        icon: i === 0 ? "home" : "work",
-        name: a.name,
-        line: `${a.line1}${a.line2 ? ", " + a.line2 : ""}, ${a.city} – ${a.pincode}`,
+        icon:  i === 0 ? "home" : "work",
+        name:  a.name,
+        line:  `${a.line1}${a.line2 ? ", " + a.line2 : ""}, ${a.city} – ${a.pincode}`,
         phone: a.mobile,
       }));
     }
     return MOCK_ADDRESSES;
   }, [user]);
+
+  const selectedAddressObj = addresses.find((a) => a.id === selectedAddress) || addresses[0];
+
+  // ── Razorpay Payment Flow ──────────────────────────────────────────────────
+  const handleProceed = useCallback(async () => {
+    if (processing) return;
+
+    // Guard: must be logged in
+    if (!user) {
+      toast.error("Please login to proceed to payment.");
+      router.push("/login");
+      return;
+    }
+
+    setProcessing(true);
+
+    try {
+      // 1. Load Razorpay SDK
+      const sdkLoaded = await loadRazorpayScript();
+      if (!sdkLoaded) {
+        toast.error("Failed to load payment gateway. Please check your connection.");
+        setProcessing(false);
+        return;
+      }
+
+      // 2. Create Razorpay order on backend
+      const orderPayload = {
+        items:           cartItems.map((item) => ({
+          productId:     item._id || item.id || null,
+          title:         item.title,
+          imageUrl:      item.imageUrl || "",
+          selectedSize:  item.selectedSize  || "",
+          selectedColor: item.selectedColor || "",
+          price:         Number(item.price) || 0,
+          qty:           Number(item.qty)   || 1,
+        })),
+        deliveryAddress: {
+          label:   selectedAddressObj?.label   || "Home",
+          name:    selectedAddressObj?.name    || "",
+          mobile:  selectedAddressObj?.phone   || "",
+          line:    selectedAddressObj?.line    || "",
+        },
+        deliveryOption: selectedDelivery,
+        subtotal,
+        platformFee: PLATFORM_FEE,
+        deliveryFee,
+        total,
+      };
+
+      const { data: orderData } = await api.post("/payment/create-order", orderPayload);
+
+      if (!orderData.success) {
+        toast.error("Could not initiate payment. Please try again.");
+        setProcessing(false);
+        return;
+      }
+
+      // 3. Open Razorpay popup
+      const options = {
+        key:         orderData.key,
+        amount:      orderData.amount,
+        currency:    orderData.currency,
+        order_id:    orderData.orderId,
+        name:        "Restyle Fashion",
+        description: `Order for ${cartItems.length} item(s)`,
+        image:       "/logo.png",
+        prefill: {
+          name:    user?.fullName  || "",
+          email:   user?.email     || "",
+          contact: user?.mobile    || "",
+        },
+        theme: { color: "#E8001C" },
+
+        handler: async (response) => {
+          // 4. Verify payment on backend
+          try {
+            const { data: verifyData } = await api.post("/payment/verify", {
+              ...response,          // razorpay_order_id, razorpay_payment_id, razorpay_signature
+              ...orderPayload,      // order metadata to persist
+            });
+
+            if (verifyData.success) {
+              // 5. Clear cart
+              clearCart();
+
+              toast.success("🎉 Payment successful! Order placed.");
+              router.push("/my-orders?success=1");
+            } else {
+              toast.error("Payment verification failed. Contact support.");
+            }
+          } catch (err) {
+            console.error("Verify error:", err);
+            toast.error(err?.response?.data?.message || "Payment verification failed.");
+          } finally {
+            setProcessing(false);
+          }
+        },
+
+        modal: {
+          ondismiss: () => {
+            toast.info("Payment cancelled.");
+            setProcessing(false);
+          },
+        },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.on("payment.failed", (response) => {
+        toast.error(`Payment failed: ${response.error?.description || "Unknown error"}`);
+        setProcessing(false);
+      });
+      rzp.open();
+
+    } catch (err) {
+      console.error("Payment error:", err);
+      toast.error(err?.response?.data?.message || "Payment failed. Please try again.");
+      setProcessing(false);
+    }
+  }, [processing, user, cartItems, selectedAddressObj, selectedDelivery, subtotal, deliveryFee, total, router]);
 
   return (
     <div className="min-h-screen bg-[#F5F5F5] pb-28">
@@ -247,7 +364,6 @@ export default function CheckoutPage() {
 
       {/* ── DELIVERY ADDRESS ────────────────────────────────────────────────── */}
       <SectionLabel>Delivery Address</SectionLabel>
-
       <div className="mx-4 rounded-2xl bg-white overflow-hidden shadow-[0_1px_4px_rgba(0,0,0,0.06)]">
         {addresses.map((addr, idx) => (
           <React.Fragment key={addr.id}>
@@ -278,8 +394,6 @@ export default function CheckoutPage() {
         ))}
 
         <Divider />
-
-        {/* Add New Address */}
         <button
           type="button"
           className="w-full flex items-center gap-3 px-4 py-4 text-left transition hover:bg-gray-50 active:bg-gray-100"
@@ -295,7 +409,6 @@ export default function CheckoutPage() {
 
       {/* ── DELIVERY OPTIONS ─────────────────────────────────────────────────── */}
       <SectionLabel>Delivery Options</SectionLabel>
-
       <div className="mx-4 rounded-2xl bg-white overflow-hidden shadow-[0_1px_4px_rgba(0,0,0,0.06)]">
         {DELIVERY_OPTIONS.map((opt, idx) => (
           <React.Fragment key={opt.id}>
@@ -321,9 +434,7 @@ export default function CheckoutPage() {
 
       {/* ── ORDER SUMMARY ───────────────────────────────────────────────────── */}
       <SectionLabel>Order Summary</SectionLabel>
-
       <div className="mx-4 rounded-2xl bg-white overflow-hidden shadow-[0_1px_4px_rgba(0,0,0,0.06)]">
-        {/* Cart Items */}
         {cartItems.map((item, idx) => (
           <React.Fragment key={item.id || idx}>
             {idx > 0 && <Divider />}
@@ -360,9 +471,7 @@ export default function CheckoutPage() {
             <span className="text-[13px] text-[#1C1C1E] font-medium">₹ {subtotal.toLocaleString("en-IN")}</span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-[13px] text-[#555] flex items-center">
-              Platform Fee <IconInfo />
-            </span>
+            <span className="text-[13px] text-[#555] flex items-center">Platform Fee <IconInfo /></span>
             <span className="text-[13px] text-[#1C1C1E] font-medium">₹ {PLATFORM_FEE}</span>
           </div>
           <div className="flex items-center justify-between">
@@ -386,6 +495,23 @@ export default function CheckoutPage() {
 
         <Divider />
 
+        {/* Payment Method Badge */}
+        <div className="px-4 py-4 flex items-center gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#FFF0F2]">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#E8001C" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
+              <line x1="1" y1="10" x2="23" y2="10" />
+            </svg>
+          </div>
+          <div className="flex-1">
+            <p className="text-[14px] font-bold text-[#1C1C1E]">Pay via Razorpay</p>
+            <p className="text-[12px] text-[#888] mt-0.5">Cards, UPI, Net Banking, Wallets & more</p>
+          </div>
+          <span className="text-[11px] font-bold text-[#E8001C] bg-[#FFF0F2] px-2 py-0.5 rounded-full">SECURE</span>
+        </div>
+
+        <Divider />
+
         {/* Add GSTIN */}
         <button
           type="button"
@@ -405,6 +531,7 @@ export default function CheckoutPage() {
       <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-100 px-4 pt-3 pb-5 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
         <button
           type="button"
+          id="razorpay-pay-btn"
           onClick={handleProceed}
           disabled={processing}
           className="w-full h-[54px] rounded-2xl bg-[#E8001C] text-white text-[15px] font-bold uppercase tracking-widest shadow-[0_4px_16px_rgba(232,0,28,0.35)] transition active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
@@ -417,12 +544,18 @@ export default function CheckoutPage() {
               Processing...
             </span>
           ) : (
-            "Proceed to Payment"
+            <span className="flex items-center justify-center gap-2">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
+                <line x1="1" y1="10" x2="23" y2="10" />
+              </svg>
+              Pay ₹ {total.toLocaleString("en-IN")}
+            </span>
           )}
         </button>
         <p className="mt-2 text-center text-[11px] text-[#888]">
           <IconLock />
-          Your payment information is 100% secure.
+          Payments secured by Razorpay · 100% safe & encrypted
         </p>
       </div>
     </div>

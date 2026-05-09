@@ -32,9 +32,9 @@ const SECONDARY_ITEMS = [
     link: "/wishlist"
   },
   {
-    name: "Orders",
+    name: "My Orders",
     icon: <LocalMallOutlinedIcon />,
-    link: "/orders"
+    link: "/my-orders"
   },
   {
     name: "Contact Us",
@@ -307,11 +307,7 @@ export default function DrawerMenu({ open, onClose, drawerRef }) {
                       {wishlistCount}
                     </span>
                   ) : null}
-                  {item.name === "Orders" ? (
-                    <span className="text-[13px] font-bold" style={{ color: SALE_RED }}>
-                      {cartCount}
-                    </span>
-                  ) : null}
+                  {item.name === "My Orders" ? null : null}
                 </Link>
               );
               })}

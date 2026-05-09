@@ -130,6 +130,9 @@ export function CartProvider({ children }) {
     setWishlist((prev) => prev.filter((w) => getId(w) !== id));
   };
 
+  /** Empties the entire cart (called after successful payment). */
+  const clearCart = () => setCart([]);
+
   const value = useMemo(
     () => ({
       cart,
@@ -142,6 +145,7 @@ export function CartProvider({ children }) {
       deleteFromWishlist,
       incrementCartItem,
       setCartItemQuantity,
+      clearCart,
     }),
     [cart, wishlist]
   );
