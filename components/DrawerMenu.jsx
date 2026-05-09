@@ -1,23 +1,21 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import KeyboardArrowRightOutlinedIcon from '@mui/icons-material/KeyboardArrowRightOutlined';
 import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined';
-import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlined';
-import LocalMallOutlinedIcon from '@mui/icons-material/LocalMallOutlined';
 import MailOutlineOutlinedIcon from '@mui/icons-material/MailOutlineOutlined';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import HelpOutlineOutlinedIcon from '@mui/icons-material/HelpOutlineOutlined';
 import CloseOutlinedIcon from '@mui/icons-material/CloseOutlined';
 import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
 import { useAuth } from "@/context/AuthContext";
 import { usePathname, useRouter } from "next/navigation";
-import StorefrontOutlinedIcon from '@mui/icons-material/StorefrontOutlined';
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import Inventory2Icon from "@mui/icons-material/Inventory2";
 import PeopleIcon from "@mui/icons-material/People";
 import { useSearch } from "@/context/SearchContext";
-import { useCart } from "@/context/CartContext";
 import { DRAWER_CATEGORY_ITEMS } from "@/data/categories";
 
 const SECONDARY_ITEMS = [
@@ -27,6 +25,9 @@ const SECONDARY_ITEMS = [
     link: "/profile"
   },
   {
+    name: "About Us",
+    icon: <InfoOutlinedIcon />,
+    link: "#"
     name: "Wishlist",
     icon: <FavoriteBorderOutlinedIcon />,
     link: "/wishlist"
@@ -63,7 +64,6 @@ export default function DrawerMenu({ open, onClose, drawerRef }) {
   const pathname = usePathname();
   const router = useRouter();
   const { activeCategory, setActiveCategory } = useSearch();
-  const { cartCount, wishlistCount } = useCart();
   const isAdminRoute = pathname.startsWith("/admin");
 
   const handleCategoryClick = (id) => {
@@ -107,7 +107,7 @@ export default function DrawerMenu({ open, onClose, drawerRef }) {
           transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]
           ${open ? "translate-x-0" : "-translate-x-full"}`}
       >
-        
+
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-6 pt-8 border-b border-gray-100">
           <Link href="/" onClick={onClose} className="inline-block font-extrabold text-[28px] tracking-tight bg-gradient-to-b from-black to-[#F7246E] bg-clip-text text-transparent">
@@ -147,14 +147,14 @@ export default function DrawerMenu({ open, onClose, drawerRef }) {
               ) : (
                 <div className="flex gap-3">
                   <Link
-                    href="/login"
+                    href="/auth"
                     onClick={onClose}
                     className="flex-1 py-2.5 text-center bg-brand-pink text-white rounded-xl font-medium text-[16px] transition-opacity hover:opacity-90"
                   >
                     Login
                   </Link>
                   <Link
-                    href="/signup"
+                    href="/auth"
                     onClick={onClose}
                     className="flex-1 py-2.5 text-center border border-brand-pink text-brand-pink bg-white rounded-xl font-medium text-[16px] transition-colors hover:bg-gray-50"
                   >
@@ -164,18 +164,23 @@ export default function DrawerMenu({ open, onClose, drawerRef }) {
               )}
 
               {/* Sell with us banner */}
-              <div className="mt-6 w-full rounded-[16px] bg-[#FFF5F8] overflow-hidden flex relative border border-pink-100">
+              <div className="mt-6 w-full min-h-[132px] rounded-[16px] bg-[#FFF5F8] overflow-hidden flex relative border border-pink-100">
                 <div className="p-4 py-5 z-10 flex flex-col justify-center w-[60%]">
                   <h3 className="text-[17px] font-bold text-gray-900 leading-tight">Sell with us</h3>
                   <p className="text-[13px] text-gray-600 mt-1 mb-3">Earn more. Empower style.</p>
-                  <Link href="/seller/login" onClick={onClose} className="bg-brand-pink text-white text-[13px] font-semibold px-4 py-1.5 rounded-lg self-start transition-opacity hover:opacity-90 shadow-sm shadow-brand-pink/20">
+                  <Link href="/seller/auth" onClick={onClose} className="bg-brand-pink text-white text-[13px] font-semibold px-4 py-1.5 rounded-lg self-start transition-opacity hover:opacity-90 shadow-sm shadow-brand-pink/20">
                     Start Selling
                   </Link>
                 </div>
-                {/* Right side decorative background */}
-                <div className="absolute right-0 top-0 bottom-0 w-[50%] overflow-hidden">
-                   <div className="w-[150%] h-[150%] bg-[#FFD6E4] rounded-l-[100px] absolute top-[-25%] right-[-15%]"></div>
-                   {/* In a real app, the specific clothing rack image would go here. We use a placeholder image for now if you add it. */}
+                <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-[52%] overflow-hidden" aria-hidden>
+                  <Image
+                    src="/drawer-sell-banner.png"
+                    alt=""
+                    fill
+                    sizes="188px"
+                    className="object-cover object-[88%_center]"
+                    priority={false}
+                  />
                 </div>
               </div>
             </div>
@@ -194,11 +199,10 @@ export default function DrawerMenu({ open, onClose, drawerRef }) {
                         key={item.title}
                         href={item.path}
                         onClick={onClose}
-                        className={`group flex items-center gap-4 px-6 py-4 rounded-[20px] text-[17px] font-semibold transition-all duration-200 border border-transparent ${
-                          isActive 
-                          ? "bg-brand-pink text-white shadow-lg shadow-brand-pink/20" 
-                          : "text-brand-dark bg-transparent hover:bg-white hover:text-brand-pink hover:shadow-md hover:border-gray-100"
-                        }`}
+                        className={`group flex items-center gap-4 px-6 py-4 rounded-[20px] text-[17px] font-semibold transition-all duration-200 border border-transparent ${isActive
+                            ? "bg-brand-pink text-white shadow-lg shadow-brand-pink/20"
+                            : "text-brand-dark bg-transparent hover:bg-white hover:text-brand-pink hover:shadow-md hover:border-gray-100"
+                          }`}
                       >
                         <span className={`${isActive ? "text-white" : "text-gray-400 group-hover:text-brand-pink"} transition-colors`}>
                           {item.icon}
@@ -222,8 +226,17 @@ export default function DrawerMenu({ open, onClose, drawerRef }) {
                       className="group flex items-center justify-between text-left transition-colors"
                     >
                       <div className="flex items-center gap-4">
-                        <div className="w-[52px] h-[64px] bg-gray-100 rounded-lg overflow-hidden shrink-0">
-                          {item.image && <img src={item.image} alt={item.label} className="w-full h-full object-cover" />}
+                        <div className="w-[52px] h-[64px] bg-gray-100 rounded-lg overflow-hidden shrink-0 relative">
+                          {item.image && (
+                            <img
+                              src={item.image}
+                              alt=""
+                              loading="lazy"
+                              decoding="async"
+                              referrerPolicy="no-referrer"
+                              className="w-full h-full object-cover"
+                            />
+                          )}
                         </div>
                         <div className="flex flex-col">
                           <span className="text-[16px] font-semibold text-gray-800 group-hover:text-brand-pink transition-colors flex items-center">
@@ -257,7 +270,16 @@ export default function DrawerMenu({ open, onClose, drawerRef }) {
                               <LocalFireDepartmentIcon style={{ color: SALE_RED, fontSize: 32 }} />
                             </div>
                           ) : (
-                            item.image && <img src={item.image} alt={item.label} className="w-full h-full object-cover" />
+                            item.image && (
+                              <img
+                                src={item.image}
+                                alt=""
+                                loading="lazy"
+                                decoding="async"
+                                referrerPolicy="no-referrer"
+                                className="w-full h-full object-cover"
+                              />
+                            )
                           )}
                         </div>
                         <div className="flex flex-col">
@@ -282,34 +304,35 @@ export default function DrawerMenu({ open, onClose, drawerRef }) {
           <div className="px-6 py-8">
             <div className="flex flex-col gap-7">
               {SECONDARY_ITEMS.map((item) => {
-                const active = pathname === item.link;
+                const href =
+                  item.link === "/profile" && !user ? "/auth?next=/profile" : item.link;
+                const active = pathname === item.link && item.link !== "#";
                 const isFaq = item.name === "FAQs";
                 return (
-                <Link
-                  key={item.name}
-                  href={item.link}
-                  onClick={onClose}
-                  aria-current={active ? "page" : undefined}
-                  className={`flex items-center gap-4 text-[17px] font-medium transition-colors ${
-                    active || item.highlight ? "text-brand-pink" : "text-brand-dark"
-                  }`}
-                  style={isFaq ? { color: SALE_RED } : undefined}
-                >
-                  <span
-                    className={active || item.highlight ? "text-brand-pink" : "text-gray-400"}
+                  <Link
+                    key={item.name}
+                    href={href}
+                    onClick={onClose}
+                    aria-current={active ? "page" : undefined}
+                    className={`flex items-center gap-4 text-[17px] font-medium transition-colors ${active || item.highlight ? "text-brand-pink" : "text-brand-dark"
+                      }`}
                     style={isFaq ? { color: SALE_RED } : undefined}
                   >
-                    {item.icon}
-                  </span>
-                  <span className="flex-1">{item.name}</span>
-                  {item.name === "Wishlist" ? (
-                    <span className="text-[13px] font-bold" style={{ color: SALE_RED }}>
-                      {wishlistCount}
+                    <span
+                      className={active || item.highlight ? "text-brand-pink" : "text-gray-400"}
+                      style={isFaq ? { color: SALE_RED } : undefined}
+                    >
+                      {item.icon}
                     </span>
-                  ) : null}
-                  {item.name === "My Orders" ? null : null}
-                </Link>
-              );
+                    <span className="flex-1">{item.name}</span>
+                    {item.name === "Wishlist" ? (
+                      <span className="text-[13px] font-bold" style={{ color: SALE_RED }}>
+                        {wishlistCount}
+                      </span>
+                    ) : null}
+                    {item.name === "My Orders" ? null : null}
+                  </Link>
+                );
               })}
 
               {/* Authentication Actions */}

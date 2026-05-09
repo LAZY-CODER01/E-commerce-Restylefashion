@@ -1,237 +1,159 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import api from "@/lib/api";
-import Button from "@/components/Button";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import AddIcon from "@mui/icons-material/Add";
+import {
+  DASHBOARD_METRICS,
+  EARNINGS_MONTH_OPTIONS,
+  EARNINGS_SERIES_BY_MONTH,
+  DASHBOARD_PRODUCTS,
+  formatINR,
+} from "@/data/sellerDashboardMock";
+import EarningsAreaChart from "@/components/dashboard/EarningsAreaChart";
+import ProductListItem from "@/components/dashboard/ProductListItem";
 
-function normalizeStatus(raw) {
-  if (raw === "approved") return "active";
-  return raw;
-}
+function MetricCard({ href, children, disabled = false, ariaLabel }) {
+  const base =
+    "rounded-2xl bg-white shadow-sm px-4 py-4 min-h-[92px] flex flex-col justify-between";
 
-function ListingCard({ product }) {
-  const status = normalizeStatus(product.status);
-  const isActive = status === "active";
-  const isPending = status === "pending";
-  const badgeClass = isPending
-    ? "bg-amber-100 text-amber-800 border border-amber-200"
-    : isActive
-      ? "bg-green-100 text-green-800 border border-green-200"
-      : "bg-red-50 text-red-700 border border-red-200";
-
-  const badgeText = isPending ? "Pending" : isActive ? "Active" : "Rejected";
-  const img = product.imageUrl || product.images?.[0];
+  if (disabled) {
+    return (
+      <div className={base} aria-label={ariaLabel}>
+        {children}
+      </div>
+    );
+  }
 
   return (
-    <div className="bg-white rounded-[24px] border border-gray-100 overflow-hidden flex flex-col sm:flex-row gap-4 p-4 shadow-sm hover:border-brand-pink/20 transition-colors">
-      <div className="relative w-full sm:w-36 aspect-square rounded-2xl bg-gray-50 overflow-hidden shrink-0">
-        {img ? (
-          <img src={img} alt="" className="w-full h-full object-cover" />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-gray-300 text-[12px] font-bold">
-            No image
-          </div>
-        )}
-      </div>
-      <div className="flex-1 flex flex-col gap-2 min-w-0">
-        <div className="flex items-start justify-between gap-2">
-          <h3 className="font-bold text-brand-dark text-[16px] leading-snug line-clamp-2">{product.title}</h3>
-          <span
-            className={`text-[11px] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full shrink-0 ${badgeClass}`}
-          >
-            {badgeText}
-          </span>
-        </div>
-        <p className="text-[13px] text-gray-500">
-          {product.brand} · {product.category}
-        </p>
-        <p className="text-[17px] font-extrabold text-brand-pink">₹{product.price}</p>
-        {isActive && (
-          <Link
-            href={`/product/${product._id}`}
-            className="text-[13px] font-bold text-brand-pink hover:underline w-fit mt-auto pt-1"
-          >
-            View on site
-          </Link>
-        )}
-      </div>
-    </div>
+    <Link href={href} className={`${base} transition active:scale-[0.99]`} aria-label={ariaLabel}>
+      {children}
+    </Link>
   );
 }
 
-export default function MyListingsDashboard() {
+export default function DashboardMainPage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
-  const [listings, setListings] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
 
   useEffect(() => {
     if (authLoading) return;
-    if (!user) {
-      router.replace("/login?redirect=/dashboard");
-      return;
-    }
+    if (!user) router.replace("/auth?next=/dashboard");
+  }, [authLoading, user, router]);
 
-    let cancelled = false;
-    async function load() {
-      setLoading(true);
-      setError("");
-      try {
-        const { data } = await api.get("/products/my-listings");
-        if (!cancelled) setListings(Array.isArray(data) ? data : []);
-      } catch (err) {
-        if (!cancelled) {
-          setError(err.response?.data?.message || "Could not load your listings.");
-          setListings([]);
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
-    load();
-    return () => {
-      cancelled = true;
-    };
-  }, [user, authLoading, router]);
-
-  const { pending, active, rejected } = useMemo(() => {
-    const pending = [];
-    const active = [];
-    const rejected = [];
-    for (const p of listings) {
-      const s = normalizeStatus(p.status);
-      if (s === "pending") pending.push(p);
-      else if (s === "active") active.push(p);
-      else if (s === "rejected") rejected.push(p);
-    }
-    return { pending, active, rejected };
-  }, [listings]);
+  const productsPreview = useMemo(() => DASHBOARD_PRODUCTS.slice(0, 5), []);
 
   if (authLoading) {
-    return (
-      <div className="min-h-[calc(100dvh-80px)] bg-brand-light flex items-center justify-center text-gray-500">
-        Loading…
-      </div>
-    );
+    return <div className="mx-auto max-w-[560px] px-4 py-12 text-gray-500">Loading…</div>;
   }
-
   if (!user) {
-    return (
-      <div className="min-h-[calc(100dvh-80px)] bg-brand-light flex items-center justify-center text-gray-500">
-        Redirecting to login…
-      </div>
-    );
+    return <div className="mx-auto max-w-[560px] px-4 py-12 text-gray-500">Redirecting…</div>;
   }
 
   return (
-    <div className="min-h-[calc(100dvh-80px)] bg-brand-light font-roboto pb-16">
-      <div className="max-w-3xl mx-auto px-4 py-8 sm:py-10">
-        <div className="flex items-center gap-3 mb-8">
-          <button
-            type="button"
-            onClick={() => router.back()}
-            className="w-10 h-10 rounded-full hover:bg-white border border-gray-200 flex items-center justify-center text-brand-dark transition-colors"
-            aria-label="Back"
-          >
-            <ArrowBackIcon sx={{ fontSize: 22 }} />
-          </button>
-          <div className="flex-1">
-            <h1 className="text-[24px] sm:text-[28px] font-extrabold text-brand-dark leading-tight">My Listings</h1>
-            <p className="text-[13px] text-gray-500 font-medium mt-1">
-              Track items under review and live on Restyle
-            </p>
+    <div className="pb-2">
+      <main className="mx-auto w-full max-w-[1200px] px-4 pb-10 pt-4 md:px-9 md:pt-6">
+        <div className="mx-auto w-full max-w-[720px]">
+          <div className="mb-4 flex items-center justify-center">
+            <h1 className="text-[16px] font-semibold text-gray-900">Dashboard</h1>
           </div>
-          <Link href="/seller/products/new">
-            <Button className="h-11 px-5 rounded-full font-bold text-[14px] gap-1.5 hidden sm:flex">
-              <AddIcon sx={{ fontSize: 20 }} />
-              New listing
-            </Button>
-          </Link>
+        <section className="grid grid-cols-2 gap-3">
+          <MetricCard href="/dashboard/earnings" ariaLabel="Go to Earnings">
+            <div>
+              <p className="text-[12px] font-semibold text-gray-500">{DASHBOARD_METRICS.earnings.label}</p>
+              <p className="mt-1 text-[20px] font-semibold tracking-tight text-gray-900">
+                ₹{formatINR(DASHBOARD_METRICS.earnings.value)}
+              </p>
+            </div>
+            <div className="mt-2 flex items-center gap-1 text-[11px] font-medium">
+              <span className="text-[#22C55E]" aria-hidden>
+                ↑
+              </span>
+              <span className="text-gray-500">{DASHBOARD_METRICS.earnings.deltaLabel}</span>
+            </div>
+          </MetricCard>
+
+          <MetricCard href="/dashboard/active-listings" ariaLabel="Go to Active Listings">
+            <div>
+              <p className="text-[12px] font-semibold text-gray-500">{DASHBOARD_METRICS.activeListings.label}</p>
+              <p className="mt-1 text-[20px] font-semibold tracking-tight text-gray-900">
+                {DASHBOARD_METRICS.activeListings.value}
+              </p>
+            </div>
+            <p className="mt-2 text-[11px] font-medium text-gray-500">{DASHBOARD_METRICS.activeListings.subLabel}</p>
+          </MetricCard>
+
+          <MetricCard href="/dashboard/orders-sold" ariaLabel="Go to Orders Sold">
+            <div>
+              <p className="text-[12px] font-semibold text-gray-500">{DASHBOARD_METRICS.ordersSold.label}</p>
+              <p className="mt-1 text-[20px] font-semibold tracking-tight text-gray-900">
+                {DASHBOARD_METRICS.ordersSold.value}
+              </p>
+            </div>
+            <p className="mt-2 text-[11px] font-medium text-gray-500">{DASHBOARD_METRICS.ordersSold.subLabel}</p>
+          </MetricCard>
+
+          <MetricCard disabled ariaLabel="Stock Insights (static)">
+            <div>
+              <p className="text-[12px] font-semibold text-gray-500">{DASHBOARD_METRICS.stockInsights.label}</p>
+              <p className="mt-1 text-[20px] font-semibold tracking-tight text-gray-900">
+                {DASHBOARD_METRICS.stockInsights.value}
+              </p>
+              <p className="mt-1 text-[11px] font-medium text-gray-500">{DASHBOARD_METRICS.stockInsights.subLabel}</p>
+            </div>
+            <div className="mt-3 flex items-center justify-between gap-3">
+              <div className="h-[8px] flex-1 overflow-hidden rounded-full bg-gray-100">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-[#F97316] via-[#FBBF24] to-[#22C55E]"
+                  style={{ width: `${DASHBOARD_METRICS.stockInsights.healthPct}%` }}
+                />
+              </div>
+              <p className="text-[11px] font-semibold text-[#22C55E]">{DASHBOARD_METRICS.stockInsights.healthLabel}</p>
+            </div>
+          </MetricCard>
+        </section>
+
+        <section className="mt-4">
+          <EarningsAreaChart
+            seriesByMonth={EARNINGS_SERIES_BY_MONTH}
+            monthOptions={EARNINGS_MONTH_OPTIONS}
+            defaultMonthKey="2025-01"
+          />
+        </section>
+
+        <section className="mt-4 rounded-2xl bg-white shadow-sm">
+          <div className="flex items-center justify-between px-4 pt-4">
+            <p className="text-[16px] font-semibold text-gray-900">All Products</p>
+            <Link href="/dashboard/active-listings" className="text-[12px] font-semibold text-[#F7246E]">
+              View all
+            </Link>
+          </div>
+
+          <div className="mt-2 px-3 pb-4">
+            <div className="flex flex-col gap-2">
+              {productsPreview.map((p) => (
+                <ProductListItem
+                  key={p.id}
+                  product={p}
+                  href={`/product/${encodeURIComponent(p.id)}`}
+                  rightSlot={
+                    <div className="flex items-center gap-2">
+                      <p className="text-[12px] font-medium text-gray-500">{p.status}</p>
+                      <span className="text-gray-300" aria-hidden>
+                        ›
+                      </span>
+                    </div>
+                  }
+                  subtitleSlot={<p className="mt-0.5 text-[12px] font-medium text-gray-500">₹{formatINR(p.price)}</p>}
+                />
+              ))}
+            </div>
+          </div>
+        </section>
         </div>
-
-        {error && (
-          <div className="mb-6 p-4 rounded-2xl bg-red-50 border border-red-100 text-red-700 text-[14px] font-medium">
-            {error}
-          </div>
-        )}
-
-        {loading ? (
-          <div className="space-y-4">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="h-36 rounded-[24px] bg-white border border-gray-100 animate-pulse" />
-            ))}
-          </div>
-        ) : (
-          <div className="flex flex-col gap-12">
-            <section>
-              <div className="flex items-center gap-2 mb-4">
-                <span className="h-2 w-2 rounded-full bg-amber-400" />
-                <h2 className="text-[14px] font-bold text-brand-dark uppercase tracking-widest">
-                  Under review
-                </h2>
-                <span className="text-[12px] font-bold text-gray-400">({pending.length})</span>
-              </div>
-              {pending.length === 0 ? (
-                <p className="text-[14px] text-gray-500 py-6 pl-1">No listings pending review.</p>
-              ) : (
-                <div className="flex flex-col gap-4">
-                  {pending.map((p) => (
-                    <ListingCard key={p._id} product={p} />
-                  ))}
-                </div>
-              )}
-            </section>
-
-            <section>
-              <div className="flex items-center gap-2 mb-4">
-                <span className="h-2 w-2 rounded-full bg-green-500" />
-                <h2 className="text-[14px] font-bold text-brand-dark uppercase tracking-widest">
-                  Active
-                </h2>
-                <span className="text-[12px] font-bold text-gray-400">({active.length})</span>
-              </div>
-              {active.length === 0 ? (
-                <p className="text-[14px] text-gray-500 py-6 pl-1">No active listings yet.</p>
-              ) : (
-                <div className="flex flex-col gap-4">
-                  {active.map((p) => (
-                    <ListingCard key={p._id} product={p} />
-                  ))}
-                </div>
-              )}
-            </section>
-
-            {rejected.length > 0 && (
-              <section>
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="h-2 w-2 rounded-full bg-red-400" />
-                  <h2 className="text-[14px] font-bold text-brand-dark uppercase tracking-widest">
-                    Rejected
-                  </h2>
-                  <span className="text-[12px] font-bold text-gray-400">({rejected.length})</span>
-                </div>
-                <div className="flex flex-col gap-4">
-                  {rejected.map((p) => (
-                    <ListingCard key={p._id} product={p} />
-                  ))}
-                </div>
-              </section>
-            )}
-          </div>
-        )}
-
-        <Link href="/seller/products/new" className="sm:hidden fixed bottom-6 right-6 z-30">
-          <Button className="h-14 w-14 rounded-full shadow-xl shadow-brand-pink/30 p-0 min-w-0">
-            <AddIcon sx={{ fontSize: 28 }} />
-          </Button>
-        </Link>
-      </div>
+      </main>
     </div>
   );
 }
+

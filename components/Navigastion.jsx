@@ -106,7 +106,21 @@ export default function Navigation() {
 
           {/* Right Actions */}
           <div className="relative z-10 flex min-w-0 flex-nowrap items-center justify-end gap-1 sm:gap-1.5">
-            {pathname.startsWith("/admin") ? (
+            {pathname.startsWith("/dashboard") ? (
+              <Link
+                href="/seller/wallet"
+                aria-label="Wallet"
+                className="relative flex h-7 w-7 items-center justify-center text-brand-dark transition hover:opacity-90"
+              >
+                <Image
+                  src="/seller-wallet.png"
+                  alt=""
+                  width={26}
+                  height={26}
+                  className="h-6 w-6 object-contain"
+                />
+              </Link>
+            ) : pathname.startsWith("/admin") ? (
               <button className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 transition rounded-full pl-2 pr-4 py-1.5 shadow-sm">
                  <div className="w-7 h-7 bg-brand-pink text-white rounded-full flex items-center justify-center">
                     <PersonOutlineOutlinedIcon sx={{ fontSize: 18 }} />
@@ -152,10 +166,10 @@ export default function Navigation() {
                   Sell
                 </button>
 {/* 22C55E */}
-                {/* Account / Profile */}
+                {/* Account / Profile — guests go to login/signup then return here */}
                 <Link
-                  href="/profile"
-                  aria-label="Account"
+                  href={user ? "/profile" : "/auth?next=/profile"}
+                  aria-label={user ? "Account" : "Log in or sign up"}
                   className="group relative flex items-center justify-center transition-all duration-300"
                 >
                   {user ? (

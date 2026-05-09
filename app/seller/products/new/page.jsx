@@ -454,6 +454,7 @@ export default function NewProductPage() {
     const next = el.value.slice(0, start) + text + el.value.slice(end);
     applyDescriptionValue(next);
     clearDescriptionFieldError();
+    
   };
 
   const validateProductForm = () => {
@@ -631,7 +632,7 @@ export default function NewProductPage() {
         mergeDraftListing({ product: formData, imageDataUrls: urls });
         const next =
           pathname && pathname.startsWith("/") ? pathname : "/sell";
-        router.push(`/login?redirect=${encodeURIComponent(next)}`);
+        router.push(`/auth?next=${encodeURIComponent(next)}`);
       } catch (err) {
         toast.error(
           isDraftStorageFullError(err)

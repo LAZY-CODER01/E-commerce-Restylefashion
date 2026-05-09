@@ -1,9 +1,14 @@
 "use client";
 
-import { useEffect, useMemo, useState, Suspense } from "react";
+import { useEffect, useState, Suspense, useCallback } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { toast } from "react-toastify";
 import { useAuth } from "@/context/AuthContext";
+import {
+  completeDraftListingFlow,
+  shouldRehydrateAfterAuth,
+} from "@/lib/draftListing";
 
 const EMAIL_RE = /\S+@\S+\.\S+/;
 const PHONE_RE = /^[6-9]\d{9}$/;
@@ -232,7 +237,7 @@ function AuthCardSkeleton() {
   );
 }
 
-function SignupView({ onSwitchToLogin, onAuthSuccess }) {
+function SignupView({ onSwitchToLogin, onAuthComplete }) {
   const { register } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -328,7 +333,7 @@ function SignupView({ onSwitchToLogin, onAuthSuccess }) {
       setGlobalError(result.message || "Registration failed. Please try again.");
       return;
     }
-    onAuthSuccess();
+    await onAuthComplete(result);
   };
 
   const handleSocialLogin = (provider) => {
@@ -515,7 +520,7 @@ function formatIndiaMobileDisplay(digits) {
   return `+91 ${d.slice(0, 5)} ${d.slice(5)}`;
 }
 
-function LoginView({ onSwitchToSignup, onAuthSuccess }) {
+function LoginView({ onSwitchToSignup, onAuthComplete }) {
   const { login } = useAuth();
   const [method, setMethod] = useState("email");
   const [step, setStep] = useState(1);
@@ -595,7 +600,7 @@ function LoginView({ onSwitchToSignup, onAuthSuccess }) {
       if (otp === "123456") {
         setOtpSuccess(true);
         setIsLoading(false);
-        onAuthSuccess();
+        onAuthComplete({ skipDraftHandling: true });
       } else {
         setError("Incorrect OTP");
         setIsLoading(false);
@@ -627,7 +632,7 @@ function LoginView({ onSwitchToSignup, onAuthSuccess }) {
       setGlobalError(result.message || "Login failed. Please check your credentials.");
       return;
     }
-    onAuthSuccess();
+    await onAuthComplete(result);
   };
 
   const handleSocialLogin = (provider) => {
@@ -827,31 +832,78 @@ function LoginView({ onSwitchToSignup, onAuthSuccess }) {
   );
 }
 
+/** Resolve URL `next`, `redirect` (legacy), or sane default — same rules as former /login flows. */
+function resolvePostAuthPath(intentRaw) {
+  const intent =
+    intentRaw == null || String(intentRaw).trim() === ""
+      ? "/"
+      : String(intentRaw).trim();
+  if (intent === "complete-listing" || intent === "listing-page") return "/sell";
+  return intent.startsWith("/") ? intent : "/";
+}
+
 function AuthPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { user, loading } = useAuth();
+  const { user, loading, setUser, redirectBasedOnRole } = useAuth();
   const [activeScreen, setActiveScreen] = useState("login");
   const [showSkeleton, setShowSkeleton] = useState(true);
 
-  // Where to go after successful auth (default: home)
-  const nextPath = searchParams.get("next") || "/";
+  const redirectIntent =
+    searchParams.get("next") || searchParams.get("redirect") || "/";
+
+  const handleAuthComplete = useCallback(
+    async (authResult) => {
+      if (authResult?.skipDraftHandling) {
+        router.replace(resolvePostAuthPath(redirectIntent));
+        return;
+      }
+
+      const intent = redirectIntent;
+      const wantsRehydrate = shouldRehydrateAfterAuth(intent);
+      const wantsAutoSubmitDraft =
+        intent === "complete-listing" || intent === "listing-page";
+
+      if (wantsRehydrate) {
+        toast.success("Welcome back! Your listing draft was restored.");
+        router.replace(resolvePostAuthPath(intent));
+        return;
+      }
+
+      if (wantsAutoSubmitDraft && authResult?.user) {
+        const flow = await completeDraftListingFlow(setUser);
+        if (flow.ok) {
+          toast.success("Welcome back! Your listing was submitted.");
+          router.replace("/verification");
+        } else if (flow.reason === "no_draft") {
+          toast.info(
+            flow.message ||
+              "No saved listing found. Continue from the Sell flow when you are ready."
+          );
+          redirectBasedOnRole(authResult.user.role);
+        } else {
+          toast.error(flow.message || "Could not submit your listing. Try again from your dashboard.");
+          redirectBasedOnRole(authResult.user.role);
+        }
+        return;
+      }
+
+      router.replace(resolvePostAuthPath(intent));
+    },
+    [redirectIntent, router, setUser, redirectBasedOnRole]
+  );
 
   // If already logged in, redirect immediately
   useEffect(() => {
     if (!loading && user) {
-      router.replace(nextPath);
+      router.replace(resolvePostAuthPath(redirectIntent));
     }
-  }, [user, loading, nextPath, router]);
+  }, [user, loading, redirectIntent, router]);
 
   useEffect(() => {
     const t = window.setTimeout(() => setShowSkeleton(false), 380);
     return () => window.clearTimeout(t);
   }, []);
-
-  const handleAuthSuccess = () => {
-    router.replace(nextPath);
-  };
 
   return (
     <div
@@ -864,12 +916,12 @@ function AuthPageInner() {
         ) : activeScreen === "signup" ? (
           <SignupView
             onSwitchToLogin={() => setActiveScreen("login")}
-            onAuthSuccess={handleAuthSuccess}
+            onAuthComplete={handleAuthComplete}
           />
         ) : (
           <LoginView
             onSwitchToSignup={() => setActiveScreen("signup")}
-            onAuthSuccess={handleAuthSuccess}
+            onAuthComplete={handleAuthComplete}
           />
         )}
       </div>
