@@ -47,7 +47,7 @@ const PROFILE_SECTIONS = [
       {
         title: "Orders",
         subtitle: "Track and manage your orders",
-        href: "/orders",
+        href: "/my-orders",
       },
     ],
   },
@@ -105,52 +105,6 @@ const PROFILE_SECTIONS = [
     ],
   },
 ];
-title: "Orders",
-  subtitle: "Check your order status",
-    icon: <LocalShippingOutlinedIcon strokeWidth={1} sx={{ fontSize: 32 }} />,
-      path: "/my-orders"
-  },
-{
-  title: "Wishlist",
-    subtitle: "All your curated product collections",
-      icon: <FavoriteBorderOutlinedIcon strokeWidth={1} sx={{ fontSize: 32 }} />,
-        path: "/wishlist"
-},
-{
-  title: "Saved Address",
-    subtitle: "Edit your saved addresses",
-      icon: <HomeOutlinedIcon strokeWidth={1} sx={{ fontSize: 32 }} />,
-        path: "/profile/address"
-},
-{
-  title: "Saved Payment Methods",
-    subtitle: "Save your payment methods for faster checkout",
-      icon: <FeaturedPlayListOutlinedIcon strokeWidth={1} sx={{ fontSize: 32 }} />,
-        path: "/profile/payment-methods"
-},
-{
-  title: "Profile Details",
-    subtitle: "Change your profile details",
-      icon: <PersonOutlineOutlinedIcon strokeWidth={1} sx={{ fontSize: 32 }} />,
-        path: "/profile/details"
-},
-];
-
-const LISTINGS_MENU_ITEM = {
-  title: "My Listings",
-  subtitle: "Manage your listed products",
-  icon: <ViewModuleOutlinedIcon strokeWidth={1} sx={{ fontSize: 32 }} />,
-  path: "/profile/listings"
-};
-
-const LEGAL_LINKS = [
-  "FAQs",
-  "About Us",
-  "Terms of Use",
-  "Customer Policies"
-];
-
-import { toast } from "react-toastify";
 
 export default function UserProfile() {
   const router = useRouter();

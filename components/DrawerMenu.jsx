@@ -9,6 +9,8 @@ import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import HelpOutlineOutlinedIcon from '@mui/icons-material/HelpOutlineOutlined';
 import CloseOutlinedIcon from '@mui/icons-material/CloseOutlined';
 import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
+import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlined';
+import LocalMallOutlinedIcon from '@mui/icons-material/LocalMallOutlined';
 import { useAuth } from "@/context/AuthContext";
 import { usePathname, useRouter } from "next/navigation";
 import DashboardIcon from "@mui/icons-material/Dashboard";
@@ -16,6 +18,7 @@ import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import Inventory2Icon from "@mui/icons-material/Inventory2";
 import PeopleIcon from "@mui/icons-material/People";
 import { useSearch } from "@/context/SearchContext";
+import { useCart } from "@/context/CartContext";
 import { DRAWER_CATEGORY_ITEMS } from "@/data/categories";
 
 const SECONDARY_ITEMS = [
@@ -28,6 +31,8 @@ const SECONDARY_ITEMS = [
     name: "About Us",
     icon: <InfoOutlinedIcon />,
     link: "#"
+  },
+  {
     name: "Wishlist",
     icon: <FavoriteBorderOutlinedIcon />,
     link: "/wishlist"
@@ -61,6 +66,7 @@ const SALE_RED = "#EB0010";
 
 export default function DrawerMenu({ open, onClose, drawerRef }) {
   const { user, logout } = useAuth();
+  const { wishlistCount } = useCart();
   const pathname = usePathname();
   const router = useRouter();
   const { activeCategory, setActiveCategory } = useSearch();
@@ -131,7 +137,12 @@ export default function DrawerMenu({ open, onClose, drawerRef }) {
                   <div className="w-[60px] h-[60px] rounded-full border border-brand-pink p-[2px] shrink-0">
                     <div className="w-full h-full rounded-full bg-gray-100 flex items-center justify-center text-[22px] font-medium text-gray-500 overflow-hidden">
                       {user.avatar ? (
-                        <img src={user.avatar} alt={user.fullName} className="w-full h-full object-cover" />
+                        <Image
+                          src={user.avatar}
+                          alt={user.fullName || "User avatar"}
+                          fill
+                          className="object-cover"
+                        />
                       ) : (
                         user.fullName?.charAt(0)?.toUpperCase() || "U"
                       )}
@@ -200,8 +211,8 @@ export default function DrawerMenu({ open, onClose, drawerRef }) {
                         href={item.path}
                         onClick={onClose}
                         className={`group flex items-center gap-4 px-6 py-4 rounded-[20px] text-[17px] font-semibold transition-all duration-200 border border-transparent ${isActive
-                            ? "bg-brand-pink text-white shadow-lg shadow-brand-pink/20"
-                            : "text-brand-dark bg-transparent hover:bg-white hover:text-brand-pink hover:shadow-md hover:border-gray-100"
+                          ? "bg-brand-pink text-white shadow-lg shadow-brand-pink/20"
+                          : "text-brand-dark bg-transparent hover:bg-white hover:text-brand-pink hover:shadow-md hover:border-gray-100"
                           }`}
                       >
                         <span className={`${isActive ? "text-white" : "text-gray-400 group-hover:text-brand-pink"} transition-colors`}>
@@ -226,15 +237,14 @@ export default function DrawerMenu({ open, onClose, drawerRef }) {
                       className="group flex items-center justify-between text-left transition-colors"
                     >
                       <div className="flex items-center gap-4">
-                        <div className="w-[52px] h-[64px] bg-gray-100 rounded-lg overflow-hidden shrink-0 relative">
+                        <div className="relative w-[52px] h-[64px] bg-gray-100 rounded-lg overflow-hidden shrink-0">
                           {item.image && (
-                            <img
+                            <Image
                               src={item.image}
-                              alt=""
-                              loading="lazy"
-                              decoding="async"
-                              referrerPolicy="no-referrer"
-                              className="w-full h-full object-cover"
+                              alt={item.label || "Category image"}
+                              fill
+                              className="object-cover"
+                              sizes="52px"
                             />
                           )}
                         </div>
@@ -264,20 +274,19 @@ export default function DrawerMenu({ open, onClose, drawerRef }) {
                       className="group flex items-center justify-between text-left transition-colors"
                     >
                       <div className="flex items-center gap-4">
-                        <div className="w-[52px] h-[64px] rounded-lg overflow-hidden shrink-0 flex items-center justify-center bg-gray-100">
+                        <div className="relative w-[52px] h-[64px] rounded-lg overflow-hidden shrink-0 flex items-center justify-center bg-gray-100">
                           {item.image === "flame-icon" ? (
                             <div className="w-full h-full bg-[#FFE5ED] flex items-center justify-center">
                               <LocalFireDepartmentIcon style={{ color: SALE_RED, fontSize: 32 }} />
                             </div>
                           ) : (
                             item.image && (
-                              <img
+                              <Image
                                 src={item.image}
-                                alt=""
-                                loading="lazy"
-                                decoding="async"
-                                referrerPolicy="no-referrer"
-                                className="w-full h-full object-cover"
+                                alt={item.label || "Discover image"}
+                                fill
+                                className="object-cover"
+                                sizes="52px"
                               />
                             )
                           )}
