@@ -25,6 +25,7 @@ function initialsFromName(fullName) {
 }
 
 /** Sectioned menu: chevron-right on each row (no left icons). */
+
 const PROFILE_SECTIONS = [
   {
     label: "ACTIVITY",
