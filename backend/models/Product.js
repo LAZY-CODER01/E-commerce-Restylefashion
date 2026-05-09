@@ -111,6 +111,12 @@ const productSchema = new mongoose.Schema(
             type: [String],
             default: [],
         },
+        sizeInventory: [
+            {
+                size: { type: String, required: true },
+                quantity: { type: Number, default: 0, min: 0 }
+            }
+        ],
         colors: {
             type: [String],
             default: [],

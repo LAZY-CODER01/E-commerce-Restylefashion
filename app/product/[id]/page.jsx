@@ -123,6 +123,7 @@ function normalizeApiProductForPdp(data) {
     stockStatus: p.stockStatus || "In Stock",
     condition: p.condition || "Gently Used",
     sizes: Array.isArray(p.sizes) && p.sizes.length ? p.sizes : [],
+    sizeInventory: Array.isArray(p.sizeInventory) ? p.sizeInventory : [],
     colors: Array.isArray(p.colors) && p.colors.length ? p.colors : [],
     description: p.description || "",
     similarProducts: related,
@@ -429,19 +430,33 @@ export default function ProductDetailsPage({ params }) {
             <span className="text-[13px] font-semibold text-[#1C1C1E] shrink-0">Size:</span>
             <div className="flex items-center gap-1.5 flex-wrap flex-1">
               {product.sizes.map((size) => {
+                const invItem = product.sizeInventory?.find(s => s.size === size);
+                // If it has inventory data, use it; otherwise assume infinite (old items)
+                const hasInventoryData = !!invItem;
+                const qty = hasInventoryData ? invItem.quantity : null;
+                const isOutOfStock = hasInventoryData && qty <= 0;
                 const isSelected = selectedSize === size;
+                
                 return (
                   <button
                     key={size}
                     type="button"
-                    onClick={() => setSelectedSize(isSelected ? "" : size)}
-                    className={`h-[34px] min-w-[38px] px-2 rounded-lg border text-[13px] font-semibold transition-all duration-150 ${
-                      isSelected
-                        ? "border-[#F7246E] bg-white text-[#F7246E]"
-                        : "border-gray-300 bg-white text-[#1C1C1E] hover:border-gray-400"
+                    onClick={() => { if (!isOutOfStock) setSelectedSize(isSelected ? "" : size) }}
+                    disabled={isOutOfStock}
+                    className={`relative h-[34px] min-w-[38px] px-2 rounded-lg border text-[13px] font-semibold transition-all duration-150 ${
+                      isOutOfStock
+                        ? "border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed"
+                        : isSelected
+                          ? "border-[#F7246E] bg-white text-[#F7246E]"
+                          : "border-gray-300 bg-white text-[#1C1C1E] hover:border-gray-400"
                     }`}
                   >
                     {size}
+                    {hasInventoryData && !isOutOfStock && qty <= 3 && (
+                      <span className="absolute -top-1.5 -right-1.5 bg-[#F7246E] text-white text-[9px] px-1 rounded-full border border-white">
+                        {qty}
+                      </span>
+                    )}
                   </button>
                 );
               })}

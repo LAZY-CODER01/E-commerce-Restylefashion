@@ -1,8 +1,11 @@
 const express = require("express");
 const Razorpay = require("razorpay");
-const crypto  = require("crypto");
+const crypto = require("crypto");
 const { protect } = require("../middleware/auth");
 const Order = require("../models/Order");
+const Product = require("../models/Product");
+const User = require("../models/User");
+const WalletTransaction = require("../models/WalletTransaction");
 
 const router = express.Router();
 
@@ -108,6 +111,52 @@ router.post("/verify", protect, async (req, res) => {
             razorpay_signature,
             status: "paid",
         });
+
+        // ── 3. Decrement Product Inventory ────────────────────────────────────
+        if (items && items.length > 0) {
+            for (const item of items) {
+                if (!item.productId) continue;
+                
+                // If selectedSize exists, decrement from sizeInventory
+                if (item.selectedSize) {
+                    await Product.updateOne(
+                        { _id: item.productId, "sizeInventory.size": item.selectedSize },
+                        { $inc: { "sizeInventory.$.quantity": -(item.qty || 1) } }
+                    );
+                }
+
+                // Check total stock left and credit seller
+                const product = await Product.findById(item.productId);
+                if (product) {
+                    if (product.sizeInventory && product.sizeInventory.length > 0) {
+                        const totalStock = product.sizeInventory.reduce((acc, curr) => acc + (curr.quantity || 0), 0);
+                        if (totalStock <= 0) {
+                            product.stockStatus = "Out of Stock";
+                            await product.save();
+                        }
+                    }
+
+                    if (product.seller) {
+                        const qty = item.qty || 1;
+                        const creditAmount = item.price * qty;
+                        
+                        await User.findByIdAndUpdate(product.seller, {
+                            $inc: { walletBalance: creditAmount }
+                        });
+
+                        await WalletTransaction.create({
+                            seller: product.seller,
+                            order: order._id,
+                            product: product._id,
+                            amount: creditAmount,
+                            quantity: qty,
+                            type: "credit",
+                            description: `Sold: ${item.title}${item.selectedSize ? ` (${item.selectedSize})` : ""} x${qty}`,
+                        });
+                    }
+                }
+            }
+        }
 
         res.json({
             success: true,

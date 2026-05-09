@@ -30,6 +30,7 @@ const SOCIAL_SELLER_TYPES = new Set(["influencer", "designer", "thrifter"]);
 
 const defaultProductForm = {
   sizes: [],
+  sizeInventory: [],
   colors: [],
   name: "",
   category: "",
@@ -550,12 +551,29 @@ export default function NewProductPage() {
       const updatedSizes = prev.sizes.includes(size)
         ? prev.sizes.filter((s) => s !== size)
         : [...prev.sizes, size];
-      return { ...prev, sizes: updatedSizes };
+        
+      const updatedInventory = prev.sizeInventory.find(s => s.size === size)
+        ? prev.sizeInventory.filter(s => s.size !== size)
+        : [...prev.sizeInventory, { size, quantity: 1 }];
+
+      return { ...prev, sizes: updatedSizes, sizeInventory: updatedInventory };
     });
     setFieldErrors((prev) => {
       const next = { ...prev };
       delete next.sizes;
       return next;
+    });
+  };
+
+  const handleUpdateSizeQty = (size, delta) => {
+    setFormData((prev) => {
+      const updatedInventory = prev.sizeInventory.map(s => {
+        if (s.size === size) {
+          return { ...s, quantity: Math.max(1, s.quantity + delta) };
+        }
+        return s;
+      });
+      return { ...prev, sizeInventory: updatedInventory };
     });
   };
 
@@ -658,6 +676,7 @@ export default function NewProductPage() {
       fd.append("price", sanitizePriceDigits(formData.sellingPrice));
       fd.append("originalPrice", sanitizePriceDigits(formData.retailPrice));
       fd.append("sizes", JSON.stringify(formData.sizes));
+      fd.append("sizeInventory", JSON.stringify(formData.sizeInventory));
       fd.append("colors", JSON.stringify(formData.colors));
       imageFiles.forEach((file) => fd.append("images", file));
 
@@ -1034,7 +1053,7 @@ export default function NewProductPage() {
               <div id="field-sizes" className="flex flex-col gap-1.5 md:col-span-2">
                 <div className="flex items-center justify-start gap-0.1 pl-1">
                   <span className="text-[12px] font-bold text-brand-dark uppercase tracking-widest">
-                    Select Size * 
+                    Select Sizes & Quantities * 
                   </span>
                   <button
                     type="button"
@@ -1045,23 +1064,51 @@ export default function NewProductPage() {
                     <InlineInfoGlyph />
                   </button>
                 </div>
-                <div className="relative isolate w-full">
-                  <div className="grid w-full grid-cols-5 gap-1.5 sm:gap-2.5">
-                    {sizes.map((size) => (
-                      <button
-                        type="button"
-                        key={size}
-                        onClick={() => toggleSize(size)}
-                        className={`flex h-9 w-full min-w-0 max-w-full items-center justify-center rounded-md border text-[12px] font-bold leading-none transition-colors sm:h-9 sm:rounded-lg sm:text-[13px]
-                          ${formData.sizes.includes(size)
-                            ? "border-brand-pink bg-brand-pink/10 text-brand-pink"
-                            : "border-gray-200 bg-white text-brand-dark hover:border-gray-300"
-                          }`}
-                      >
-                        {size}
-                      </button>
-                    ))}
-                  </div>
+                <div className="flex flex-col gap-2 w-full mt-2">
+                  {sizes.map((size) => {
+                    const inv = formData.sizeInventory?.find(s => s.size === size);
+                    const isSelected = !!inv;
+                    const qty = inv ? inv.quantity : 0;
+                    return (
+                      <div key={size} className={`flex items-center justify-between p-2 sm:p-3 rounded-xl border transition-colors ${isSelected ? 'border-brand-pink/30 bg-brand-pink/5 shadow-sm' : 'border-gray-200 bg-white shadow-sm'}`}>
+                        <button
+                          type="button"
+                          onClick={() => toggleSize(size)}
+                          className={`flex h-10 w-16 items-center justify-center rounded-lg border text-[13px] font-bold transition-colors
+                            ${isSelected
+                              ? "border-brand-pink bg-brand-pink text-white shadow-sm shadow-brand-pink/20"
+                              : "border-gray-200 bg-gray-50 text-brand-dark hover:border-gray-300"
+                            }`}
+                        >
+                          {size}
+                        </button>
+                        
+                        <div className={`flex items-center gap-3 transition-opacity ${isSelected ? "opacity-100" : "opacity-40 pointer-events-none"}`}>
+                          <span className="text-[13px] font-medium text-gray-500">Qty:</span>
+                          <div className="flex items-center rounded-lg border border-gray-200 overflow-hidden bg-white shadow-sm">
+                            <button
+                              type="button"
+                              onClick={() => handleUpdateSizeQty(size, -1)}
+                              disabled={qty <= 1}
+                              className="w-9 h-9 flex items-center justify-center text-gray-600 hover:bg-gray-50 disabled:opacity-30 transition-colors text-lg"
+                            >
+                              −
+                            </button>
+                            <span className="w-10 text-center text-[15px] font-bold text-brand-dark">
+                              {qty || 1}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => handleUpdateSizeQty(size, 1)}
+                              className="w-9 h-9 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors text-lg"
+                            >
+                              +
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
                 <div className="min-h-[18px]">
                   {fieldErrors.sizes ? (

@@ -135,7 +135,7 @@ export default function DrawerMenu({ open, onClose, drawerRef }) {
               {user ? (
                 <div className="flex items-center gap-4">
                   <div className="w-[60px] h-[60px] rounded-full border border-brand-pink p-[2px] shrink-0">
-                    <div className="w-full h-full rounded-full bg-gray-100 flex items-center justify-center text-[22px] font-medium text-gray-500 overflow-hidden">
+                    <div className="relative w-full h-full rounded-full bg-gray-100 flex items-center justify-center text-[22px] font-medium text-gray-500 overflow-hidden">
                       {user.avatar ? (
                         <Image
                           src={user.avatar}
