@@ -2,7 +2,9 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
+import ArrowBackOutlinedIcon from "@mui/icons-material/ArrowBackOutlined";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import { useCart } from "@/context/CartContext";
 
@@ -89,22 +91,35 @@ function WishlistDetailCard({ item, index, onAddToBag, onRemove }) {
 }
 
 export default function WishlistPage() {
+  const router = useRouter();
   const { wishlist, wishlistCount, deleteFromWishlist, addToBag } = useCart();
   const items = Array.isArray(wishlist) ? wishlist : [];
 
   return (
     <main className="min-h-screen bg-white font-sans pb-16">
       <div className="mx-auto w-full max-w-5xl px-4 py-6 md:px-8 md:py-8">
-        <header className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <h1 className="text-[22px] font-extrabold tracking-tight text-brand-dark md:text-[28px]">Wishlist</h1>
-            <p className="mt-0.5 text-[13px] font-medium text-gray-500 md:text-[14px]">
-              {wishlistCount} item{wishlistCount === 1 ? "" : "s"} saved
-            </p>
+        <header className="flex flex-wrap items-start justify-between gap-x-4 gap-y-3">
+          <div className="flex min-w-0 flex-1 items-start gap-3 sm:gap-4">
+            <button
+              type="button"
+              onClick={() => router.back()}
+              className="-ml-1 mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-[#2F2F2F] transition hover:bg-black/5 md:h-12 md:w-12"
+              aria-label="Go back"
+            >
+              <ArrowBackOutlinedIcon sx={{ fontSize: 26 }} />
+            </button>
+            <div className="min-w-0">
+              <h1 className="text-[22px] font-extrabold tracking-tight text-brand-dark md:text-[28px]">
+                Wishlist
+              </h1>
+              <p className="mt-0.5 text-[13px] font-medium text-gray-500 md:text-[14px]">
+                {wishlistCount} item{wishlistCount === 1 ? "" : "s"} saved
+              </p>
+            </div>
           </div>
           <Link
             href="/"
-            className="shrink-0 self-start text-[14px] font-semibold text-brand-pink hover:text-brand-pink-hover hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-pink/40 focus-visible:ring-offset-2 sm:self-auto"
+            className="shrink-0 self-center text-[14px] font-semibold text-brand-pink hover:text-brand-pink-hover hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-pink/40 focus-visible:ring-offset-2"
           >
             Continue shopping
           </Link>

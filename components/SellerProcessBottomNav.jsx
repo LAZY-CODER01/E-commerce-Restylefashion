@@ -13,13 +13,17 @@ function getActiveId(pathname) {
   if (pathname === "/") {
     return "home";
   }
-  if (pathname.startsWith("/dashboard") || pathname === "/seller/dashboard" || pathname === "/seller/wallet") {
+  if (pathname.startsWith("/dashboard") || pathname === "/seller/dashboard") {
     return "dashboard";
+  }
+  /* Wallet is its own flow — do not mark Dashboard (or any tab) active here */
+  if (pathname === "/seller/wallet" || pathname.startsWith("/seller/wallet/")) {
+    return null;
   }
   if (pathname.startsWith("/seller/products")) return "products";
   if (pathname === "/seller/orders") return "orders";
   if (pathname === "/seller/profile") return "profile";
-  if (pathname.startsWith("/seller/boost") || pathname === "/seller/store") {
+  if (pathname.startsWith("/seller/boost")) {
     return "products";
   }
   return null;
@@ -47,7 +51,7 @@ export default function SellerProcessBottomNav() {
         <DashboardIcon sx={{ fontSize: 24 }} />
         <span className="max-w-full truncate text-[9px] font-bold uppercase tracking-tight sm:text-[10px] sm:tracking-wider">Dashboard</span>
       </Link>
-      <Link href="/seller/store" className={itemClass("products")}>
+      <Link href="/seller/products/new" className={itemClass("products")}>
         <ShoppingBagIcon sx={{ fontSize: 24 }} />
         <span className="max-w-full truncate text-[9px] font-bold uppercase tracking-tight sm:text-[10px] sm:tracking-wider">Products</span>
       </Link>

@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import {
   DASHBOARD_METRICS,
@@ -55,9 +56,20 @@ export default function DashboardMainPage() {
     <div className="pb-2">
       <main className="mx-auto w-full max-w-[1200px] px-4 pb-10 pt-4 md:px-9 md:pt-6">
         <div className="mx-auto w-full max-w-[720px]">
-          <div className="mb-4 flex items-center justify-center">
-            <h1 className="text-[16px] font-semibold text-gray-900">Dashboard</h1>
-          </div>
+          <header className="relative mb-4 flex min-h-[48px] items-center justify-between gap-3 md:mb-6">
+            <button
+              type="button"
+              onClick={() => router.back()}
+              className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-700 shadow-sm transition hover:bg-gray-50 md:h-11 md:w-11"
+              aria-label="Go back"
+            >
+              <ArrowLeft className="h-5 w-5" strokeWidth={2} />
+            </button>
+            <h1 className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-[16px] font-semibold text-gray-900 md:text-[17px]">
+              Dashboard
+            </h1>
+            <span className="h-10 w-10 shrink-0 md:h-11 md:w-11" aria-hidden />
+          </header>
         <section className="grid grid-cols-2 gap-3">
           <MetricCard href="/dashboard/earnings" ariaLabel="Go to Earnings">
             <div>

@@ -14,6 +14,7 @@ export default function ConditionalFooter() {
     pathname === "/seller/dashboard" ||
     pathname === "/seller/orders" ||
     pathname === "/seller/wallet" ||
+    pathname.startsWith("/seller/wallet/") ||
     pathname === "/seller/store" ||
     pathname === "/checkout"
   ) {

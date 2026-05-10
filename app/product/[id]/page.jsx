@@ -9,7 +9,9 @@ import ProductImageGallery from "@/components/pdp/ProductImageGallery";
 import RelatedProductsSection from "@/components/pdp/RelatedProductsSection";
 
 import { ALL_PRODUCTS } from "@/data/mockData";
+import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
+import { recordRecentlyViewed } from "@/lib/recentlyViewed";
 
 const VALID_PRODUCTS = ALL_PRODUCTS.filter((p) => p != null && p.id != null);
 
@@ -172,6 +174,8 @@ export default function ProductDetailsPage({ params }) {
   const resolvedParams = use(params);
   const id = resolvedParams?.id ?? resolvedParams?.slug ?? "";
   const router = useRouter();
+  const { user } = useAuth();
+  const recentlyViewedUserKey = user?.email ?? user?._id ?? user?.id;
 
   const mockProduct = useMemo(() => getProductData(id), [id]);
   const [remoteProduct, setRemoteProduct] = useState(null);
@@ -212,6 +216,32 @@ export default function ProductDetailsPage({ params }) {
     setPincode("");
     setDeliveryInfo(null);
   }, [id]);
+
+  useEffect(() => {
+    if (!product) return;
+    const pid = product.id ?? product._id;
+    if (pid === null || pid === undefined || String(pid).trim() === "") return;
+    const sizePick =
+      selectedSize ||
+      (Array.isArray(product.sizes) && product.sizes.length ? String(product.sizes[0]) : "");
+    const colorPick =
+      selectedColor ||
+      (Array.isArray(product.colors) && product.colors.length ? String(product.colors[0]) : "");
+    recordRecentlyViewed(
+      {
+        id: String(pid),
+        title: product.title ?? "Product",
+        imageUrl:
+          product.imageUrl ||
+          (Array.isArray(product.images) && product.images.length ? product.images[0] : "") ||
+          "",
+        price: Number(product.price) || 0,
+        displaySize: sizePick.trim() ? sizePick : null,
+        displayColor: colorPick.trim() ? colorPick : null,
+      },
+      recentlyViewedUserKey
+    );
+  }, [product, selectedSize, selectedColor, recentlyViewedUserKey]);
 
   const { wishlist, toggleWishlist, addToBag } = useCart();
   const safeWishlist = Array.isArray(wishlist) ? wishlist : [];

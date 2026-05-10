@@ -38,7 +38,7 @@ const PROFILE_SECTIONS = [
       {
         title: "Recently Viewed",
         subtitle: "Items you recently explored",
-        comingSoon: true,
+        href: "/profile/recently-viewed",
       },
     ],
   },
@@ -100,8 +100,8 @@ const PROFILE_SECTIONS = [
     items: [
       {
         title: "Help & Support",
-        subtitle: "FAQs, order help and more",
-        comingSoon: true,
+        subtitle: "Orders, deliveries, payments & account help",
+        href: "/profile/help",
       },
     ],
   },
