@@ -12,6 +12,7 @@ import { ALL_PRODUCTS } from "@/data/mockData";
 import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
 import { recordRecentlyViewed } from "@/lib/recentlyViewed";
+import { FOLLOWING_EVENT, isFollowing, toggleFollowSeller } from "@/lib/following";
 
 const VALID_PRODUCTS = ALL_PRODUCTS.filter((p) => p != null && p.id != null);
 
@@ -50,6 +51,10 @@ const getProductData = (id) => {
     description: foundProduct.description || "In excellent condition.",
     details: foundProduct.details || { fabric: "Cotton Mix", fit: "Standard Fit", care: "Handle with care" },
     seller: {
+      sellerId:
+        foundProduct.seller?.id != null
+          ? String(foundProduct.seller.id)
+          : `mock-${String(foundProduct.seller?.name || "restyle").replace(/\s+/g, "-").toLowerCase()}`,
       name: foundProduct.seller?.name || "Restyle Seller",
       initials: (foundProduct.seller?.name || "RS").split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase(),
       followers: foundProduct.seller?.followers || "2.4k",
@@ -95,7 +100,12 @@ function normalizeApiProductForPdp(data) {
     sellerDoc && typeof sellerDoc === "object" && !Array.isArray(sellerDoc)
       ? sellerDoc.fullName || "Seller"
       : "Restyle Seller";
+  const sellerIdFromApi =
+    sellerDoc && typeof sellerDoc === "object" && !Array.isArray(sellerDoc) && sellerDoc._id != null
+      ? String(sellerDoc._id)
+      : `mock-${sellerName.replace(/\s+/g, "-").toLowerCase()}`;
   const seller = {
+    sellerId: sellerIdFromApi,
     name: sellerName,
     initials: sellerName.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase(),
     followers: sellerDoc?.followers || "2.4k",
@@ -250,6 +260,23 @@ export default function ProductDetailsPage({ params }) {
     Boolean(productIdKey) &&
     safeWishlist.some((w) => String(w?.id ?? w?._id ?? w?.sku ?? w?.slug ?? w?.productId) === productIdKey);
 
+  const buyerKey = user?._id ?? user?.id;
+  const sellerIdForFollow =
+    product?.seller?.sellerId != null && String(product.seller.sellerId).trim() !== ""
+      ? String(product.seller.sellerId)
+      : "";
+  const [followTick, setFollowTick] = useState(0);
+  useEffect(() => {
+    const on = () => setFollowTick((x) => x + 1);
+    window.addEventListener(FOLLOWING_EVENT, on);
+    return () => window.removeEventListener(FOLLOWING_EVENT, on);
+  }, []);
+
+  const isFollowingSeller = useMemo(
+    () => Boolean(buyerKey && sellerIdForFollow && isFollowing(buyerKey, sellerIdForFollow)),
+    [buyerKey, sellerIdForFollow, followTick]
+  );
+
   const handleWishlistToggle = () => {
     if (!product) return;
     toggleWishlist({
@@ -293,6 +320,32 @@ export default function ProductDetailsPage({ params }) {
       qty: 1,
     });
     router.push("/checkout");
+  };
+
+  const handleSellerFollowToggle = () => {
+    if (!product?.seller) return;
+    if (!sellerIdForFollow) {
+      toast.warn("Seller information unavailable.");
+      return;
+    }
+    if (!buyerKey) {
+      toast.info("Sign in to follow stores.");
+      router.push(`/auth?next=/product/${encodeURIComponent(String(id))}`);
+      return;
+    }
+    const s = product.seller;
+    const fl = s.followers;
+    const followersLabel =
+      typeof fl === "number" && Number.isFinite(fl) ? fl.toLocaleString("en-IN") : String(fl ?? "—");
+    const listings = Number(s.products) || 0;
+    const nowFollowing = toggleFollowSeller(buyerKey, {
+      sellerId: sellerIdForFollow,
+      name: s.name || "Store",
+      avatar: s.avatar ?? null,
+      followersLabel,
+      listings,
+    });
+    toast.info(nowFollowing ? `You're following ${s.name}!` : `Unfollowed ${s.name}`);
   };
 
   const handleCheckPincode = () => {
@@ -527,16 +580,23 @@ export default function ProductDetailsPage({ params }) {
               <span className="text-[11px] font-medium text-[#888]">Seller Store</span>
               <span className="text-[15px] font-bold text-[#1C1C1E] leading-tight">{product.seller?.name || "Restyle Seller"}</span>
               <span className="text-[12px] text-[#888] mt-0.5">
-                {product.seller?.followers || "2.4k"} followers · {product.seller?.products || 68} products
+                {product.seller?.followers || "2.4k"} followers · {product.seller?.products || 68} listings
               </span>
             </div>
           </div>
           {/* Follow / View Store */}
           <button
             type="button"
-            className="shrink-0 h-9 rounded-xl border-2 border-[#F7246E] bg-white px-4 text-[13px] font-bold text-[#F7246E] transition hover:bg-[#FFF0F6] active:scale-95"
+            onClick={handleSellerFollowToggle}
+            aria-pressed={isFollowingSeller}
+            aria-label={isFollowingSeller ? "Unfollow seller" : "Follow seller"}
+            className={`shrink-0 h-9 rounded-xl px-4 text-[13px] font-bold transition active:scale-95 ${
+              isFollowingSeller
+                ? "border border-gray-300 bg-white text-[#1C1C1E] hover:bg-gray-50"
+                : "border-2 border-[#F7246E] bg-white text-[#F7246E] hover:bg-[#FFF0F6]"
+            }`}
           >
-            Follow
+            {isFollowingSeller ? "Following" : "Follow"}
           </button>
         </div>
 

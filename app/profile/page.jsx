@@ -79,14 +79,13 @@ const PROFILE_SECTIONS = [
       {
         title: "Following",
         subtitle: "People and stores you follow",
-        comingSoon: true,
+        href: "/profile/following",
       },
       {
         title: "My Store",
         subtitle: "Manage your store and listings",
         hrefSeller: "/profile/listings",
-        comingSoon: true,
-        // hrefBuyer: "/",
+        sellerOnly: true,
       },
       {
         title: "Profile Details",
@@ -201,7 +200,7 @@ export default function UserProfile() {
               {section.label}
             </p>
             <div className="overflow-hidden rounded-2xl border border-gray-200/90 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
-              {section.items.map((item) => {
+              {section.items.filter((item) => !(item.sellerOnly && !isSeller)).map((item) => {
                 return (
                   <button
                     key={`${section.label}-${item.title}`}

@@ -179,17 +179,18 @@ export default function DrawerMenu({ open, onClose, drawerRef }) {
                 <div className="p-4 py-5 z-10 flex flex-col justify-center w-[60%]">
                   <h3 className="text-[17px] font-bold text-gray-900 leading-tight">Sell with us</h3>
                   <p className="text-[13px] text-gray-600 mt-1 mb-3">Earn more. Empower style.</p>
-                  <Link href="/seller/auth" onClick={onClose} className="bg-brand-pink text-white text-[13px] font-semibold px-4 py-1.5 rounded-lg self-start transition-opacity hover:opacity-90 shadow-sm shadow-brand-pink/20">
+                  <Link href="/auth" onClick={onClose} className="bg-brand-pink text-white text-[13px] font-semibold px-4 py-1.5 rounded-lg self-start transition-opacity hover:opacity-90 shadow-sm shadow-brand-pink/20">
                     Start Selling
                   </Link>
                 </div>
-                <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-[52%] overflow-hidden" aria-hidden>
+                <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-[52%] overflow-hidden bg-[#FFF5F8]" aria-hidden>
                   <Image
-                    src="/drawer-sell-banner.png"
+                    src="/drawer-sell-photo.png"
                     alt=""
                     fill
-                    sizes="188px"
-                    className="object-cover object-[88%_center]"
+                    sizes="(max-width: 360px) 45vw, 200px"
+                    quality={100}
+                    className="object-cover object-center"
                     priority={false}
                   />
                 </div>

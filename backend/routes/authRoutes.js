@@ -105,21 +105,56 @@ router.post("/make-admin", protect, async (req, res) => {
     }
 });
 
+/** Parse client birth input; stores as UTC noon for stable YYYY-MM-DD in JSON responses. */
+function dateFromBirthInput(raw) {
+    if (raw == null || raw === "") return null;
+    const s = String(raw).trim();
+    const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(s);
+    if (m)
+        return new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]), 12, 0, 0, 0));
+    const d = new Date(s);
+    if (Number.isNaN(d.getTime())) return null;
+    return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 12, 0, 0, 0));
+}
+
 // @route   PUT /api/auth/profile
 // @desc    Update basic profile info (fullName, mobile)
 // @access  Private
 router.put("/profile", protect, async (req, res) => {
     try {
-        const { fullName, mobile } = req.body;
+        const { fullName, mobile, dateOfBirth, gender } = req.body;
         const updateFields = {};
         if (fullName && String(fullName).trim()) updateFields.fullName = String(fullName).trim();
         if (mobile !== undefined) updateFields.mobile = String(mobile).trim();
 
-        const user = await User.findByIdAndUpdate(
-            req.user._id,
-            { $set: updateFields },
-            { new: true, runValidators: true }
-        );
+        if (gender !== undefined) {
+            const g = String(gender || "").trim().toLowerCase();
+            if (!g || ["female", "male", "other", "unspecified"].includes(g)) {
+                updateFields.gender = g;
+            }
+        }
+
+        if (dateOfBirth !== undefined) {
+            if (dateOfBirth === null || dateOfBirth === "") {
+                updateFields.dateOfBirth = null;
+            } else {
+                const d = dateFromBirthInput(dateOfBirth);
+                if (!d) return res.status(400).json({ message: "Invalid date of birth." });
+                updateFields.dateOfBirth = d;
+            }
+        }
+
+        let user;
+        if (Object.keys(updateFields).length > 0) {
+            user = await User.findByIdAndUpdate(
+                req.user._id,
+                { $set: updateFields },
+                { new: true, runValidators: true }
+            );
+        } else {
+            user = await User.findById(req.user._id);
+        }
+        if (!user) return res.status(404).json({ message: "User not found." });
         res.json(buildUserPayload(user));
     } catch (error) {
         res.status(500).json({ message: error.message });

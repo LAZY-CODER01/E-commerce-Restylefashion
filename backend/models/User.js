@@ -35,6 +35,19 @@ const userSchema = new mongoose.Schema(
             type: String,
             default: "",
         },
+        dateOfBirth: {
+            type: Date,
+            default: null,
+        },
+        gender: {
+            type: String,
+            trim: true,
+            default: "",
+            enum: {
+                values: ["female", "male", "other", "unspecified", ""],
+                message: "{VALUE} is not a valid gender",
+            },
+        },
         // Seller profile fields
         sellerType: {
             type: String,

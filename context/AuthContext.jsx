@@ -17,7 +17,14 @@ export function AuthProvider({ children }) {
       if (token) {
         try {
           const { data } = await api.get("/auth/profile");
-          setUser(data);
+          // Merge so /auth/login shape (includes token from token field) stays consistent after refresh,
+          // and GET always wins on profile fields including dateOfBirth / gender when backend supports them.
+          const t = localStorage.getItem("restyle_token");
+          setUser((prev) => ({
+            ...(prev && typeof prev === "object" ? prev : {}),
+            ...data,
+            ...(t ? { token: t } : {}),
+          }));
         } catch (error) {
           console.error("Failed to fetch profile", error);
           localStorage.removeItem("restyle_token");
