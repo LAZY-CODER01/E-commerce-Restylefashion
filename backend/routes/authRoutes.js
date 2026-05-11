@@ -1,6 +1,7 @@
 const express = require("express");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
+const Product = require("../models/Product");
 const { protect, authorize } = require("../middleware/auth");
 const { buildUserPayload } = require("../utils/userPayload");
 
@@ -156,6 +157,41 @@ router.put("/profile", protect, async (req, res) => {
         }
         if (!user) return res.status(404).json({ message: "User not found." });
         res.json(buildUserPayload(user));
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// @route   PUT /api/auth/vacation-mode
+// @desc    Toggle vacation mode and update products
+// @access  Private (Seller/Admin)
+router.put("/vacation-mode", protect, authorize("Seller", "Admin"), async (req, res) => {
+    try {
+        const { isActive, startDate, endDate } = req.body;
+        
+        // Update the user document
+        const user = await User.findByIdAndUpdate(
+            req.user._id,
+            {
+                $set: {
+                    "vacationMode.isActive": isActive,
+                    "vacationMode.startDate": startDate ? new Date(startDate) : null,
+                    "vacationMode.endDate": endDate ? new Date(endDate) : null,
+                }
+            },
+            { new: true }
+        );
+
+        // Synchronously update all products belonging to this seller
+        await Product.updateMany(
+            { seller: req.user._id },
+            { $set: { sellerVacationMode: isActive === true } }
+        );
+
+        res.json({
+            ...buildUserPayload(user),
+            token: generateToken(user._id),
+        });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

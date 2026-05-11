@@ -188,4 +188,23 @@ router.get("/orders", protect, async (req, res) => {
     }
 });
 
+// ─────────────────────────────────────────────────────────────────────────────
+// GET /api/payment/orders/:id
+// Returns a specific order by ID for the authenticated user
+// ─────────────────────────────────────────────────────────────────────────────
+router.get("/orders/:id", protect, async (req, res) => {
+    try {
+        const order = await Order.findOne({ _id: req.params.id, user: req.user._id }).lean();
+        
+        if (!order) {
+            return res.status(404).json({ success: false, message: "Order not found." });
+        }
+
+        res.json({ success: true, order });
+    } catch (err) {
+        console.error("❌ Fetch order error:", err);
+        res.status(500).json({ message: "Failed to fetch order details.", error: err.message });
+    }
+});
+
 module.exports = router;

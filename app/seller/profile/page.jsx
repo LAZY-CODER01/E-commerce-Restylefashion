@@ -35,6 +35,8 @@ import {
   writeSellerHubState,
 } from "@/lib/sellerHubProfile";
 import SellerProcessBottomNav from "@/components/SellerProcessBottomNav";
+import { useAuth } from "@/context/AuthContext";
+import api from "@/lib/api";
 
 function formatDateLabel(iso) {
   if (!iso) return "";
@@ -182,12 +184,16 @@ function initialsFromName(fullName) {
 
 export default function SellerProfilePage() {
   const router = useRouter();
+  const { user, setUser } = useAuth();
   const [mounted, setMounted] = useState(false);
   const [tick, setTick] = useState(0);
   const [vacationModalOpen, setVacationModalOpen] = useState(false);
+  
+  // Initialize from user object
   const [vacationStart, setVacationStart] = useState("");
   const [vacationEnd, setVacationEnd] = useState("");
   const [vacationModeUI, setVacationModeUI] = useState(false);
+  
   const [followed, setFollowed] = useState(false);
   const [storeSearch, setStoreSearch] = useState("");
   const [shareSheetOpen, setShareSheetOpen] = useState(false);
@@ -195,6 +201,15 @@ export default function SellerProfilePage() {
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Sync state when user object loads
+  useEffect(() => {
+    if (user && user.vacationMode) {
+      setVacationModeUI(user.vacationMode.isActive || false);
+      if (user.vacationMode.startDate) setVacationStart(user.vacationMode.startDate.substring(0, 10));
+      if (user.vacationMode.endDate) setVacationEnd(user.vacationMode.endDate.substring(0, 10));
+    }
+  }, [user]);
 
   useEffect(() => {
     const bump = () => setTick((t) => t + 1);
@@ -218,16 +233,26 @@ export default function SellerProfilePage() {
     };
   }, [mounted, tick]);
 
-  const vacationMode = hub.onlineStore === false;
-  useEffect(() => {
-    // Keep UI state synced with persisted hub state (but allow instant flips on click).
-    setVacationModeUI(vacationMode);
-  }, [vacationMode]);
-
-  const setVacationMode = (nextVacationMode) => {
-    // vacationMode === true => onlineStore should be false
-    writeSellerHubState({ onlineStore: nextVacationMode ? false : true });
-    setTick((t) => t + 1);
+  const updateVacationModeBackend = async (isActive, start, end) => {
+    try {
+      const { data } = await api.put("/auth/vacation-mode", {
+        isActive,
+        startDate: start || null,
+        endDate: end || null,
+      });
+      setUser(data);
+      if (isActive) {
+        toast.success("Vacation Mode activated. Your listings are now hidden.");
+      } else {
+        toast.success("Vacation Mode deactivated. Your listings are now live.");
+      }
+    } catch (error) {
+      toast.error("Failed to update Vacation Mode.");
+      // Revert UI on failure
+      if (user?.vacationMode) {
+        setVacationModeUI(user.vacationMode.isActive || false);
+      }
+    }
   };
 
   const handleVacationToggle = (nextVacationMode) => {
@@ -236,17 +261,14 @@ export default function SellerProfilePage() {
       setVacationModalOpen(true);
       return;
     }
-    // Instant UI update + persist
+    // Instant UI update + API call
     setVacationModeUI(false);
-    setVacationMode(false);
+    updateVacationModeBackend(false, null, null);
   };
 
   const confirmVacationOn = () => {
-    // Flip the toggle ON using the same state path,
-    // then persist optional dates.
-    setVacationModeUI(true); // instant
-    setVacationMode(true);
-    writeSellerHubState({ vacationStart: vacationStart || "", vacationEnd: vacationEnd || "" });
+    setVacationModeUI(true); // instant UI update
+    updateVacationModeBackend(true, vacationStart, vacationEnd);
     setVacationModalOpen(false);
   };
 
@@ -680,35 +702,34 @@ export default function SellerProfilePage() {
             </button>
 
             {/* Action chips */}
-            <div className="mt-3 grid w-full grid-cols-3 gap-2.5 sm:gap-3">
-            <button
-              type="button"
-              onClick={() => setShareSheetOpen(true)}
-              className="flex min-w-0 items-center justify-center gap-2 rounded-2xl border border-gray-200 bg-white px-2.5 py-3 text-[11px] font-semibold leading-tight text-gray-900 shadow-sm hover:bg-gray-50 sm:px-4 sm:text-[12px]"
-            >
-              <ShareOutlinedIcon sx={{ fontSize: 16 }} className="text-[#F7246E]" aria-hidden />
-              <span className="whitespace-normal text-center sm:whitespace-nowrap">Share Profile</span>
-            </button>
-            <Link
-              href="/seller/store"
-              className="flex min-w-0 items-center justify-center gap-2 rounded-2xl border border-gray-200 bg-white px-2.5 py-3 text-[11px] font-semibold leading-tight text-gray-900 shadow-sm hover:bg-gray-50 sm:px-4 sm:text-[12px]"
-            >
-              <VisibilityOutlinedIcon sx={{ fontSize: 16 }} className="text-[#F7246E]" aria-hidden />
-              <span className="whitespace-normal text-center sm:whitespace-nowrap">Store Preview</span>
-            </Link>
-            <div className="flex min-w-0 items-center justify-between rounded-2xl border border-gray-200 bg-white px-2.5 py-3 shadow-sm sm:px-4">
-              <div className="flex min-w-0 flex-1 items-center gap-2">
-                <BeachAccessOutlinedIcon sx={{ fontSize: 16 }} className="text-[#F7246E]" aria-hidden />
-                <span className="min-w-0 text-[11px] font-semibold leading-tight text-gray-900 sm:text-[12px]">
-                  <span className="block sm:hidden">Vacation</span>
-                  <span className="block sm:hidden">Mode</span>
-                  <span className="hidden sm:inline">Vacation Mode</span>
-                </span>
+            <div className="mt-3 grid w-full gap-2">
+              <div className="grid w-full grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShareSheetOpen(true)}
+                  className="flex min-w-0 items-center justify-center gap-2 rounded-2xl border border-gray-200 bg-white px-2.5 py-3 text-[11px] font-semibold leading-tight text-gray-900 shadow-sm hover:bg-gray-50"
+                >
+                  <ShareOutlinedIcon sx={{ fontSize: 16 }} className="text-[#F7246E]" aria-hidden />
+                  <span className="truncate text-center">Share Profile</span>
+                </button>
+                <Link
+                  href="/seller/store"
+                  className="flex min-w-0 items-center justify-center gap-2 rounded-2xl border border-gray-200 bg-white px-2.5 py-3 text-[11px] font-semibold leading-tight text-gray-900 shadow-sm hover:bg-gray-50"
+                >
+                  <VisibilityOutlinedIcon sx={{ fontSize: 16 }} className="text-[#F7246E]" aria-hidden />
+                  <span className="truncate text-center">Store Preview</span>
+                </Link>
               </div>
-              <div className="ml-3 shrink-0 sm:ml-4">
-                <VacationToggle checked={vacationModeUI} onChange={handleVacationToggle} />
+
+              <div className="flex min-w-0 items-center justify-between rounded-2xl border border-gray-200 bg-white px-3 py-3 shadow-sm">
+                <div className="flex min-w-0 items-center gap-2">
+                  <BeachAccessOutlinedIcon sx={{ fontSize: 16 }} className="text-[#F7246E]" aria-hidden />
+                  <span className="truncate text-[11px] font-semibold leading-tight text-gray-900">Vacation Mode</span>
+                </div>
+                <div className="flex shrink-0">
+                  <VacationToggle checked={vacationModeUI} onChange={handleVacationToggle} />
+                </div>
               </div>
-            </div>
             </div>
           </section>
 

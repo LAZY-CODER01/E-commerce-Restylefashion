@@ -82,6 +82,12 @@ const PROFILE_SECTIONS = [
         href: "/profile/following",
       },
       {
+        title: "Seller Profile",
+        subtitle: "Manage your seller page, vacation mode, and sharing",
+        hrefSeller: "/seller/profile",
+        sellerOnly: true,
+      },
+      {
         title: "My Store",
         subtitle: "Manage your store and listings",
         hrefSeller: "/profile/listings",

@@ -128,6 +128,11 @@ const userSchema = new mongoose.Schema(
             type: Number,
             default: 0,
         },
+        vacationMode: {
+            isActive: { type: Boolean, default: false },
+            startDate: { type: Date, default: null },
+            endDate: { type: Date, default: null },
+        },
     },
     { timestamps: true }
 );
