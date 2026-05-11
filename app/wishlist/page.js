@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 
 import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRounded";
-import ShoppingBagOutlinedIcon from "@mui/icons-material/ShoppingBagOutlined";
 import FavoriteRoundedIcon from "@mui/icons-material/FavoriteRounded";
 
 import { useCart } from "@/context/CartContext";
@@ -144,7 +143,6 @@ export default function WishlistPage() {
 
   const {
     wishlist,
-    cartCount,
     deleteFromWishlist,
     addToBag,
   } = useCart();
@@ -154,12 +152,10 @@ export default function WishlistPage() {
     : [];
 
   return (
-    <main className="min-h-screen bg-white pb-28">
-      {/* CONTAINER */}
-      <div className="mx-auto w-full max-w-[430px] px-5 pt-6">
+    <main className="min-h-screen bg-white pb-10">
+      <div className="mx-auto w-full max-w-[1280px] px-5 pt-6">
         {/* HEADER */}
-        <header className="flex items-center justify-between">
-          {/* BACK */}
+        <header className="flex items-center gap-4">
           <button
             onClick={() => router.back()}
             className="flex h-10 w-10 items-center justify-center"
@@ -172,40 +168,18 @@ export default function WishlistPage() {
             />
           </button>
 
-          {/* TITLE */}
-          <div className="text-center">
-            <h1 className="text-[30px] font-bold tracking-[-1.5px] text-black">
-              My Wishlist
-            </h1>
-          </div>
-
-          {/* CART */}
-          <button
-            onClick={() => router.push("/orders")}
-            className="relative flex h-10 w-10 items-center justify-center"
-          >
-            <ShoppingBagOutlinedIcon
-              sx={{
-                fontSize: 30,
-                color: "#111",
-              }}
-            />
-
-            {cartCount > 0 && (
-              <span className="absolute right-0 top-0 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-[#FF2147] px-1 text-[11px] font-bold text-white">
-                {cartCount}
-              </span>
-            )}
-          </button>
+          <h1 className="text-[22px] font-medium tracking-[-0.5px] text-black">
+            My Wishlist
+          </h1>
         </header>
 
         {/* SUBTITLE */}
-        <p className="mt-8 text-[18px] font-medium text-[#707070]">
+        <p className="mt-4 text-[15px] text-[#707070]">
           Items you love, all in one place.
         </p>
 
         {/* LIST */}
-        <div className="mt-7 flex flex-col gap-5">
+        <div className="mt-6 flex flex-col gap-5">
           {items.length === 0 ? (
             <div className="rounded-[22px] border border-[#F3F3F3] bg-white p-10 text-center">
               <p className="text-[16px] text-[#666]">
@@ -234,55 +208,6 @@ export default function WishlistPage() {
               />
             ))
           )}
-        </div>
-      </div>
-
-      {/* BOTTOM NAV */}
-      <div className="fixed bottom-0 left-0 right-0 border-t border-[#F1F1F1] bg-white">
-        <div className="mx-auto flex h-[78px] max-w-[430px] items-center justify-around">
-          <div className="flex flex-col items-center gap-1 text-[#444]">
-            <span className="text-[24px]">⌂</span>
-            <span className="text-[13px]">
-              Home
-            </span>
-          </div>
-
-          <div className="flex flex-col items-center gap-1 text-[#444]">
-            <span className="text-[24px]">
-              ⌕
-            </span>
-            <span className="text-[13px]">
-              Search
-            </span>
-          </div>
-
-          <div className="flex flex-col items-center gap-1 text-[#444]">
-            <span className="text-[24px]">
-              ⊞
-            </span>
-            <span className="text-[13px]">
-              Sell
-            </span>
-          </div>
-
-          <div className="flex flex-col items-center gap-1 text-[#FF2147]">
-            <FavoriteRoundedIcon
-              sx={{ fontSize: 27 }}
-            />
-
-            <span className="text-[13px] font-medium">
-              Wishlist
-            </span>
-          </div>
-
-          <div className="flex flex-col items-center gap-1 text-[#444]">
-            <span className="text-[24px]">
-              ◯
-            </span>
-            <span className="text-[13px]">
-              Profile
-            </span>
-          </div>
         </div>
       </div>
     </main>
