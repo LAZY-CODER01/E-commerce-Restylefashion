@@ -457,7 +457,7 @@ export default function ProfileDetailsPage() {
   return (
     <div className="min-h-[100dvh] bg-white pb-28 font-sans">
       <header className="sticky top-0 z-30 border-b border-gray-100 bg-white">
-        <div className="mx-auto grid max-w-lg grid-cols-[auto_1fr_auto] items-center gap-2 px-3 py-2">
+        <div className="mx-auto grid max-w-[1280px] grid-cols-[auto_1fr_auto] items-center gap-2 px-3 py-2 md:px-6">
           <button
             type="button"
             onClick={() => router.back()}
@@ -502,8 +502,8 @@ export default function ProfileDetailsPage() {
         </div>
       </header>
 
-      <div className="mx-auto max-w-lg px-4 pt-8">
-        <div className="mx-auto mb-8 flex h-[88px] w-[88px] items-center justify-center rounded-full bg-[#F7246E] text-[28px] font-bold text-white shadow-md ring-4 ring-pink-100">
+      <div className="mx-auto max-w-[1280px] px-4 pt-8 md:px-6">
+        <div className="mx-auto mb-8 flex h-[88px] w-[88px] items-center justify-center rounded-full bg-[#F7246E] text-[28px] font-bold text-white shadow-md ring-4 ring-pink-100 md:h-[100px] md:w-[100px] md:text-[32px]">
           {user.avatar ? (
             <div className="relative h-full w-full overflow-hidden rounded-full">
               <Image src={user.avatar} alt="" fill className="object-cover" sizes="88px" />
@@ -513,7 +513,7 @@ export default function ProfileDetailsPage() {
           )}
         </div>
 
-        <div className="overflow-hidden rounded-2xl border border-gray-200/90 bg-white shadow-[0_1px_8px_rgba(0,0,0,0.06)]">
+        <div className="mx-auto max-w-2xl overflow-hidden rounded-2xl border border-gray-200/90 bg-white shadow-[0_1px_8px_rgba(0,0,0,0.06)]">
           <ProfileRow
             icon={<PersonOutlineOutlinedIcon sx={{ fontSize: 22 }} />}
             label="Full Name"
@@ -609,7 +609,7 @@ export default function ProfileDetailsPage() {
             type="button"
             onClick={() => saveProfile()}
             disabled={saving}
-            className="mt-6 w-full rounded-2xl py-4 text-[16px] font-bold text-white shadow-lg shadow-[#F7246E]/25 transition active:scale-[0.98] disabled:opacity-60"
+            className="mx-auto mt-6 block w-full max-w-2xl rounded-2xl py-4 text-[16px] font-bold text-white shadow-lg shadow-[#F7246E]/25 transition active:scale-[0.98] disabled:opacity-60"
             style={{ backgroundColor: BRAND_PINK }}
           >
             {saving ? "Saving…" : "Save changes"}
@@ -617,7 +617,7 @@ export default function ProfileDetailsPage() {
         )}
 
         {isSeller && (
-          <section className={`mt-8 ${editing ? "opacity-60" : ""}`}>
+          <section className={`mx-auto mt-8 max-w-2xl ${editing ? "opacity-60" : ""}`}>
             <h2 className="mb-3 text-[15px] font-bold text-gray-900">My Store</h2>
             <div className="flex items-center gap-3 overflow-hidden rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
               <IconWrap>
@@ -648,7 +648,7 @@ export default function ProfileDetailsPage() {
             logout();
             toast.success("Logged out");
           }}
-          className="mt-10 w-full rounded-2xl border-2 py-3.5 text-[16px] font-bold transition-colors hover:bg-[#FFF5F8]"
+          className="mx-auto mt-10 block w-full max-w-2xl rounded-2xl border-2 py-3.5 text-[16px] font-bold transition-colors hover:bg-[#FFF5F8]"
           style={{ borderColor: BRAND_PINK, color: BRAND_PINK }}
         >
           Logout
