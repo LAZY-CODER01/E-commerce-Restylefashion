@@ -96,7 +96,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-[100dvh] bg-brand-light pb-24">
-      <main className="max-w-[1400px] mx-auto px-4 md:px-9 pt-4 flex flex-col gap-8">
+      <main className="app-gutter flex w-full min-w-0 flex-col gap-8 pt-4">
 
         {/* ── Hero Carousel ── */}
         <section className="relative w-full aspect-[21/9] sm:aspect-[3/1] rounded-card overflow-hidden shadow-sm group">

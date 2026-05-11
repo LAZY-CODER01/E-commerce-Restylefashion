@@ -6,7 +6,8 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Building2, ChevronRight, Shield, Wallet } from "lucide-react";
 import { toast } from "react-toastify";
 import SellerProcessBottomNav from "@/components/SellerProcessBottomNav";
-import { readSellerHubState } from "@/lib/sellerHubProfile";
+import { readSellerHubState, writeSellerHubState } from "@/lib/sellerHubProfile";
+import api from "@/lib/api";
 
 const MIN_WITHDRAW = 200;
 
@@ -26,18 +27,15 @@ function formatAmountInputDigits(digits) {
 
 export default function SellerWithdrawPage() {
   const router = useRouter();
-  const [withdrawalBalance, setWithdrawalBalance] = useState(12450);
+  const [withdrawalBalance, setWithdrawalBalance] = useState(0);
   const [amountDigits, setAmountDigits] = useState("1000");
   const [payoutAccount, setPayoutAccount] = useState("upi");
   const [upiId, setUpiId] = useState("username@upi");
   const [bankLine, setBankLine] = useState("HDFC Bank •••• 1234");
+  const [withdrawing, setWithdrawing] = useState(false);
 
   useEffect(() => {
     const hub = readSellerHubState();
-    const w = Number(hub.restyleWalletBalance);
-    if (Number.isFinite(w) && w > 0) {
-      setWithdrawalBalance(Math.floor(w));
-    }
     if (typeof hub.withdrawalUpiId === "string" && hub.withdrawalUpiId.trim()) {
       setUpiId(hub.withdrawalUpiId.trim());
     }
@@ -46,9 +44,32 @@ export default function SellerWithdrawPage() {
     }
   }, []);
 
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const { data } = await api.get("/wallet");
+        if (!alive) return;
+        const full = Math.floor(Number(data.balance) || 0);
+        const withdrawable = Math.floor(
+          Number(data.breakdown?.withdrawable ?? data.balance) || 0
+        );
+        setWithdrawalBalance(withdrawable);
+        writeSellerHubState({ restyleWalletBalance: full });
+      } catch {
+        const hub = readSellerHubState();
+        const w = Number(hub.restyleWalletBalance);
+        if (Number.isFinite(w) && w > 0) setWithdrawalBalance(Math.floor(w));
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, []);
+
   const amountNumber = useMemo(() => parseInt(amountDigits || "0", 10) || 0, [amountDigits]);
 
-  function onWithdrawSubmit() {
+  async function onWithdrawSubmit() {
     if (amountNumber < MIN_WITHDRAW) {
       toast.error(`Minimum withdrawal amount is ₹${MIN_WITHDRAW.toLocaleString("en-IN")}.`);
       return;
@@ -57,7 +78,20 @@ export default function SellerWithdrawPage() {
       toast.error("Amount exceeds withdrawal balance.");
       return;
     }
-    toast.success("Withdrawal request submitted. (Demo — connect payouts API next.)");
+    setWithdrawing(true);
+    try {
+      const { data } = await api.post("/wallet/withdraw", { amount: amountNumber });
+      const next = Math.floor(Number(data.balance) || 0);
+      setWithdrawalBalance(next);
+      writeSellerHubState({ restyleWalletBalance: next });
+      toast.success("Withdrawal recorded. Funds will be sent to your linked account.");
+      router.push("/seller/wallet");
+    } catch (e) {
+      const msg = e?.response?.data?.message || "Withdrawal failed.";
+      toast.error(msg);
+    } finally {
+      setWithdrawing(false);
+    }
   }
 
   function onAmountChange(e) {
@@ -111,10 +145,11 @@ export default function SellerWithdrawPage() {
               </label>
               <button
                 type="button"
-                className="h-9 shrink-0 rounded-md bg-brand-pink px-4 text-[13px] font-bold leading-none text-white shadow-sm transition hover:bg-brand-pink-hover active:scale-[0.98] sm:h-9 sm:px-5"
+                disabled={withdrawing}
+                className="h-9 shrink-0 rounded-md bg-brand-pink px-4 text-[13px] font-bold leading-none text-white shadow-sm transition hover:bg-brand-pink-hover active:scale-[0.98] disabled:opacity-50 sm:h-9 sm:px-5"
                 onClick={onWithdrawSubmit}
               >
-                Withdraw
+                {withdrawing ? "…" : "Withdraw"}
               </button>
             </div>
             <p className="mt-2.5 text-[13px] text-gray-500">

@@ -32,6 +32,17 @@ const walletTransactionSchema = new mongoose.Schema(
             type: String,
             required: true,
         },
+        /** For filters: earnings, withdrawals, refunds, bonuses, top-ups, pending holds */
+        category: {
+            type: String,
+            enum: ["earning", "withdrawal", "refund", "bonus", "topup", "pending", "other"],
+            default: "other",
+        },
+        settlementStatus: {
+            type: String,
+            enum: ["pending", "completed"],
+            default: "completed",
+        },
     },
     { timestamps: true }
 );

@@ -1,5 +1,14 @@
 @import "tailwindcss";
 
+/** Site max width (desktop) + horizontal rhythm — use with page-level `w-full` inside */
+@utility app-content {
+  @apply mx-auto w-full min-w-0 max-w-[1280px];
+}
+
+@utility app-gutter {
+  @apply px-4 sm:px-5 md:px-6 lg:px-8;
+}
+
 @theme {
   --font-sans: "Roboto", ui-sans-serif, system-ui, sans-serif;
   --color-brand-pink: #F7246E;

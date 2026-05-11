@@ -4,6 +4,19 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import { readSellerHubState, writeSellerHubState } from "@/lib/sellerHubProfile";
+import api from "@/lib/api";
+
+function getLocalWalletLedger(hub) {
+  const ledger = hub?.localWalletLedger;
+  return Array.isArray(ledger) ? ledger : [];
+}
+
+function localLedgerCreditSum(ledger) {
+  return ledger.reduce(
+    (s, tx) => s + (tx?.type === "credit" ? Math.abs(Number(tx.amount) || 0) : 0),
+    0
+  );
+}
 import {
   ArrowLeft,
   ChevronRight,
@@ -236,25 +249,80 @@ export default function BoostListingFlow({
   };
 
   /** After UPI / card / net banking / third-party wallet — add money or complete boost. */
-  const handlePaymentSuccess = () => {
+  const handlePaymentSuccess = async () => {
     if (selectedPaymentMethod === "wallet-topup") {
       const hub = readSellerHubState();
-      const bal = Math.max(0, Math.floor(Number(hub.restyleWalletBalance) || 0));
       const add = Math.max(0, Math.floor(selectedAmount) || 0);
       if (add < 1) return;
       const prevHistory = Array.isArray(hub.boostHistory) ? hub.boostHistory : [];
       const label = `Wallet top-up ₹${add}`;
+      const historyEntry = { label, amount: add, method: "wallet-topup", at: Date.now() };
+
+      const token =
+        typeof window !== "undefined" &&
+        (localStorage.getItem("restyle_token") || localStorage.getItem("token"));
+
+      if (token) {
+        try {
+          const { data } = await api.post("/wallet/topup", { amount: add });
+          const serverB = Number(data.balance) || 0;
+          const prevLedger = getLocalWalletLedger(hub);
+          const mergedDisplay = serverB + localLedgerCreditSum(prevLedger);
+          writeSellerHubState({
+            serverWalletBalance: serverB,
+            localWalletLedger: prevLedger,
+            restyleWalletBalance: Math.max(0, Math.floor(mergedDisplay)),
+            boostHistory: [...prevHistory, historyEntry],
+          });
+          setWalletBalance(mergedDisplay);
+          closePaymentSubView();
+          setCurrentStep("select_package");
+          toast.success(`₹${add.toLocaleString("en-IN")} added to your Restyle wallet.`);
+          try {
+            window.dispatchEvent(new Event("restyle-wallet-hub-updated"));
+          } catch {
+            /* ignore */
+          }
+          return;
+        } catch {
+          /* fall through to local-only path */
+        }
+      }
+
+      const bal = Math.max(0, Math.floor(Number(hub.restyleWalletBalance) || 0));
+      let serverB = Number(hub.serverWalletBalance);
+      if (!Number.isFinite(serverB)) {
+        const prevLedger = getLocalWalletLedger(hub);
+        const ls = localLedgerCreditSum(prevLedger);
+        serverB = Math.max(0, bal - ls);
+      }
+      const prevLedger = getLocalWalletLedger(hub);
+      const entry = {
+        _id: `boost_topup_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
+        description: label,
+        amount: add,
+        type: "credit",
+        normalizedCategory: "topup",
+        settlementStatus: "completed",
+        createdAt: new Date().toISOString(),
+      };
+      const ledger = [entry, ...prevLedger].slice(0, 100);
+      const merged = serverB + localLedgerCreditSum(ledger);
       writeSellerHubState({
-        restyleWalletBalance: bal + add,
-        boostHistory: [
-          ...prevHistory,
-          { label, amount: add, method: "wallet-topup", at: Date.now() },
-        ],
+        serverWalletBalance: serverB,
+        localWalletLedger: ledger,
+        restyleWalletBalance: Math.max(0, Math.floor(merged)),
+        boostHistory: [...prevHistory, historyEntry],
       });
-      setWalletBalance(bal + add);
+      setWalletBalance(merged);
       closePaymentSubView();
       setCurrentStep("select_package");
       toast.success(`₹${add.toLocaleString("en-IN")} added to your Restyle wallet.`);
+      try {
+        window.dispatchEvent(new Event("restyle-wallet-hub-updated"));
+      } catch {
+        /* ignore */
+      }
       return;
     }
     completePackagePurchaseAfterExternalPayment();

@@ -151,6 +151,8 @@ router.post("/verify", protect, async (req, res) => {
                             amount: creditAmount,
                             quantity: qty,
                             type: "credit",
+                            category: "earning",
+                            settlementStatus: "completed",
                             description: `Sold: ${item.title}${item.selectedSize ? ` (${item.selectedSize})` : ""} x${qty}`,
                         });
                     }
