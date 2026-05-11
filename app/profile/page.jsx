@@ -73,7 +73,7 @@ const PROFILE_SECTIONS = [
       {
         title: "Wallet",
         subtitle: "View balance, transactions and more",
-        hrefSeller: "/seller/wallet",
+        hrefSeller: "/profile/wallet",
         comingSoonForBuyer: true,
       },
       {
