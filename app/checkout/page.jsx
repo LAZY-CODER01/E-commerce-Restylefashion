@@ -315,7 +315,7 @@ export default function CheckoutPage() {
               clearCart();
 
               toast.success("🎉 Payment successful! Order placed.");
-              router.push("/my-orders?success=1");
+              router.push(`/order-placed?orderId=${verifyData.order._id}`);
             } else {
               toast.error("Payment verification failed. Contact support.");
             }

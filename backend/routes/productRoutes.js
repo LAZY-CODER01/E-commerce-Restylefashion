@@ -132,7 +132,10 @@ router.post("/seed", async (req, res) => {
 router.get("/", async (req, res) => {
     try {
         const { category, search, page = 1, limit = 20 } = req.query;
-        const query = { status: { $in: ["active", "approved"] } };
+        const query = { 
+            status: { $in: ["active", "approved"] },
+            sellerVacationMode: { $ne: true }
+        };
 
         // Category filter
         if (category && category !== "all") {
@@ -261,6 +264,7 @@ router.get("/:id", async (req, res) => {
             category: product.category,
             _id: { $ne: product._id },
             status: { $in: ["active", "approved"] },
+            sellerVacationMode: { $ne: true },
         }).limit(4);
 
         res.json({ ...product.toObject(), similarProducts });

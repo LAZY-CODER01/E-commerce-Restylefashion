@@ -1,6 +1,8 @@
 const express = require("express");
+const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
+const Product = require("../models/Product");
 const { protect, authorize } = require("../middleware/auth");
 const { buildUserPayload } = require("../utils/userPayload");
 
@@ -69,6 +71,192 @@ router.post("/login", async (req, res) => {
             ...buildUserPayload(user),
             token: generateToken(user._id),
         });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// @route   GET /api/auth/influencers
+// @desc    Get all active influencers/sellers with their active product counts
+// @access  Public
+router.get("/influencers", async (req, res) => {
+    try {
+        const influencers = await User.aggregate([
+            { $match: { role: { $in: ["Influencer", "Seller"] } } },
+            {
+                $lookup: {
+                    from: "products",
+                    localField: "_id",
+                    foreignField: "seller",
+                    pipeline: [
+                        { $match: { status: "active", sellerVacationMode: { $ne: true } } },
+                        { $count: "activeCount" }
+                    ],
+                    as: "activeProducts"
+                }
+            },
+            {
+                $project: {
+                    _id: 1,
+                    fullName: 1,
+                    avatar: 1,
+                    coverUrl: 1,
+                    followersCount: 1,
+                    instagramId: 1,
+                    businessName: 1,
+                    itemsListed: {
+                        $ifNull: [{ $arrayElemAt: ["$activeProducts.activeCount", 0] }, 0]
+                    }
+                }
+            },
+            { $sort: { followersCount: -1, itemsListed: -1 } }
+        ]);
+
+        res.json(influencers);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// @route   GET /api/auth/influencer/:id
+// @desc    Get a single influencer's public profile
+// @access  Public
+router.get("/influencer/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const influencer = await User.aggregate([
+            { $match: { _id: new mongoose.Types.ObjectId(id) } },
+            {
+                $lookup: {
+                    from: "products",
+                    localField: "_id",
+                    foreignField: "seller",
+                    pipeline: [
+                        { $match: { status: "active", sellerVacationMode: { $ne: true } } },
+                        { $count: "activeCount" }
+                    ],
+                    as: "activeProducts"
+                }
+            },
+            {
+                $project: {
+                    _id: 1,
+                    fullName: 1,
+                    avatar: 1,
+                    coverUrl: 1,
+                    followersCount: 1,
+                    followingCount: 1,
+                    instagramId: 1,
+                    businessName: 1,
+                    sellerType: 1,
+                    itemsListed: {
+                        $ifNull: [{ $arrayElemAt: ["$activeProducts.activeCount", 0] }, 0]
+                    }
+                }
+            }
+        ]);
+
+        if (!influencer || influencer.length === 0) {
+            return res.status(404).json({ message: "Influencer not found" });
+        }
+
+        res.json(influencer[0]);
+    } catch (error) {
+        res.status(500).json({ message: "Invalid ID or server error" });
+    }
+});
+
+// @route   POST /api/auth/influencer/:id/follow
+// @desc    Follow or unfollow an influencer
+// @access  Private
+router.post("/influencer/:id/follow", protect, async (req, res) => {
+    try {
+        const { id } = req.params;
+        if (id === req.user._id.toString()) {
+            return res.status(400).json({ message: "You cannot follow yourself" });
+        }
+
+        const influencer = await User.findById(id);
+        if (!influencer) {
+            return res.status(404).json({ message: "Influencer not found" });
+        }
+
+        const loggedInUser = await User.findById(req.user._id);
+
+        const isFollowing = loggedInUser.following.includes(id);
+
+        if (isFollowing) {
+            // Unfollow
+            loggedInUser.following.pull(id);
+            loggedInUser.followingCount = Math.max(0, loggedInUser.followingCount - 1);
+            
+            influencer.followers.pull(loggedInUser._id);
+            influencer.followersCount = Math.max(0, influencer.followersCount - 1);
+        } else {
+            // Follow
+            loggedInUser.following.push(id);
+            loggedInUser.followingCount += 1;
+
+            influencer.followers.push(loggedInUser._id);
+            influencer.followersCount += 1;
+        }
+
+        await loggedInUser.save();
+        await influencer.save();
+
+        res.json({
+            message: isFollowing ? "Unfollowed successfully" : "Followed successfully",
+            followingCount: loggedInUser.followingCount,
+            influencerFollowersCount: influencer.followersCount,
+            user: buildUserPayload(loggedInUser)
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// @route   GET /api/auth/following
+// @desc    Get all influencers the current user follows
+// @access  Private
+router.get("/following", protect, async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id);
+        if (!user) return res.status(404).json({ message: "User not found" });
+
+        if (!user.following || user.following.length === 0) {
+            return res.json([]);
+        }
+
+        const followingList = await User.aggregate([
+            { $match: { _id: { $in: user.following } } },
+            {
+                $lookup: {
+                    from: "products",
+                    localField: "_id",
+                    foreignField: "seller",
+                    pipeline: [
+                        { $match: { status: "active", sellerVacationMode: { $ne: true } } },
+                        { $count: "activeCount" }
+                    ],
+                    as: "activeProducts"
+                }
+            },
+            {
+                $project: {
+                    _id: 1,
+                    fullName: 1,
+                    avatar: 1,
+                    coverUrl: 1,
+                    followersCount: 1,
+                    businessName: 1,
+                    itemsListed: {
+                        $ifNull: [{ $arrayElemAt: ["$activeProducts.activeCount", 0] }, 0]
+                    }
+                }
+            }
+        ]);
+
+        res.json(followingList);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -156,6 +344,41 @@ router.put("/profile", protect, async (req, res) => {
         }
         if (!user) return res.status(404).json({ message: "User not found." });
         res.json(buildUserPayload(user));
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// @route   PUT /api/auth/vacation-mode
+// @desc    Toggle vacation mode and update products
+// @access  Private (Seller/Admin)
+router.put("/vacation-mode", protect, authorize("Seller", "Admin"), async (req, res) => {
+    try {
+        const { isActive, startDate, endDate } = req.body;
+        
+        // Update the user document
+        const user = await User.findByIdAndUpdate(
+            req.user._id,
+            {
+                $set: {
+                    "vacationMode.isActive": isActive,
+                    "vacationMode.startDate": startDate ? new Date(startDate) : null,
+                    "vacationMode.endDate": endDate ? new Date(endDate) : null,
+                }
+            },
+            { new: true }
+        );
+
+        // Synchronously update all products belonging to this seller
+        await Product.updateMany(
+            { seller: req.user._id },
+            { $set: { sellerVacationMode: isActive === true } }
+        );
+
+        res.json({
+            ...buildUserPayload(user),
+            token: generateToken(user._id),
+        });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

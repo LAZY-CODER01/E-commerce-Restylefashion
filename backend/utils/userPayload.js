@@ -59,6 +59,7 @@ function buildUserPayload(user) {
         isSellerVerified: u.isSellerVerified,
         addresses: u.addresses || [],
         paymentMethods: u.paymentMethods || [],
+        following: u.following || [],
         createdAt: u.createdAt,
     };
 }

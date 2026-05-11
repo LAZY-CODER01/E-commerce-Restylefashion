@@ -6,6 +6,18 @@ import Image from "next/image";
 import ArrowBackOutlinedIcon from "@mui/icons-material/ArrowBackOutlined";
 import KeyboardArrowRightOutlinedIcon from "@mui/icons-material/KeyboardArrowRightOutlined";
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
+import FavoriteBorderOutlinedIcon from "@mui/icons-material/FavoriteBorderOutlined";
+import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
+import ShoppingBagOutlinedIcon from "@mui/icons-material/ShoppingBagOutlined";
+import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
+import CreditCardOutlinedIcon from "@mui/icons-material/CreditCardOutlined";
+import SecurityOutlinedIcon from "@mui/icons-material/SecurityOutlined";
+import AccountBalanceWalletOutlinedIcon from "@mui/icons-material/AccountBalanceWalletOutlined";
+import PersonAddAltOutlinedIcon from "@mui/icons-material/PersonAddAltOutlined";
+import StorefrontOutlinedIcon from "@mui/icons-material/StorefrontOutlined";
+import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
+import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
+import HeadsetMicOutlinedIcon from "@mui/icons-material/HeadsetMicOutlined";
 import { toast } from "react-toastify";
 import { useAuth } from "@/context/AuthContext";
 
@@ -82,6 +94,12 @@ const PROFILE_SECTIONS = [
         href: "/profile/following",
       },
       {
+        title: "Seller Profile",
+        subtitle: "Manage your seller page, vacation mode, and sharing",
+        hrefSeller: "/seller/profile",
+        sellerOnly: true,
+      },
+      {
         title: "My Store",
         subtitle: "Manage your store and listings",
         hrefSeller: "/profile/listings",
@@ -105,6 +123,21 @@ const PROFILE_SECTIONS = [
     ],
   },
 ];
+
+const ITEM_ICON_MAP = {
+  Wishlist: FavoriteBorderOutlinedIcon,
+  "Recently Viewed": VisibilityOutlinedIcon,
+  Orders: ShoppingBagOutlinedIcon,
+  "Saved address": LocationOnOutlinedIcon,
+  "Saved payment method": CreditCardOutlinedIcon,
+  Security: SecurityOutlinedIcon,
+  Wallet: AccountBalanceWalletOutlinedIcon,
+  Following: PersonAddAltOutlinedIcon,
+  "Seller Profile": StorefrontOutlinedIcon,
+  "My Store": Inventory2OutlinedIcon,
+  "Profile Details": PersonOutlineOutlinedIcon,
+  "Help & Support": HeadsetMicOutlinedIcon,
+};
 
 export default function UserProfile() {
   const router = useRouter();
@@ -201,6 +234,7 @@ export default function UserProfile() {
             </p>
             <div className="overflow-hidden rounded-2xl border border-gray-200/90 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
               {section.items.filter((item) => !(item.sellerOnly && !isSeller)).map((item) => {
+                const SectionIcon = ITEM_ICON_MAP[item.title];
                 return (
                   <button
                     key={`${section.label}-${item.title}`}
@@ -208,6 +242,9 @@ export default function UserProfile() {
                     onClick={() => handleRowClick(item)}
                     className="flex w-full cursor-pointer items-center gap-3 border-b border-gray-100 px-4 py-4 text-left transition-colors last:border-b-0 hover:bg-gray-50/90 active:bg-gray-50 md:gap-4 md:px-5 md:py-[18px]"
                   >
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#FFF0F6] text-[#F7246E]">
+                      {SectionIcon ? <SectionIcon sx={{ fontSize: 20 }} /> : null}
+                    </div>
                     <div className="flex min-w-0 flex-1 flex-col gap-0.5">
                       <span className="text-[15px] font-bold leading-snug tracking-tight text-[#000000] md:text-[16px]">
                         {item.title}

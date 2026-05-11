@@ -35,6 +35,30 @@ const userSchema = new mongoose.Schema(
             type: String,
             default: "",
         },
+        coverUrl: {
+            type: String,
+            default: "",
+        },
+        followersCount: {
+            type: Number,
+            default: 0,
+        },
+        followingCount: {
+            type: Number,
+            default: 0,
+        },
+        followers: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "User",
+            },
+        ],
+        following: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "User",
+            },
+        ],
         dateOfBirth: {
             type: Date,
             default: null,
@@ -127,6 +151,11 @@ const userSchema = new mongoose.Schema(
         walletBalance: {
             type: Number,
             default: 0,
+        },
+        vacationMode: {
+            isActive: { type: Boolean, default: false },
+            startDate: { type: Date, default: null },
+            endDate: { type: Date, default: null },
         },
     },
     { timestamps: true }

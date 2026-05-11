@@ -143,6 +143,10 @@ const productSchema = new mongoose.Schema(
             enum: ["pending", "active", "rejected", "approved"],
             default: "pending",
         },
+        sellerVacationMode: {
+            type: Boolean,
+            default: false,
+        },
     },
     { timestamps: true }
 );
