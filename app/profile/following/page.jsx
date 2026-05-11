@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import ArrowBackOutlinedIcon from "@mui/icons-material/ArrowBackOutlined";
 import { toast } from "react-toastify";
 import { useAuth } from "@/context/AuthContext";
-import { FOLLOWING_EVENT, readFollowed, unfollowSeller } from "@/lib/following";
+import api from "@/lib/api";
 
 const BRAND = "#F7246E";
 
@@ -19,46 +19,45 @@ function initialsFromName(fullName) {
   return w.length >= 2 ? w.slice(0, 2).toUpperCase() : `${w[0]}`.toUpperCase();
 }
 
-function useSyncedFollowList(userKey) {
-  const [tick, setTick] = useState(0);
-  useEffect(() => {
-    const on = () => setTick((x) => x + 1);
-    window.addEventListener(FOLLOWING_EVENT, on);
-    return () => window.removeEventListener(FOLLOWING_EVENT, on);
-  }, []);
-  return useMemo(() => readFollowed(userKey), [userKey, tick]);
-}
-
 function FollowingStoreCard({ store, onUnfollow }) {
+  const storeName = store.businessName || store.fullName || "Store";
+  const avatar = store.avatar;
+  const followersCount = Number(store.followersCount || 0);
+  const listingsCount = Number(store.itemsListed || 0);
+
   return (
-    <div className="flex items-center gap-3 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm lg:gap-4">
+    <div className="flex items-center gap-3 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm lg:gap-4 cursor-pointer hover:border-gray-300 transition-colors"
+         onClick={() => window.location.href = `/influencer/${store._id}`}>
       <div className="relative flex h-[52px] w-[52px] shrink-0 overflow-hidden rounded-full bg-[#FFF5F8] ring-2 ring-white">
-        {store.avatar ? (
-          <Image src={store.avatar} alt="" fill className="object-cover" sizes="52px" />
+        {avatar ? (
+          <Image src={avatar} alt="" fill className="object-cover" sizes="52px" />
         ) : (
           <span className="flex h-full w-full items-center justify-center text-[15px] font-bold text-neutral-900">
-            {initialsFromName(store.name)}
+            {initialsFromName(storeName)}
           </span>
         )}
       </div>
 
       <div className="min-w-0 flex-1">
         <p className="truncate text-[15px] font-bold leading-tight tracking-tight text-neutral-950 lg:text-[16px]">
-          {store.name}
+          {storeName}
         </p>
         <p className="mt-1 truncate text-[13px] leading-snug text-gray-500">
-          {store.followersLabel} followers{" "}
+          {followersCount > 1000 ? `${(followersCount / 1000).toFixed(1)}k` : followersCount} followers{" "}
           <span aria-hidden className="whitespace-pre">
             {" "}
             •{" "}
           </span>{" "}
-          {Number(store.listings).toLocaleString()} listings
+          {listingsCount.toLocaleString()} listings
         </p>
       </div>
 
       <button
         type="button"
-        onClick={() => onUnfollow(store.sellerId, store.name)}
+        onClick={(e) => {
+          e.stopPropagation();
+          onUnfollow(store._id, storeName);
+        }}
         className="shrink-0 rounded-xl border border-gray-300 bg-white px-3 py-2 text-[13px] font-semibold text-neutral-900 shadow-sm transition hover:bg-gray-50 active:scale-[0.98] lg:min-w-[100px]"
       >
         Following
@@ -69,28 +68,48 @@ function FollowingStoreCard({ store, onUnfollow }) {
 
 export default function ProfileFollowingPage() {
   const router = useRouter();
-  const { user, loading } = useAuth();
-  const userKey = user?._id ?? user?.id;
+  const { user, loading: authLoading, setUser } = useAuth();
+  
+  const [stores, setStores] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (loading) return;
-    if (!user) router.replace("/auth?next=/profile/following");
-  }, [loading, user, router]);
+    if (authLoading) return;
+    if (!user) {
+      router.replace("/auth?next=/profile/following");
+      return;
+    }
 
-  const stores = useSyncedFollowList(userKey);
+    // Fetch following list
+    setLoading(true);
+    api.get("/auth/following")
+      .then(({ data }) => setStores(data || []))
+      .catch((err) => {
+        toast.error("Failed to load following list.");
+      })
+      .finally(() => setLoading(false));
+  }, [authLoading, user, router]);
 
   const handleUnfollow = useCallback(
-    (sellerId, name) => {
-      if (!userKey) return;
-      unfollowSeller(userKey, sellerId);
-      toast.info(`Unfollowed ${name}`);
+    async (sellerId, name) => {
+      if (!user) return;
+      try {
+        const { data } = await api.post(`/auth/influencer/${sellerId}/follow`);
+        // Remove from local list instantly
+        setStores((prev) => prev.filter(s => s._id !== sellerId));
+        // Sync context
+        setUser(data.user);
+        toast.info(`Unfollowed ${name}`);
+      } catch (error) {
+        toast.error("Failed to unfollow.");
+      }
     },
-    [userKey]
+    [user, setUser]
   );
 
   const countLabel = `${stores.length} Store${stores.length === 1 ? "" : "s"}`;
 
-  if (loading || !user) {
+  if (authLoading || loading) {
     return (
       <div className="flex min-h-[100dvh] items-center justify-center bg-[#fafafa]">
         <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#F7246E] border-t-transparent" />
@@ -141,7 +160,7 @@ export default function ProfileFollowingPage() {
         ) : (
           <ul className="grid grid-cols-1 gap-3 lg:grid-cols-2 lg:gap-4 xl:gap-5">
             {stores.map((s) => (
-              <li key={s.sellerId}>
+              <li key={s._id}>
                 <FollowingStoreCard store={s} onUnfollow={handleUnfollow} />
               </li>
             ))}

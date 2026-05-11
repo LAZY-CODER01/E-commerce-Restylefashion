@@ -43,6 +43,9 @@ export default function HomePage() {
   const { searchQuery, activeCategory, setActiveCategory } = useSearch();
   const [listings, setListings]               = useState([]);
   const [listingsLoading, setListingsLoading] = useState(true);
+  
+  const [influencers, setInfluencers] = useState([]);
+  const [influencersLoading, setInfluencersLoading] = useState(true);
 
   // Auto carousel
   useEffect(() => {
@@ -59,6 +62,15 @@ export default function HomePage() {
       .then(({ data }) => setListings(data.products || []))
       .catch(() => setListings([]))
       .finally(() => setListingsLoading(false));
+  }, []);
+
+  // Fetch influencers from backend
+  useEffect(() => {
+    setInfluencersLoading(true);
+    api.get("/auth/influencers")
+      .then(({ data }) => setInfluencers(data || []))
+      .catch(() => setInfluencers([]))
+      .finally(() => setInfluencersLoading(false));
   }, []);
 
   const listingCategoryMatch = (p) => {
@@ -228,12 +240,40 @@ export default function HomePage() {
         <section id="influencers" className="flex flex-col gap-3">
           <div className="flex items-center justify-between px-1">
             <h3 className="text-[20px] font-bold text-brand-dark tracking-tight">Shop by Influencer</h3>
-            <span className="text-[12px] font-bold text-brand-pink uppercase tracking-widest cursor-pointer hover:underline">See all</span>
+            {influencers.length > 2 && (
+              <span className="text-[12px] font-bold text-brand-pink uppercase tracking-widest cursor-pointer hover:underline">See all</span>
+            )}
           </div>
-          <div className="grid grid-cols-2 gap-3 sm:gap-4">
-            <InfluencerCard id="1" name="Sarah Style" handle="@sarahstyle" />
-            <InfluencerCard id="2" name="Jane Doe"    handle="@janedoe" />
-          </div>
+          {influencersLoading ? (
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">
+               {Array.from({ length: 2 }).map((_, i) => (
+                <div key={i} className="animate-pulse flex flex-col gap-2">
+                  <div className="h-32 w-full bg-gray-200 rounded-card" />
+                  <div className="h-20 w-20 bg-gray-300 rounded-full mx-auto -mt-10 border-4 border-white" />
+                  <div className="h-4 bg-gray-200 rounded w-1/2 mx-auto mt-2" />
+                </div>
+               ))}
+            </div>
+          ) : influencers.length > 0 ? (
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">
+              {influencers.map((inf) => (
+                <InfluencerCard
+                  key={inf._id}
+                  id={inf._id}
+                  name={inf.fullName || inf.businessName}
+                  handle={inf.instagramId ? `@${inf.instagramId}` : `@${(inf.fullName || "user").replace(/\s+/g, "").toLowerCase()}`}
+                  followers={inf.followersCount > 1000 ? `${(inf.followersCount / 1000).toFixed(1)}k` : inf.followersCount}
+                  itemsListed={inf.itemsListed}
+                  avatarUrl={inf.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"}
+                  coverUrl={inf.coverUrl || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-10 bg-white rounded-card border border-dashed border-gray-200">
+              <p className="text-gray-400 font-medium italic">No influencers available.</p>
+            </div>
+          )}
         </section>
 
       </main>

@@ -35,6 +35,30 @@ const userSchema = new mongoose.Schema(
             type: String,
             default: "",
         },
+        coverUrl: {
+            type: String,
+            default: "",
+        },
+        followersCount: {
+            type: Number,
+            default: 0,
+        },
+        followingCount: {
+            type: Number,
+            default: 0,
+        },
+        followers: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "User",
+            },
+        ],
+        following: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "User",
+            },
+        ],
         dateOfBirth: {
             type: Date,
             default: null,

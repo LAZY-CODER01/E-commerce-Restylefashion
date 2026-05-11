@@ -181,7 +181,7 @@ export default function WishlistPage() {
 
           {/* CART */}
           <button
-            onClick={() => router.push("/cart")}
+            onClick={() => router.push("/orders")}
             className="relative flex h-10 w-10 items-center justify-center"
           >
             <ShoppingBagOutlinedIcon
