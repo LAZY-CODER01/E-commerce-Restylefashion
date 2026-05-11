@@ -5,19 +5,6 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import ArrowBackOutlinedIcon from "@mui/icons-material/ArrowBackOutlined";
 import KeyboardArrowRightOutlinedIcon from "@mui/icons-material/KeyboardArrowRightOutlined";
-import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
-import FavoriteBorderOutlinedIcon from "@mui/icons-material/FavoriteBorderOutlined";
-import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
-import ShoppingBagOutlinedIcon from "@mui/icons-material/ShoppingBagOutlined";
-import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
-import CreditCardOutlinedIcon from "@mui/icons-material/CreditCardOutlined";
-import SecurityOutlinedIcon from "@mui/icons-material/SecurityOutlined";
-import AccountBalanceWalletOutlinedIcon from "@mui/icons-material/AccountBalanceWalletOutlined";
-import PersonAddAltOutlinedIcon from "@mui/icons-material/PersonAddAltOutlined";
-import StorefrontOutlinedIcon from "@mui/icons-material/StorefrontOutlined";
-import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
-import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
-import HeadsetMicOutlinedIcon from "@mui/icons-material/HeadsetMicOutlined";
 import { toast } from "react-toastify";
 import { useAuth } from "@/context/AuthContext";
 
@@ -42,102 +29,35 @@ const PROFILE_SECTIONS = [
   {
     label: "ACTIVITY",
     items: [
-      {
-        title: "Wishlist",
-        subtitle: "Your saved favorite finds",
-        href: "/wishlist",
-      },
-      {
-        title: "Recently Viewed",
-        subtitle: "Items you recently explored",
-        href: "/profile/recently-viewed",
-      },
+      { title: "Wishlist", subtitle: "Your saved favorite finds", href: "/wishlist" },
+      { title: "Recently Viewed", subtitle: "Items you recently explored", href: "/profile/recently-viewed" },
+      { title: "Following", subtitle: "People and stores you follow", href: "/profile/following" },
     ],
   },
   {
     label: "ORDERS",
     items: [
-      {
-        title: "Orders",
-        subtitle: "Track and manage your orders",
-        href: "/my-orders",
-      },
+      { title: "Orders", subtitle: "Track and manage your orders", href: "/my-orders" },
     ],
   },
   {
     label: "ACCOUNT",
     items: [
-      {
-        title: "Saved address",
-        subtitle: "Manage your delivery addresses",
-        href: "/profile/address",
-      },
-      {
-        title: "Saved payment method",
-        subtitle: "Manage your saved payment methods",
-        href: "/profile/payment-methods",
-      },
-      {
-        title: "Security",
-        subtitle: "Password, phone, email and two-factor authentication",
-        href: "/profile/security",
-      },
-      {
-        title: "Wallet",
-        subtitle: "View balance, transactions and more",
-        hrefSeller: "/profile/wallet",
-        comingSoonForBuyer: true,
-      },
-      {
-        title: "Following",
-        subtitle: "People and stores you follow",
-        href: "/profile/following",
-      },
-      {
-        title: "Seller Profile",
-        subtitle: "Manage your seller page, vacation mode, and sharing",
-        hrefSeller: "/seller/profile",
-        sellerOnly: true,
-      },
-      {
-        title: "My Store",
-        subtitle: "Manage your store and listings",
-        hrefSeller: "/profile/listings",
-        sellerOnly: true,
-      },
-      {
-        title: "Profile Details",
-        subtitle: "View and edit your profile details",
-        href: "/profile/details",
-      },
+      { title: "Address", subtitle: "Manage your delivery addresses", href: "/profile/address" },
+      { title: "Payments", subtitle: "Manage your saved payment methods", href: "/profile/payment-methods" },
+      { title: "Security", subtitle: "Password, phone, email and two-factor authentication", href: "/profile/security" },
+      { title: "Wallet", subtitle: "View balance, transactions and more", hrefSeller: "/profile/wallet", comingSoonForBuyer: true },
+      { title: "My Store", subtitle: "Manage your store and listings", hrefSeller: "/profile/listings", sellerOnly: true },
+      { title: "Profile Details", subtitle: "View and edit your profile details", href: "/profile/details" },
     ],
   },
   {
     label: "SUPPORT",
     items: [
-      {
-        title: "Help & Support",
-        subtitle: "Orders, deliveries, payments & account help",
-        href: "/profile/help",
-      },
+      { title: "Help & Support", subtitle: "Orders, deliveries, payments & account help", href: "/profile/help" },
     ],
   },
 ];
-
-const ITEM_ICON_MAP = {
-  Wishlist: FavoriteBorderOutlinedIcon,
-  "Recently Viewed": VisibilityOutlinedIcon,
-  Orders: ShoppingBagOutlinedIcon,
-  "Saved address": LocationOnOutlinedIcon,
-  "Saved payment method": CreditCardOutlinedIcon,
-  Security: SecurityOutlinedIcon,
-  Wallet: AccountBalanceWalletOutlinedIcon,
-  Following: PersonAddAltOutlinedIcon,
-  "Seller Profile": StorefrontOutlinedIcon,
-  "My Store": Inventory2OutlinedIcon,
-  "Profile Details": PersonOutlineOutlinedIcon,
-  "Help & Support": HeadsetMicOutlinedIcon,
-};
 
 export default function UserProfile() {
   const router = useRouter();
@@ -199,7 +119,7 @@ export default function UserProfile() {
             <ArrowBackOutlinedIcon sx={{ fontSize: 26 }} />
           </button>
 
-          <div className="relative h-[52px] w-[52px] shrink-0 overflow-hidden rounded-full border-2 border-white bg-brand-pink shadow-sm ring-[3px] ring-pink-100 md:h-[64px] md:w-[64px] md:ring-4 md:ring-pink-100/90 [&>img]:object-cover">
+          <div className="relative h-[72px] w-[72px] shrink-0 overflow-hidden rounded-full border-2 border-white bg-brand-pink shadow-sm ring-[3px] ring-pink-100 md:h-[88px] md:w-[88px] md:ring-4 md:ring-pink-100/90 [&>img]:object-cover">
             {user?.avatar ? (
               <Image
                 src={user.avatar}
@@ -209,7 +129,7 @@ export default function UserProfile() {
                 sizes="64px"
               />
             ) : (
-              <span className="flex h-full w-full items-center justify-center text-[15px] font-bold tracking-tight text-white md:text-[18px]" aria-hidden>
+              <span className="flex h-full w-full items-center justify-center text-[22px] font-bold tracking-tight text-white md:text-[28px]" aria-hidden>
                 {initialsFromName(displayName || "Guest User")}
               </span>
             )}
@@ -233,23 +153,20 @@ export default function UserProfile() {
               {section.label}
             </p>
             <div className="overflow-hidden rounded-2xl border border-gray-200/90 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
-              {section.items.filter((item) => !(item.sellerOnly && !isSeller)).map((item) => {
-                const SectionIcon = ITEM_ICON_MAP[item.title];
-                return (
+              {section.items
+                .filter((item) => !(item.sellerOnly && !isSeller))
+                .map((item) => (
                   <button
                     key={`${section.label}-${item.title}`}
                     type="button"
                     onClick={() => handleRowClick(item)}
                     className="flex w-full cursor-pointer items-center gap-3 border-b border-gray-100 px-4 py-4 text-left transition-colors last:border-b-0 hover:bg-gray-50/90 active:bg-gray-50 md:gap-4 md:px-5 md:py-[18px]"
                   >
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#FFF0F6] text-[#F7246E]">
-                      {SectionIcon ? <SectionIcon sx={{ fontSize: 20 }} /> : null}
-                    </div>
                     <div className="flex min-w-0 flex-1 flex-col gap-0.5">
                       <span className="text-[15px] font-bold leading-snug tracking-tight text-[#000000] md:text-[16px]">
                         {item.title}
                       </span>
-                      <span className="text-[13px] font-normal leading-snug text-gray-500 md:text-[13px]">
+                      <span className="text-[13px] font-normal leading-snug text-gray-500">
                         {item.subtitle}
                       </span>
                     </div>
@@ -259,8 +176,7 @@ export default function UserProfile() {
                       aria-hidden
                     />
                   </button>
-                );
-              })}
+                ))}
             </div>
           </div>
         ))}
@@ -271,9 +187,8 @@ export default function UserProfile() {
             logout();
             toast.success("Logged out");
           }}
-          className="mt-8 flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-[#F7246E] bg-white px-4 py-3.5 text-[15px] font-bold tracking-wide text-[#F7246E] transition-colors hover:bg-[#FFF5F8] md:mt-10 md:py-4 md:text-[16px]"
+          className="mt-8 flex w-full items-center justify-center rounded-2xl border-2 border-[#F7246E] bg-white px-4 py-3.5 text-[15px] font-bold tracking-wide text-[#F7246E] transition-colors hover:bg-[#FFF5F8] md:mt-10 md:py-4 md:text-[16px]"
         >
-          <LogoutOutlinedIcon sx={{ fontSize: 22 }} className="text-[#F7246E]" aria-hidden />
           Logout
         </button>
       </div>
