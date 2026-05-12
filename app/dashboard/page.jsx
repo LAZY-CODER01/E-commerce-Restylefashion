@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
@@ -17,7 +18,7 @@ import ProductListItem from "@/components/dashboard/ProductListItem";
 
 function MetricCard({ href, children, disabled = false, ariaLabel }) {
   const base =
-    "rounded-2xl bg-white shadow-sm px-4 py-4 min-h-[92px] flex flex-col justify-between";
+    "rounded-2xl bg-white shadow-sm px-4 py-4 h-[120px] flex flex-col justify-between";
 
   if (disabled) {
     return (
@@ -54,22 +55,39 @@ export default function DashboardMainPage() {
 
   return (
     <div className="pb-2">
+      <header className="sticky top-0 z-30 bg-[#F7246E] px-4 py-4 md:px-9">
+        <div className="relative mx-auto flex w-full max-w-[1200px] items-center justify-between">
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className="flex h-10 w-10 items-center justify-center text-white"
+            aria-label="Go back"
+          >
+            <ArrowLeft className="h-6 w-6" strokeWidth={2} />
+          </button>
+
+          <h1 className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-[18px] font-extrabold tracking-tight text-white md:text-[20px]">
+            Dashboard
+          </h1>
+
+          <Link
+            href="/seller/wallet"
+            aria-label="Wallet"
+            className="flex h-10 w-10 items-center justify-center text-white"
+          >
+            <Image
+              src="/seller-wallet.png"
+              alt=""
+              width={26}
+              height={26}
+              className="h-6 w-6 object-contain brightness-0 invert"
+            />
+          </Link>
+        </div>
+      </header>
+
       <main className="mx-auto w-full max-w-[1200px] px-4 pb-10 pt-4 md:px-9 md:pt-6">
         <div className="mx-auto w-full max-w-[720px]">
-          <header className="relative mb-4 flex min-h-[48px] items-center justify-between gap-3 md:mb-6">
-            <button
-              type="button"
-              onClick={() => router.back()}
-              className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-700 shadow-sm transition hover:bg-gray-50 md:h-11 md:w-11"
-              aria-label="Go back"
-            >
-              <ArrowLeft className="h-5 w-5" strokeWidth={2} />
-            </button>
-            <h1 className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-[16px] font-semibold text-gray-900 md:text-[17px]">
-              Dashboard
-            </h1>
-            <span className="h-10 w-10 shrink-0 md:h-11 md:w-11" aria-hidden />
-          </header>
         <section className="grid grid-cols-2 gap-3">
           <MetricCard href="/dashboard/earnings" ariaLabel="Go to Earnings">
             <div>
@@ -77,12 +95,12 @@ export default function DashboardMainPage() {
               <p className="mt-1 text-[20px] font-semibold tracking-tight text-gray-900">
                 ₹{formatINR(DASHBOARD_METRICS.earnings.value)}
               </p>
-            </div>
-            <div className="mt-2 flex items-center gap-1 text-[11px] font-medium">
-              <span className="text-[#22C55E]" aria-hidden>
-                ↑
-              </span>
-              <span className="text-gray-500">{DASHBOARD_METRICS.earnings.deltaLabel}</span>
+              <div className="mt-0.5 flex items-center gap-1 text-[11px] font-medium">
+                <span className="text-[#22C55E]" aria-hidden>
+                  ↑
+                </span>
+                <span className="text-gray-500">{DASHBOARD_METRICS.earnings.deltaLabel}</span>
+              </div>
             </div>
           </MetricCard>
 
@@ -92,8 +110,8 @@ export default function DashboardMainPage() {
               <p className="mt-1 text-[20px] font-semibold tracking-tight text-gray-900">
                 {DASHBOARD_METRICS.activeListings.value}
               </p>
+              <p className="mt-0.5 text-[11px] font-medium text-gray-500">{DASHBOARD_METRICS.activeListings.subLabel}</p>
             </div>
-            <p className="mt-2 text-[11px] font-medium text-gray-500">{DASHBOARD_METRICS.activeListings.subLabel}</p>
           </MetricCard>
 
           <MetricCard href="/dashboard/orders-sold" ariaLabel="Go to Orders Sold">
@@ -102,8 +120,8 @@ export default function DashboardMainPage() {
               <p className="mt-1 text-[20px] font-semibold tracking-tight text-gray-900">
                 {DASHBOARD_METRICS.ordersSold.value}
               </p>
+              <p className="mt-0.5 text-[11px] font-medium text-gray-500">{DASHBOARD_METRICS.ordersSold.subLabel}</p>
             </div>
-            <p className="mt-2 text-[11px] font-medium text-gray-500">{DASHBOARD_METRICS.ordersSold.subLabel}</p>
           </MetricCard>
 
           <MetricCard disabled ariaLabel="Stock Insights (static)">

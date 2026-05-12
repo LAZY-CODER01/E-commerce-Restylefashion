@@ -746,43 +746,39 @@ export default function NewProductPage() {
       : "Enter price";
 
   return (
-    <div className="min-h-screen bg-brand-light flex items-center justify-center p-4 pb-24 font-roboto">
-      <div className="w-full max-w-2xl overflow-visible rounded-[32px] bg-white shadow-sm animate-fadeIn pb-12">
-        <div className="relative p-8 border-b border-gray-100 flex items-center justify-center">
-          <div className="absolute left-8 top-1/2 -translate-y-1/2">
+    <div className="min-h-screen bg-brand-light p-4 pb-24 font-roboto">
+      <div className="mx-auto w-full max-w-2xl overflow-visible rounded-[20px] bg-white shadow-sm animate-fadeIn pb-8">
+        <div className="relative px-4 py-4 border-b border-gray-100">
+          <div className="relative flex items-center justify-between">
             <button
               type="button"
               onClick={() => router.back()}
-              className="w-10 h-10 rounded-full hover:bg-gray-50 flex items-center justify-center text-brand-dark transition-all"
+              className="flex h-10 w-10 items-center justify-center rounded-full text-gray-900 transition hover:bg-gray-100"
+              aria-label="Go back"
             >
-              <ArrowBackIcon sx={{ fontSize: 20 }} />
+              <ArrowBackIcon sx={{ fontSize: 22 }} />
             </button>
+            <h1 className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-[18px] font-bold text-brand-pink">
+              Snap, Describe, Sell
+            </h1>
+            <span className="h-10 w-10 shrink-0" aria-hidden />
           </div>
-          <div className="flex flex-col items-center text-center">
-            <h1 className="text-[20px] font-bold text-brand-pink">Snap, Describe, Sell</h1>
-          </div>
-          {/* <div className="p-2.5 px-3 bg-brand-pink/5 rounded-full flex items-center gap-2 text-brand-pink">
-            <span className="text-[11px] font-bold uppercase tracking-tight">
-              Step 3 of 6: Product
-            </span>
-          </div> */}
         </div>
 
-        <form onSubmit={handleSubmit} className="p-10 flex flex-col gap-5">
-          <div id="field-photos" className="flex flex-col gap-2.5">
-            <h3 className="text-[14px] font-bold text-brand-dark uppercase tracking-widest pl-3 border-l-4 border-brand-pink">
-            Visuals
-            </h3>
-            <div className="relative isolate space-y-4">
+        <form onSubmit={handleSubmit} className="px-6 py-6 flex flex-col gap-6">
+          <div id="field-photos" className="flex flex-col gap-1.5">
+            <div className="relative isolate space-y-2">
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="mx-auto flex aspect-square w-full max-w-[130px] flex-col items-center justify-center rounded-2xl border-2 border-dashed border-gray-300 bg-gray-50/30 px-4 text-center transition hover:border-gray-400"
+                className="mx-auto flex w-full flex-col items-center justify-center rounded-2xl border-2 border-dashed border-gray-200 bg-white py-5 px-4 text-center transition hover:border-gray-300"
               >
-                <Camera className="h-5 w-5 text-gray-500" />
-                <p className="mt-1.5 text-[15px] font-bold text-gray-700">Add Photos</p>
-                <p className="mt-0.5 text-[10px] font-medium text-gray-400">
-                  Add Pictures from your device
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-pink-50">
+                  <Camera className="h-5 w-5 text-brand-pink" />
+                </div>
+                <p className="mt-2 text-[14px] font-bold text-gray-700">Add Photos</p>
+                <p className="mt-0.5 text-[12px] font-medium text-gray-400">
+                  Add pictures from your device
                 </p>
               </button>
               <input
@@ -836,28 +832,20 @@ export default function NewProductPage() {
                 ) : null}
               </div>
             </div>
-            {/* <div className="flex w-full items-start justify-start gap-2 px-1 sm:px-2">
-              <span className="mt-0.5 inline-flex shrink-0" aria-hidden>
-                <InlineInfoGlyph tone="orange" size={17} />
-              </span> */}
-              {/* <p className="min-w-0 text-left text-[13px] font-medium italic leading-snug text-orange-800">
-                Fill the correct details. Once the product is listed it cannot be edited.
-              </p> */}
-            {/* </div> */}
             <button
               type="button"
               onClick={() => setGuidelinesOpen(true)}
-              className="w-full px-1 text-left text-[13px] font-medium text-red-500 underline underline-offset-2 hover:text-red-600 sm:px-2"
+              className="w-full text-left text-[13px] font-medium text-brand-pink underline underline-offset-2 hover:text-brand-pink/80"
             >
               Read our Picture Guidelines
             </button>
           </div>
 
-          <div className="flex flex-col gap-2.5">
+          <div className="flex flex-col gap-4">
             <h3 className="text-[14px] font-bold text-brand-dark uppercase tracking-widest pl-3 border-l-4 border-brand-pink">
               Product Detail
             </h3>
-            <div className="grid grid-cols-1 gap-x-4 gap-y-4 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-x-4 gap-y-1 md:grid-cols-2">
               <div id="field-name" className="md:col-span-2">
                 <Input
                   label="Product Name"
@@ -1048,64 +1036,78 @@ export default function NewProductPage() {
                     <span className="text-[12px] text-red-600 font-medium">{fieldErrors.description}</span>
                   ) : null}
                 </div>
+                <p className="text-[11px] text-brand-pink font-medium leading-snug">
+                  ✦ Add details like size, fit, flaws or material to help buyers trust you.
+                </p>
               </div>
 
               <div id="field-sizes" className="flex flex-col gap-1.5 md:col-span-2">
-                <div className="flex items-center justify-start gap-0.1 pl-1">
-                  <span className="text-[12px] font-bold text-brand-dark uppercase tracking-widest">
-                    Select Sizes & Quantities * 
-                  </span>
+                <div className="flex items-center justify-between pl-1">
+                  <div className="flex items-center gap-0.5">
+                    <span className="text-[14px] font-medium text-brand-dark">
+                      Select Size *
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setIsSizeChartOpen(true)}
+                      className={inlineInfoBtnClass}
+                      aria-label="Open size chart"
+                    >
+                      <InlineInfoGlyph />
+                    </button>
+                  </div>
                   <button
                     type="button"
                     onClick={() => setIsSizeChartOpen(true)}
-                    className={inlineInfoBtnClass}
-                    aria-label="Open size chart"
+                    className="text-[12px] font-semibold text-brand-pink"
                   >
-                    <InlineInfoGlyph />
+                    Size Guide
                   </button>
                 </div>
-                <div className="flex flex-col gap-2 w-full mt-2">
+                <div className="grid grid-cols-5 gap-2 w-full mt-2">
                   {sizes.map((size) => {
                     const inv = formData.sizeInventory?.find(s => s.size === size);
                     const isSelected = !!inv;
                     const qty = inv ? inv.quantity : 0;
                     return (
-                      <div key={size} className={`flex items-center justify-between p-2 sm:p-3 rounded-xl border transition-colors ${isSelected ? 'border-brand-pink/30 bg-brand-pink/5 shadow-sm' : 'border-gray-200 bg-white shadow-sm'}`}>
+                      <div key={size} className="flex flex-col items-center gap-1.5">
                         <button
                           type="button"
                           onClick={() => toggleSize(size)}
-                          className={`flex h-10 w-16 items-center justify-center rounded-lg border text-[13px] font-bold transition-colors
+                          className={`flex h-10 w-full items-center justify-center rounded-lg border text-[13px] font-bold transition-colors
                             ${isSelected
-                              ? "border-brand-pink bg-brand-pink text-white shadow-sm shadow-brand-pink/20"
+                              ? "border-brand-pink bg-pink-50 text-brand-pink"
                               : "border-gray-200 bg-gray-50 text-brand-dark hover:border-gray-300"
                             }`}
                         >
                           {size}
                         </button>
-                        
-                        <div className={`flex items-center gap-3 transition-opacity ${isSelected ? "opacity-100" : "opacity-40 pointer-events-none"}`}>
-                          <span className="text-[13px] font-medium text-gray-500">Qty:</span>
-                          <div className="flex items-center rounded-lg border border-gray-200 overflow-hidden bg-white shadow-sm">
-                            <button
-                              type="button"
-                              onClick={() => handleUpdateSizeQty(size, -1)}
-                              disabled={qty <= 1}
-                              className="w-9 h-9 flex items-center justify-center text-gray-600 hover:bg-gray-50 disabled:opacity-30 transition-colors text-lg"
-                            >
-                              −
-                            </button>
-                            <span className="w-10 text-center text-[15px] font-bold text-brand-dark">
-                              {qty || 1}
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => handleUpdateSizeQty(size, 1)}
-                              className="w-9 h-9 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors text-lg"
-                            >
-                              +
-                            </button>
-                          </div>
-                        </div>
+
+                        {isSelected && (
+                          <>
+                            <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">QTY</span>
+                            <div className="flex items-center rounded-lg border border-gray-200 overflow-hidden bg-gray-50 w-full">
+                              <button
+                                type="button"
+                                onClick={() => handleUpdateSizeQty(size, -1)}
+                                disabled={qty <= 1}
+                                className="flex-1 h-9 flex items-center justify-center text-gray-500 hover:bg-gray-100 disabled:opacity-30 transition-colors text-sm"
+                              >
+                                −
+                              </button>
+                              <span className="flex-1 text-center text-[14px] font-bold text-brand-dark">
+                                {qty || 1}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => handleUpdateSizeQty(size, 1)}
+                                className="flex-1 h-9 flex items-center justify-center text-gray-500 hover:bg-gray-100 transition-colors text-sm"
+                              >
+                                +
+                              </button>
+                            </div>
+                          </>
+                        )}
                       </div>
                     );
                   })}
@@ -1118,7 +1120,7 @@ export default function NewProductPage() {
               </div>
 
               {/* ── Color Picker ──────────────────────────────────────────── */}
-              <div id="field-colors" className="flex flex-col gap-1.5 md:col-span-2">
+              <div id="field-colors" className="flex flex-col gap-1.5 md:col-span-2 mb-0">
                 <span className="text-[12px] font-bold text-brand-dark uppercase tracking-widest pl-1">
                   Colour (optional)
                 </span>
@@ -1182,20 +1184,18 @@ export default function NewProductPage() {
               </div>
               {/* ───────────────────────────────────────────────────────────── */}
 
-              <div className="grid grid-cols-1 gap-1 md:col-span-2">
-                {/* <p className="text-[11px] font-medium text-gray-500 pl-1"> */}
-                  {/* Selling price auto-fills at <span className="font-bold text-brand-dark">30% off MRP</span> (max 70% of MRP). You can lower it further; raising it above that shows an error. */}
-                {/* </p> */}
-                <div className="grid grid-cols-1 items-stretch gap-x-3 gap-y-2 sm:grid-cols-2 sm:items-start">
+              <div className="grid grid-cols-1 gap-0 md:col-span-2 mt-4">
+                <div className="grid grid-cols-2 items-stretch gap-x-3 gap-y-2">
                   <div id="field-retailPrice" className="min-w-0">
                     <div className="flex w-full flex-col gap-1.5">
-                      <div className="flex min-h-[26px] items-center gap-1">
+                      <div className="flex min-h-[26px] items-center gap-1 flex-nowrap">
                         <label
                           htmlFor="product-retail-price"
-                          className="text-[14px] font-medium leading-none text-brand-dark"
+                          className="text-[13px] font-medium leading-none text-brand-dark whitespace-nowrap"
                         >
                           Retail Price (MRP)
                         </label>
+                        <InlineInfoGlyph size={14} />
                       </div>
                       <div className="relative isolate w-full">
                         <input
@@ -1222,10 +1222,10 @@ export default function NewProductPage() {
                   </div>
                   <div id="field-sellingPrice" className="min-w-0">
                     <div className="flex w-full flex-col gap-1.5">
-                      <div className="flex min-h-[26px] items-center gap-1">
+                      <div className="flex min-h-[26px] items-center gap-1 flex-nowrap">
                         <label
                           htmlFor="product-selling-price"
-                          className="text-[14px] font-medium leading-none text-brand-dark"
+                          className="text-[13px] font-medium leading-none text-brand-dark whitespace-nowrap"
                         >
                           Selling Price *
                         </label>
@@ -1259,11 +1259,6 @@ export default function NewProductPage() {
                           )}
                         />
                       </div>
-                      {Number.isFinite(retailNum) && retailNum > 0 && !fieldErrors.sellingPrice && (
-                        <p className="text-[11px] font-medium text-brand-pink pl-1">
-                          💡 Recommended price: <span className="font-bold">₹{maxSellingForRetail(retailNum)}</span> (30% off MRP)
-                        </p>
-                      )}
                       <div
                         className={clsx(
                           "min-h-[18px]",
@@ -1287,7 +1282,7 @@ export default function NewProductPage() {
               type="submit"
               fullWidth
               disabled={submitting}
-              className="mt-4 h-[54px] rounded-xl bg-[#22C55E] font-bold text-[16px] text-[#FFFFFF] shadow-lg shadow-[#22C55E]/25 ring-1 ring-white/85 transition-all hover:bg-[#16A34A] active:bg-[#16A34A] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#16A34A] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-[#22C55E] disabled:active:bg-[#22C55E]"
+              className="mt-0 h-[54px] rounded-xl bg-[#22C55E] font-bold text-[16px] text-[#FFFFFF] shadow-lg shadow-[#22C55E]/25 ring-1 ring-white/85 transition-all hover:bg-[#16A34A] active:bg-[#16A34A] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#16A34A] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-[#22C55E] disabled:active:bg-[#22C55E]"
             >
               {submitting ? "Listing product..." : "Start Selling"}
             </Button>

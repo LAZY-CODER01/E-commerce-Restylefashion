@@ -2,6 +2,7 @@
 
 import React, { useMemo, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import SearchIcon from "@mui/icons-material/Search";
 import ArrowBackOutlinedIcon from "@mui/icons-material/ArrowBackOutlined";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
@@ -116,22 +117,34 @@ export default function SellerOrdersPage() {
   return (
     <div className="min-h-[100dvh] bg-[#F5F5F5] pb-28 font-sans text-neutral-900">
       {/* Top bar (no pink header) */}
-      <header className="sticky top-0 z-30 border-b border-gray-200 bg-white/95 px-4 py-4 backdrop-blur-md md:px-9">
-        <div className="mx-auto flex w-full max-w-[1200px] items-center justify-between">
+      <header className="sticky top-0 z-30 bg-[#F7246E] px-4 py-4 md:px-9">
+        <div className="relative mx-auto flex w-full max-w-[1200px] items-center justify-between">
           <button
             type="button"
             onClick={() => window.history.back()}
-            className="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-700 shadow-sm transition hover:bg-gray-50"
+            className="flex h-10 w-10 items-center justify-center text-white"
             aria-label="Back"
           >
             <ArrowBackOutlinedIcon sx={{ fontSize: 22 }} />
           </button>
 
-          <h1 className="text-[16px] font-extrabold tracking-tight text-[#000000] md:text-[18px]">
+          <h1 className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-[18px] font-extrabold tracking-tight text-white md:text-[20px]">
             Orders
           </h1>
 
-          <span className="inline-block h-10 w-10" aria-hidden />
+          <Link
+            href="/seller/wallet"
+            aria-label="Wallet"
+            className="flex h-10 w-10 items-center justify-center text-white"
+          >
+            <Image
+              src="/seller-wallet.png"
+              alt=""
+              width={26}
+              height={26}
+              className="h-6 w-6 object-contain brightness-0 invert"
+            />
+          </Link>
         </div>
       </header>
 

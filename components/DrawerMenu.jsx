@@ -41,6 +41,7 @@ const SUPPORT_ITEMS = [
     name: "FAQ",
     icon: <HelpOutlineOutlinedIcon sx={{ fontSize: 16 }} />,
     link: "/faq",
+    accent: true,
   },
   {
     name: "Contact Us",
@@ -126,7 +127,7 @@ export default function DrawerMenu({ open, onClose, drawerRef }) {
         role="dialog"
         aria-modal="true"
         aria-label="Navigation menu"
-        className={`${roboto.className} fixed inset-y-0 left-0 z-[230] h-[100dvh] w-screen bg-white flex flex-col overflow-hidden transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] ${open ? "translate-x-0" : "-translate-x-full"
+        className={`${roboto.className} fixed inset-y-0 left-0 z-[230] h-[100dvh] w-screen md:w-[380px] md:shadow-2xl bg-white flex flex-col overflow-hidden transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] ${open ? "translate-x-0" : "-translate-x-full"
           }`}
       >
         {/* Header */}
@@ -134,28 +135,22 @@ export default function DrawerMenu({ open, onClose, drawerRef }) {
           <Link
             href="/"
             onClick={onClose}
-            className="inline-block"
+            className="inline-block font-extrabold text-[22px] tracking-tight bg-gradient-to-b from-black to-[#F7246E] bg-clip-text text-transparent"
           >
-            <Image
-              src="/restyle-wordmark.png"
-              alt="Restyle"
-              width={80}
-              height={20}
-              className="object-contain"
-            />
+            Restyle
           </Link>
 
           <button
             onClick={onClose}
             aria-label="Close menu"
-            className="text-gray-400"
+            className="text-gray-400 transition hover:text-pink-400"
           >
-            <CloseOutlinedIcon sx={{ fontSize: 18 }} />
+            <CloseOutlinedIcon sx={{ fontSize: 24 }} />
           </button>
         </div>
 
         {/* NAV */}
-        <nav className="flex-1 overflow-y-auto overscroll-y-contain pb-12">
+        <nav className="flex-1 overflow-y-auto overscroll-y-contain pb-12 hide-scrollbar">
           {/* USER */}
           {/* USER */}
           {!isAdminRoute && (
@@ -163,9 +158,9 @@ export default function DrawerMenu({ open, onClose, drawerRef }) {
 
               {/* Logged In */}
               {user ? (
-                <div className="flex items-center gap-2">
-                  <div className="w-[40px] h-[40px] rounded-full border border-pink-400 p-[1.5px] shrink-0">
-                    <div className="relative w-full h-full rounded-full overflow-hidden bg-gray-100 flex items-center justify-center text-[14px] text-gray-500">
+                <div className="flex items-center gap-3">
+                  <div className="w-[52px] h-[52px] rounded-full border-2 border-pink-400 p-[2px] shrink-0">
+                    <div className="relative w-full h-full rounded-full overflow-hidden bg-gray-100 flex items-center justify-center text-[18px] font-semibold text-gray-500">
                       {user.avatar ? (
                         <Image
                           src={user.avatar}
@@ -180,11 +175,11 @@ export default function DrawerMenu({ open, onClose, drawerRef }) {
                   </div>
 
                   <div>
-                    <h2 className="text-[13px] font-normal text-gray-900 leading-none">
+                    <h2 className="text-[14px] font-medium text-gray-900 leading-none">
                       Hey, {user.fullName?.split(" ")[0]}💕
                     </h2>
 
-                    <p className="text-[10px] text-gray-500 mt-1 leading-none">
+                    <p className="text-[11px] text-gray-500 mt-1.5 leading-none">
                       Buy pre-loved. Style better.
                     </p>
                   </div>
@@ -210,13 +205,18 @@ export default function DrawerMenu({ open, onClose, drawerRef }) {
               )}
 
               {/* SELL BANNER ALWAYS VISIBLE */}
-              <div className="mt-2 rounded-xl overflow-hidden relative h-[135px]">
+              <div className="mt-2 rounded-2xl overflow-hidden relative h-[135px]">
                 <Image
-                  src="/image.png"
+                  src="/sell-bannerr.png"
                   alt="Sell Banner"
                   fill
                   className="object-cover"
                 />
+                <div className="absolute inset-0 flex items-center pl-4">
+                  <h3 className="text-[16px] font-extrabold text-gray-900 leading-tight tracking-tight">
+                    List in Seconds
+                  </h3>
+                </div>
               </div>
             </div>
           )}
@@ -253,7 +253,7 @@ export default function DrawerMenu({ open, onClose, drawerRef }) {
             ) : (
               <>
                 {/* SHOP */}
-                <h3 className="text-[9px] tracking-[0.2em] text-gray-800 font-bold mb-1 uppercase">
+                <h3 className="text-[9px] tracking-[0.2em] text-gray-400 font-bold mb-1 uppercase">
                   Shop By Category
                 </h3>
 
@@ -285,7 +285,7 @@ export default function DrawerMenu({ open, onClose, drawerRef }) {
                             </span>
 
                             {item.labelAccent === "new" && (
-                              <span className="ml-1 text-[8px] text-red-500">
+                              <span className="ml-1 text-[8px] font-bold" style={{ color: "#EB0010" }}>
                                 NEW
                               </span>
                             )}
@@ -308,7 +308,7 @@ export default function DrawerMenu({ open, onClose, drawerRef }) {
                 </div>
 
                 {/* DISCOVER */}
-                <h3 className="text-[9px] tracking-[0.2em] text-gray-800 font-bold mt-3 mb-1 uppercase">
+                <h3 className="text-[9px] tracking-[0.2em] text-gray-400 font-bold mt-3 mb-1 uppercase">
                   Discover More
                 </h3>
 
@@ -327,8 +327,8 @@ export default function DrawerMenu({ open, onClose, drawerRef }) {
                             <div className="w-full h-full flex items-center justify-center bg-[#FFE5ED]">
                               <LocalFireDepartmentIcon
                                 style={{
-                                  color: SALE_RED,
-                                  fontSize: 18,
+                                  color: "#F7246E",
+                                  fontSize: 28,
                                 }}
                               />
                             </div>
@@ -345,17 +345,9 @@ export default function DrawerMenu({ open, onClose, drawerRef }) {
                         </div>
 
                         <div className="text-left">
-                          <div className="flex items-center">
-                            <span className="text-[12px] font-normal text-gray-900 leading-none">
-                              {item.label}
-                            </span>
-
-                            {item.labelAccent === "hot" && (
-                              <span className="ml-1 text-[8px] text-red-500">
-                                HOT
-                              </span>
-                            )}
-                          </div>
+                          <span className={`text-[12px] leading-none ${item.labelAccent === "hot" ? "font-bold" : "font-normal text-gray-900"}`} style={item.labelAccent === "hot" ? { color: "#EB0010" } : undefined}>
+                            {item.label}
+                          </span>
 
                           <p className="text-[9px] text-gray-500 mt-1 leading-none">
                             {item.subtitle}
@@ -363,18 +355,25 @@ export default function DrawerMenu({ open, onClose, drawerRef }) {
                         </div>
                       </div>
 
-                      <KeyboardArrowRightOutlinedIcon
-                        sx={{
-                          fontSize: 16,
-                          color: "#C4C4C4",
-                        }}
-                      />
+                      <div className="flex items-center gap-2">
+                        {item.labelAccent === "hot" && (
+                          <span className="text-[10px] font-extrabold tracking-wide" style={{ color: "#EB0010" }}>
+                            HOT
+                          </span>
+                        )}
+                        <KeyboardArrowRightOutlinedIcon
+                          sx={{
+                            fontSize: 16,
+                            color: "#C4C4C4",
+                          }}
+                        />
+                      </div>
                     </button>
                   ))}
                 </div>
 
                 {/* SUPPORT */}
-                <h3 className="text-[9px] tracking-[0.2em] text-gray-800 font-bold mt-3 mb-1 uppercase">
+                <h3 className="text-[9px] tracking-[0.2em] text-gray-400 font-bold mt-3 mb-1 uppercase">
                   Support
                 </h3>
 
@@ -384,9 +383,10 @@ export default function DrawerMenu({ open, onClose, drawerRef }) {
                       key={item.name}
                       href={item.link}
                       onClick={onClose}
-                      className="flex items-center gap-2 text-[12px] font-normal text-gray-700"
+                      className={`flex items-center gap-2 text-[12px] font-normal ${item.accent ? "font-bold" : "text-gray-700"}`}
+                      style={item.accent ? { color: "#EB0010" } : undefined}
                     >
-                      <span className="text-gray-400 scale-75">
+                      <span className={`scale-75 ${item.accent ? "" : "text-gray-400"}`} style={item.accent ? { color: "#EB0010" } : undefined}>
                         {item.icon}
                       </span>
 

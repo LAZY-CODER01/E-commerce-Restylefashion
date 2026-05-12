@@ -73,8 +73,12 @@ export default function Navigation() {
     }
   };
 
-  // Hide main nav on checkout — it has its own header
   if (pathname === "/checkout") return null;
+  if (pathname.startsWith("/seller/wallet")) return null;
+  if (pathname === "/seller/orders") return null;
+  if (pathname === "/seller/profile") return null;
+  if (pathname === "/seller/store") return null;
+  if (pathname.startsWith("/dashboard")) return null;
 
   return (
     <>
@@ -85,7 +89,7 @@ export default function Navigation() {
             <button
               aria-label="Open Menu"
               onClick={() => setDrawerOpen(true)}
-              className="flex items-center justify-center -ml-2 p-2 rounded-xl hover:bg-gray-200 transition text-brand-dark"
+              className="flex items-center justify-center -ml-2 p-2 text-brand-dark"
             >
               <MenuOutlinedIcon />
             </button>
