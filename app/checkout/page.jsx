@@ -6,25 +6,18 @@ import { toast } from "react-toastify";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import api from "@/lib/api";
+import ArrowBackOutlinedIcon from "@mui/icons-material/ArrowBackOutlined";
 
 // ── Icons ─────────────────────────────────────────────────────────────────────
-function IconBack() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1C1C1E" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M15 18l-6-6 6-6" />
-    </svg>
-  );
-}
 function IconBag({ count = 0 }) {
   return (
     <div className="relative">
-      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#1C1C1E" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
-        <line x1="3" y1="6" x2="21" y2="6" />
-        <path d="M16 10a4 4 0 01-8 0" />
+      <svg viewBox="0 0 24 24" fill="none" stroke="#1C1C1E" strokeWidth="1.7" className="h-6 w-6" aria-hidden>
+        <rect x="3.5" y="7.5" width="17" height="12.5" rx="2.5" />
+        <path d="M9 7.5V6.6A3 3 0 0 1 12 3.8a3 3 0 0 1 3 2.8v.9" />
       </svg>
       {count > 0 && (
-        <span className="absolute -top-1.5 -right-1.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[#E8001C] px-1 text-[10px] font-bold text-white leading-none">
+        <span className="absolute -top-1 -right-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[#F7246E] px-1 text-[10px] font-bold text-white leading-none">
           {count > 9 ? "9+" : count}
         </span>
       )}
@@ -353,8 +346,8 @@ export default function CheckoutPage() {
     <div className="min-h-screen bg-[#F5F5F5] pb-28">
       {/* ── Top Nav ─────────────────────────────────────────────────────────── */}
       <div className="sticky top-0 z-40 bg-white flex items-center justify-between px-4 h-[56px] border-b border-gray-100 shadow-[0_1px_4px_rgba(0,0,0,0.05)]">
-        <button type="button" onClick={() => router.back()} className="flex h-9 w-9 items-center justify-center transition active:scale-95" aria-label="Go back">
-          <IconBack />
+        <button type="button" onClick={() => router.back()} className="-ml-1 rounded-full p-2 text-gray-800 hover:bg-gray-100" aria-label="Back">
+          <ArrowBackOutlinedIcon sx={{ fontSize: 22 }} />
         </button>
         <h1 className="text-[16px] font-bold uppercase tracking-widest text-[#1C1C1E]">Checkout</h1>
         <button type="button" onClick={() => router.back()} aria-label="Cart" className="relative flex h-9 w-9 items-center justify-center">

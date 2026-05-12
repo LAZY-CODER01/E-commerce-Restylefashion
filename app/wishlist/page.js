@@ -5,8 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 
-import ArrowBackIosNewRoundedIcon from "@mui/icons-material/ArrowBackIosNewRounded";
-import ShoppingBagOutlinedIcon from "@mui/icons-material/ShoppingBagOutlined";
+import ArrowBackOutlinedIcon from "@mui/icons-material/ArrowBackOutlined";
 import FavoriteRoundedIcon from "@mui/icons-material/FavoriteRounded";
 
 import { useCart } from "@/context/CartContext";
@@ -39,6 +38,7 @@ function WishlistCard({
   onAddToBag,
 }) {
   const id = lineId(item);
+  const productHref = id ? `/product/${id}` : "#";
 
   const title =
     item?.title ??
@@ -53,6 +53,9 @@ function WishlistCard({
   const price = Number(
     item?.price ?? 2550
   );
+
+  const size = item?.selectedSize || item?.size || "";
+  const color = item?.selectedColor || item?.color || "";
 
   return (
     <motion.div
@@ -71,14 +74,14 @@ function WishlistCard({
       className="relative flex gap-4 rounded-[22px] border border-[#F3F3F3] bg-white p-3 shadow-[0_2px_10px_rgba(0,0,0,0.03)]"
     >
       {/* IMAGE */}
-      <div className="relative h-[122px] w-[122px] shrink-0 overflow-hidden rounded-[18px] bg-[#FAFAFA]">
+      <Link href={productHref} className="relative block h-[122px] w-[122px] shrink-0 overflow-hidden rounded-[18px] bg-[#FAFAFA]">
         <Image
           src={image}
           alt={title}
           fill
           className="object-contain p-2"
         />
-      </div>
+      </Link>
 
       {/* HEART */}
       <button
@@ -96,25 +99,19 @@ function WishlistCard({
       {/* CONTENT */}
       <div className="flex flex-1 flex-col py-1 pr-1">
         <div>
-          <h2 className="line-clamp-2 text-[20px] font-semibold leading-[28px] tracking-[-0.3px] text-[#111111]">
-            {title}
-          </h2>
+          <Link href={productHref} className="hover:underline">
+            <h2 className="line-clamp-2 text-[20px] font-semibold leading-[28px] tracking-[-0.3px] text-[#111111]">
+              {title}
+            </h2>
+          </Link>
 
-          <div className="mt-2 flex items-center gap-2 text-[15px] font-medium text-[#707070]">
-            <span>
-              {item?.selectedSize ||
-                item?.size ||
-                "S"}
-            </span>
-
-            <span>|</span>
-
-            <span>
-              {item?.selectedColor ||
-                item?.color ||
-                "White"}
-            </span>
-          </div>
+          {(size || color) && (
+            <div className="mt-2 flex items-center gap-2 text-[15px] font-medium text-[#707070]">
+              {size && <span>{size}</span>}
+              {size && color && <span>|</span>}
+              {color && <span>{color}</span>}
+            </div>
+          )}
 
           <div className="mt-6 flex items-center justify-between">
             <p className="text-[16px] font-bold tracking-[-0.8px] text-black">
@@ -141,10 +138,8 @@ function WishlistCard({
 
 export default function WishlistPage() {
   const router = useRouter();
-
   const {
     wishlist,
-    cartCount,
     deleteFromWishlist,
     addToBag,
   } = useCart();
@@ -154,58 +149,30 @@ export default function WishlistPage() {
     : [];
 
   return (
-    <main className="min-h-screen bg-white pb-28">
-      {/* CONTAINER */}
-      <div className="mx-auto w-full max-w-[430px] px-5 pt-6">
+    <main className="min-h-screen bg-white pb-10">
+      <div className="mx-auto w-full max-w-[1280px] px-5 pt-6">
         {/* HEADER */}
-        <header className="flex items-center justify-between">
-          {/* BACK */}
+        <header className="flex items-center gap-2">
           <button
+            type="button"
             onClick={() => router.back()}
-            className="flex h-10 w-10 items-center justify-center"
+            className="-ml-2 rounded-full p-2 text-gray-800 hover:bg-gray-100"
+            aria-label="Back"
           >
-            <ArrowBackIosNewRoundedIcon
-              sx={{
-                fontSize: 22,
-                color: "#111",
-              }}
-            />
+            <ArrowBackOutlinedIcon sx={{ fontSize: 22 }} />
           </button>
-
-          {/* TITLE */}
-          <div className="text-center">
-            <h1 className="text-[30px] font-bold tracking-[-1.5px] text-black">
-              My Wishlist
-            </h1>
-          </div>
-
-          {/* CART */}
-          <button
-            onClick={() => router.push("/orders")}
-            className="relative flex h-10 w-10 items-center justify-center"
-          >
-            <ShoppingBagOutlinedIcon
-              sx={{
-                fontSize: 30,
-                color: "#111",
-              }}
-            />
-
-            {cartCount > 0 && (
-              <span className="absolute right-0 top-0 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-[#FF2147] px-1 text-[11px] font-bold text-white">
-                {cartCount}
-              </span>
-            )}
-          </button>
+          <h1 className="text-[22px] font-medium tracking-[-0.5px] text-black">
+            My Wishlist
+          </h1>
         </header>
 
         {/* SUBTITLE */}
-        <p className="mt-8 text-[18px] font-medium text-[#707070]">
+        <p className="mt-4 text-[15px] text-[#707070]">
           Items you love, all in one place.
         </p>
 
         {/* LIST */}
-        <div className="mt-7 flex flex-col gap-5">
+        <div className="mt-6 flex flex-col gap-5">
           {items.length === 0 ? (
             <div className="rounded-[22px] border border-[#F3F3F3] bg-white p-10 text-center">
               <p className="text-[16px] text-[#666]">
@@ -234,55 +201,6 @@ export default function WishlistPage() {
               />
             ))
           )}
-        </div>
-      </div>
-
-      {/* BOTTOM NAV */}
-      <div className="fixed bottom-0 left-0 right-0 border-t border-[#F1F1F1] bg-white">
-        <div className="mx-auto flex h-[78px] max-w-[430px] items-center justify-around">
-          <div className="flex flex-col items-center gap-1 text-[#444]">
-            <span className="text-[24px]">⌂</span>
-            <span className="text-[13px]">
-              Home
-            </span>
-          </div>
-
-          <div className="flex flex-col items-center gap-1 text-[#444]">
-            <span className="text-[24px]">
-              ⌕
-            </span>
-            <span className="text-[13px]">
-              Search
-            </span>
-          </div>
-
-          <div className="flex flex-col items-center gap-1 text-[#444]">
-            <span className="text-[24px]">
-              ⊞
-            </span>
-            <span className="text-[13px]">
-              Sell
-            </span>
-          </div>
-
-          <div className="flex flex-col items-center gap-1 text-[#FF2147]">
-            <FavoriteRoundedIcon
-              sx={{ fontSize: 27 }}
-            />
-
-            <span className="text-[13px] font-medium">
-              Wishlist
-            </span>
-          </div>
-
-          <div className="flex flex-col items-center gap-1 text-[#444]">
-            <span className="text-[24px]">
-              ◯
-            </span>
-            <span className="text-[13px]">
-              Profile
-            </span>
-          </div>
         </div>
       </div>
     </main>
