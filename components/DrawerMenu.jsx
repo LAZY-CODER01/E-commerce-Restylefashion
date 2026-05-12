@@ -126,7 +126,7 @@ export default function DrawerMenu({ open, onClose, drawerRef }) {
         role="dialog"
         aria-modal="true"
         aria-label="Navigation menu"
-        className={`${roboto.className} fixed left-0 top-0 z-[230] h-screen w-screen bg-white flex flex-col overflow-hidden transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] ${open ? "translate-x-0" : "-translate-x-full"
+        className={`${roboto.className} fixed inset-y-0 left-0 z-[230] h-[100dvh] w-screen bg-white flex flex-col overflow-hidden transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] ${open ? "translate-x-0" : "-translate-x-full"
           }`}
       >
         {/* Header */}
@@ -155,7 +155,7 @@ export default function DrawerMenu({ open, onClose, drawerRef }) {
         </div>
 
         {/* NAV */}
-        <nav className="flex-1 min-h-0 overflow-y-scroll pb-0 scrolling-touch">
+        <nav className="flex-1 overflow-y-auto overscroll-y-contain pb-12">
           {/* USER */}
           {/* USER */}
           {!isAdminRoute && (
