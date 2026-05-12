@@ -134,9 +134,15 @@ export default function DrawerMenu({ open, onClose, drawerRef }) {
           <Link
             href="/"
             onClick={onClose}
-            className="inline-block text-[18px] font-bold text-[#F7246E]"
+            className="inline-block"
           >
-            Restyle
+            <Image
+              src="/restyle-wordmark.png"
+              alt="Restyle"
+              width={80}
+              height={20}
+              className="object-contain"
+            />
           </Link>
 
           <button
@@ -223,12 +229,12 @@ export default function DrawerMenu({ open, onClose, drawerRef }) {
                   </div>
 
                   {/* RIGHT */}
-                  <div className="relative flex-1">
+                  <div className="relative flex-1 flex items-end justify-end">
                     <Image
                       src="/drawer-sell-photo.png"
                       alt="Sell Banner"
                       fill
-                      className="object-cover"
+                      className="object-contain object-right"
                     />
                   </div>
                 </div>
