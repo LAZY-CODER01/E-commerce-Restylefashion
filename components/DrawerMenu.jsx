@@ -210,34 +210,13 @@ export default function DrawerMenu({ open, onClose, drawerRef }) {
               )}
 
               {/* SELL BANNER ALWAYS VISIBLE */}
-              <div className="mt-2 rounded-xl overflow-hidden relative h-[92px] bg-[#FDEEF3]">
-                <div className="absolute inset-0 flex">
-
-                  {/* LEFT */}
-                  <div className="w-[52%] flex flex-col justify-center px-3 z-10">
-                    <h3 className="text-[13px] font-medium text-black leading-none">
-                      Sell with us
-                    </h3>
-
-                    <p className="text-[10px] text-gray-600 mt-1 leading-tight">
-                      Earn more. Empower style.
-                    </p>
-
-                    <button className="mt-2 bg-[#FF0066] text-white text-[10px] h-[24px] w-[82px] rounded-md font-medium">
-                      Start Selling
-                    </button>
-                  </div>
-
-                  {/* RIGHT */}
-                  <div className="relative flex-1 flex items-end justify-end">
-                    <Image
-                      src="/drawer-sell-photo.png"
-                      alt="Sell Banner"
-                      fill
-                      className="object-contain object-right"
-                    />
-                  </div>
-                </div>
+              <div className="mt-2 rounded-xl overflow-hidden relative h-[92px]">
+                <Image
+                  src="/image.png"
+                  alt="Sell Banner"
+                  fill
+                  className="object-cover"
+                />
               </div>
             </div>
           )}
