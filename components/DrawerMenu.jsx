@@ -210,7 +210,7 @@ export default function DrawerMenu({ open, onClose, drawerRef }) {
               )}
 
               {/* SELL BANNER ALWAYS VISIBLE */}
-              <div className="mt-2 rounded-xl overflow-hidden relative h-[92px]">
+              <div className="mt-2 rounded-xl overflow-hidden relative h-[135px]">
                 <Image
                   src="/image.png"
                   alt="Sell Banner"
