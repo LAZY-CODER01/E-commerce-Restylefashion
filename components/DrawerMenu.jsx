@@ -395,7 +395,7 @@ export default function DrawerMenu({ open, onClose, drawerRef }) {
                 </div>
 
                 {/* SUPPORT */}
-                <h3 className="text-[9px] tracking-[0.2em] text-gray-400 mt-3 mb-1 uppercase">
+                <h3 className="text-[9px] tracking-[0.2em] text-gray-800 font-bold mt-3 mb-1 uppercase">
                   Support
                 </h3>
 
