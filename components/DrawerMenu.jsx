@@ -149,7 +149,7 @@ export default function DrawerMenu({ open, onClose, drawerRef }) {
         </div>
 
         {/* NAV */}
-        <nav className="flex-1 overflow-hidden pb-0">
+        <nav className="flex-1 overflow-y-auto pb-0">
           {/* USER */}
           {/* USER */}
           {!isAdminRoute && (
