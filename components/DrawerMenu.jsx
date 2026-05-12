@@ -2,91 +2,107 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import KeyboardArrowRightOutlinedIcon from '@mui/icons-material/KeyboardArrowRightOutlined';
-import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined';
-import MailOutlineOutlinedIcon from '@mui/icons-material/MailOutlineOutlined';
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import HelpOutlineOutlinedIcon from '@mui/icons-material/HelpOutlineOutlined';
-import CloseOutlinedIcon from '@mui/icons-material/CloseOutlined';
-import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
-import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlined';
-import LocalMallOutlinedIcon from '@mui/icons-material/LocalMallOutlined';
-import { useAuth } from "@/context/AuthContext";
-import { usePathname, useRouter } from "next/navigation";
+
+import { Roboto } from "next/font/google";
+
+import KeyboardArrowRightOutlinedIcon from "@mui/icons-material/KeyboardArrowRightOutlined";
+import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
+import MailOutlineOutlinedIcon from "@mui/icons-material/MailOutlineOutlined";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import HelpOutlineOutlinedIcon from "@mui/icons-material/HelpOutlineOutlined";
+import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
+import LocalFireDepartmentIcon from "@mui/icons-material/LocalFireDepartment";
+
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import Inventory2Icon from "@mui/icons-material/Inventory2";
 import PeopleIcon from "@mui/icons-material/People";
+
+import { useAuth } from "@/context/AuthContext";
 import { useSearch } from "@/context/SearchContext";
-import { useCart } from "@/context/CartContext";
+import { usePathname, useRouter } from "next/navigation";
+
 import { DRAWER_CATEGORY_ITEMS } from "@/data/categories";
 
-const SECONDARY_ITEMS = [
-  {
-    name: "My Store",
-    icon: <PersonOutlineOutlinedIcon />,
-    link: "/profile"
-  },
+const roboto = Roboto({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "700"],
+});
+
+const SALE_RED = "#EB0010";
+
+const SUPPORT_ITEMS = [
   {
     name: "About Us",
-    icon: <InfoOutlinedIcon />,
-    link: "#"
+    icon: <InfoOutlinedIcon sx={{ fontSize: 16 }} />,
+    link: "/about",
   },
   {
-    name: "Wishlist",
-    icon: <FavoriteBorderOutlinedIcon />,
-    link: "/wishlist"
-  },
-  {
-    name: "My Orders",
-    icon: <LocalMallOutlinedIcon />,
-    link: "/my-orders"
+    name: "FAQ",
+    icon: <HelpOutlineOutlinedIcon sx={{ fontSize: 16 }} />,
+    link: "/faq",
   },
   {
     name: "Contact Us",
-    icon: <MailOutlineOutlinedIcon />,
-    link: "#"
-  },
-  {
-    name: "FAQs",
-    highlight: true,
-    icon: <HelpOutlineOutlinedIcon />,
-    link: "#"
+    icon: <MailOutlineOutlinedIcon sx={{ fontSize: 16 }} />,
+    link: "/contact",
   },
 ];
 
 const ADMIN_ITEMS = [
-  { title: "Dashboard", path: "/admin/dashboard", icon: <DashboardIcon sx={{ fontSize: 22 }} /> },
-  { title: "Listings", path: "/admin/listings", icon: <Inventory2Icon sx={{ fontSize: 22 }} /> },
-  { title: "Orders", path: "/admin/orders", icon: <LocalShippingIcon sx={{ fontSize: 22 }} /> },
-  { title: "Sellers", path: "/admin/sellers", icon: <PeopleIcon sx={{ fontSize: 22 }} /> },
+  {
+    title: "Dashboard",
+    path: "/admin/dashboard",
+    icon: <DashboardIcon sx={{ fontSize: 18 }} />,
+  },
+  {
+    title: "Listings",
+    path: "/admin/listings",
+    icon: <Inventory2Icon sx={{ fontSize: 18 }} />,
+  },
+  {
+    title: "Orders",
+    path: "/admin/orders",
+    icon: <LocalShippingIcon sx={{ fontSize: 18 }} />,
+  },
+  {
+    title: "Sellers",
+    path: "/admin/sellers",
+    icon: <PeopleIcon sx={{ fontSize: 18 }} />,
+  },
 ];
-
-const SALE_RED = "#EB0010";
 
 export default function DrawerMenu({ open, onClose, drawerRef }) {
   const { user, logout } = useAuth();
-  const { wishlistCount } = useCart();
+
   const pathname = usePathname();
   const router = useRouter();
-  const { activeCategory, setActiveCategory } = useSearch();
+
+  const { setActiveCategory } = useSearch();
+
   const isAdminRoute = pathname.startsWith("/admin");
 
   const handleCategoryClick = (id) => {
     if (id === "influencers") {
       onClose();
-      // Scroll to influencers section
+
       if (pathname === "/") {
         const element = document.getElementById("influencers");
-        element?.scrollIntoView({ behavior: "smooth" });
+
+        element?.scrollIntoView({
+          behavior: "smooth",
+        });
       } else {
         router.push("/#influencers");
       }
+
       return;
     }
 
     setActiveCategory(id);
+
     onClose();
+
     if (pathname !== "/") {
       router.push("/");
     }
@@ -98,48 +114,56 @@ export default function DrawerMenu({ open, onClose, drawerRef }) {
       <div
         onClick={onClose}
         aria-hidden="true"
-        className={`fixed inset-0 z-[220] bg-black/40 backdrop-blur-sm transition-opacity duration-300 ${open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        className={`fixed inset-0 z-[220] bg-black/30 transition-opacity duration-300 ${open
+          ? "opacity-100 pointer-events-auto"
+          : "opacity-0 pointer-events-none"
           }`}
       />
 
-      {/* Drawer panel */}
+      {/* Drawer */}
       <aside
         ref={drawerRef}
         role="dialog"
         aria-modal="true"
         aria-label="Navigation menu"
-        className={`fixed left-0 top-0 z-[230] h-[100dvh] w-[85vw] max-w-[360px] bg-white 
-          flex flex-col overflow-hidden shadow-drawer rounded-br-3xl
-          transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]
-          ${open ? "translate-x-0" : "-translate-x-full"}`}
+        className={`${roboto.className} fixed left-0 top-0 z-[230] h-screen w-screen bg-white flex flex-col overflow-hidden transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] ${open ? "translate-x-0" : "-translate-x-full"
+          }`}
       >
-
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-6 pt-8 border-b border-gray-100">
-          <Link href="/" onClick={onClose} className="inline-block font-extrabold text-[28px] tracking-tight bg-gradient-to-b from-black to-[#F7246E] bg-clip-text text-transparent">
+        <div className="flex items-center justify-between px-3 py-1.5 border-b border-gray-100 flex-shrink-0">
+          <Link
+            href="/"
+            onClick={onClose}
+            className="inline-block text-[18px] font-bold text-[#F7246E]"
+          >
             Restyle
           </Link>
+
           <button
             onClick={onClose}
             aria-label="Close menu"
-            className="p-1 text-gray-400 hover:text-brand-pink transition-colors"
+            className="text-gray-400"
           >
-            <CloseOutlinedIcon />
+            <CloseOutlinedIcon sx={{ fontSize: 18 }} />
           </button>
         </div>
 
-        {/* Scrollable Nav */}
-        <nav className="flex-1 overflow-y-auto pb-8">
+        {/* NAV */}
+        <nav className="flex-1 overflow-hidden pb-0">
+          {/* USER */}
+          {/* USER */}
           {!isAdminRoute && (
-            <div className="px-6 pt-6 pb-6 border-b border-gray-100">
+            <div className="px-3 py-2 border-b border-gray-100">
+
+              {/* Logged In */}
               {user ? (
-                <div className="flex items-center gap-4">
-                  <div className="w-[60px] h-[60px] rounded-full border border-brand-pink p-[2px] shrink-0">
-                    <div className="relative w-full h-full rounded-full bg-gray-100 flex items-center justify-center text-[22px] font-medium text-gray-500 overflow-hidden">
+                <div className="flex items-center gap-2">
+                  <div className="w-[40px] h-[40px] rounded-full border border-pink-400 p-[1.5px] shrink-0">
+                    <div className="relative w-full h-full rounded-full overflow-hidden bg-gray-100 flex items-center justify-center text-[14px] text-gray-500">
                       {user.avatar ? (
                         <Image
                           src={user.avatar}
-                          alt={user.fullName || "User avatar"}
+                          alt="avatar"
                           fill
                           className="object-cover"
                         />
@@ -148,234 +172,282 @@ export default function DrawerMenu({ open, onClose, drawerRef }) {
                       )}
                     </div>
                   </div>
-                  <div className="flex flex-col justify-center">
-                    <h2 className="text-[17px] text-gray-800 font-medium leading-snug">
-                      Hey, {user.fullName?.split(' ')[0] || "User"} <span className="inline-block ml-0.5">💕</span>
+
+                  <div>
+                    <h2 className="text-[13px] font-normal text-gray-900 leading-none">
+                      Hey, {user.fullName?.split(" ")[0]}💕
                     </h2>
-                    <p className="text-[14px] text-gray-500 mt-0.5 leading-snug">Buy pre-loved. Style better.</p>
+
+                    <p className="text-[10px] text-gray-500 mt-1 leading-none">
+                      Buy pre-loved. Style better.
+                    </p>
                   </div>
                 </div>
               ) : (
-                <div className="flex gap-3">
+                <div className="flex gap-2">
                   <Link
                     href="/auth"
                     onClick={onClose}
-                    className="flex-1 py-2.5 text-center bg-brand-pink text-white rounded-xl font-medium text-[16px] transition-opacity hover:opacity-90"
+                    className="flex-1 py-1.5 rounded-md bg-[#FF0066] text-white text-center text-[12px] font-medium"
                   >
                     Login
                   </Link>
+
                   <Link
                     href="/auth"
                     onClick={onClose}
-                    className="flex-1 py-2.5 text-center border border-brand-pink text-brand-pink bg-white rounded-xl font-medium text-[16px] transition-colors hover:bg-gray-50"
+                    className="flex-1 py-1.5 rounded-md border border-[#FF0066] text-[#FF0066] text-center text-[12px] font-medium"
                   >
                     Sign up
                   </Link>
                 </div>
               )}
 
-              {/* Sell with us banner */}
-              <div className="mt-6 w-full min-h-[132px] rounded-[16px] bg-[#FFF5F8] overflow-hidden flex relative border border-pink-100">
-                <div className="p-4 py-5 z-10 flex flex-col justify-center w-[60%]">
-                  <h3 className="text-[17px] font-bold text-gray-900 leading-tight">Sell with us</h3>
-                  <p className="text-[13px] text-gray-600 mt-1 mb-3">Earn more. Empower style.</p>
-                  <Link href="/auth" onClick={onClose} className="bg-brand-pink text-white text-[13px] font-semibold px-4 py-1.5 rounded-lg self-start transition-opacity hover:opacity-90 shadow-sm shadow-brand-pink/20">
-                    Start Selling
-                  </Link>
-                </div>
-                <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-[52%] overflow-hidden bg-[#FFF5F8]" aria-hidden>
-                  <Image
-                    src="/drawer-sell-photo.png"
-                    alt=""
-                    fill
-                    sizes="(max-width: 360px) 45vw, 200px"
-                    quality={100}
-                    className="object-cover object-center"
-                    priority={false}
-                  />
+              {/* SELL BANNER ALWAYS VISIBLE */}
+              <div className="mt-2 rounded-xl overflow-hidden relative h-[92px] bg-[#FDEEF3]">
+                <div className="absolute inset-0 flex">
+
+                  {/* LEFT */}
+                  <div className="w-[52%] flex flex-col justify-center px-3 z-10">
+                    <h3 className="text-[13px] font-medium text-black leading-none">
+                      Sell with us
+                    </h3>
+
+                    <p className="text-[10px] text-gray-600 mt-1 leading-tight">
+                      Earn more. Empower style.
+                    </p>
+
+                    <button className="mt-2 bg-[#FF0066] text-white text-[10px] h-[24px] w-[82px] rounded-md font-medium">
+                      Start Selling
+                    </button>
+                  </div>
+
+                  {/* RIGHT */}
+                  <div className="relative flex-1">
+                    <Image
+                      src="/drawer-sell-photo.png"
+                      alt="Sell Banner"
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
           )}
-
-          {/* Categories/Admin Section */}
-          <div className="px-6 py-6 border-b border-gray-100">
+          {/* MAIN */}
+          <div className="px-3 py-2">
+            {/* ADMIN */}
             {isAdminRoute ? (
               <>
-                <h3 className="text-[14px] font-bold text-gray-400 tracking-wider mb-6">ADMIN PANEL</h3>
-                <div className="flex flex-col gap-6">
+                <h3 className="text-[9px] tracking-[0.2em] text-gray-400 mb-1 uppercase">
+                  Admin Panel
+                </h3>
+
+                <div className="flex flex-col gap-2">
                   {ADMIN_ITEMS.map((item) => {
-                    const isActive = pathname === item.path;
+                    const active = pathname === item.path;
+
                     return (
                       <Link
                         key={item.title}
                         href={item.path}
                         onClick={onClose}
-                        className={`group flex items-center gap-4 px-6 py-4 rounded-[20px] text-[17px] font-semibold transition-all duration-200 border border-transparent ${isActive
-                          ? "bg-brand-pink text-white shadow-lg shadow-brand-pink/20"
-                          : "text-brand-dark bg-transparent hover:bg-white hover:text-brand-pink hover:shadow-md hover:border-gray-100"
+                        className={`flex items-center gap-2 px-2 py-2 rounded-md text-[12px] ${active
+                          ? "bg-[#F7246E] text-white"
+                          : "text-gray-700"
                           }`}
                       >
-                        <span className={`${isActive ? "text-white" : "text-gray-400 group-hover:text-brand-pink"} transition-colors`}>
-                          {item.icon}
-                        </span>
+                        {item.icon}
                         {item.title}
                       </Link>
-                    )
+                    );
                   })}
                 </div>
               </>
             ) : (
-              <div className="flex flex-col">
-                <h3 className="text-[13px] font-bold text-gray-500 tracking-widest mb-4">
-                  SHOP BY CATEGORY
+              <>
+                {/* SHOP */}
+                <h3 className="text-[9px] tracking-[0.2em] text-gray-800 font-bold mb-1 uppercase">
+                  Shop By Category
                 </h3>
-                <div className="flex flex-col gap-5">
-                  {DRAWER_CATEGORY_ITEMS.filter(item => item.section === "shop").map((item) => (
+
+                <div className="flex flex-col gap-[8px]">
+                  {DRAWER_CATEGORY_ITEMS.filter(
+                    (item) => item.section === "shop"
+                  ).map((item) => (
                     <button
                       key={item.id}
                       onClick={() => handleCategoryClick(item.id)}
-                      className="group flex items-center justify-between text-left transition-colors"
+                      className="flex items-center justify-between"
                     >
-                      <div className="flex items-center gap-4">
-                        <div className="relative w-[52px] h-[64px] bg-gray-100 rounded-lg overflow-hidden shrink-0">
+                      <div className="flex items-center gap-2">
+                        <div className="relative w-[70px] h-[42px] rounded-md overflow-hidden bg-gray-100 shrink-0">
                           {item.image && (
                             <Image
                               src={item.image}
-                              alt={item.label || "Category image"}
+                              alt={item.label}
                               fill
                               className="object-cover"
-                              sizes="52px"
                             />
                           )}
                         </div>
-                        <div className="flex flex-col">
-                          <span className="text-[16px] font-semibold text-gray-800 group-hover:text-brand-pink transition-colors flex items-center">
-                            {item.label}
+
+                        <div className="text-left">
+                          <div className="flex items-center">
+                            <span className="text-[12px] font-normal text-gray-900 leading-none">
+                              {item.label}
+                            </span>
+
                             {item.labelAccent === "new" && (
-                              <span className="ml-2 text-[11px] font-bold tracking-wider" style={{ color: SALE_RED }}>NEW</span>
+                              <span className="ml-1 text-[8px] text-red-500">
+                                NEW
+                              </span>
                             )}
-                          </span>
-                          <span className="text-[13px] text-gray-500 mt-0.5">{item.subtitle}</span>
+                          </div>
+
+                          <p className="text-[9px] text-gray-500 mt-1 leading-none">
+                            {item.subtitle}
+                          </p>
                         </div>
                       </div>
-                      <KeyboardArrowRightOutlinedIcon className="text-gray-300 group-hover:text-brand-pink transition-colors" />
+
+                      <KeyboardArrowRightOutlinedIcon
+                        sx={{
+                          fontSize: 16,
+                          color: "#C4C4C4",
+                        }}
+                      />
                     </button>
                   ))}
                 </div>
 
-                <h3 className="text-[13px] font-bold text-gray-500 tracking-widest mt-8 mb-4">
-                  DISCOVER MORE
+                {/* DISCOVER */}
+                <h3 className="text-[9px] tracking-[0.2em] text-gray-800 font-bold mt-3 mb-1 uppercase">
+                  Discover More
                 </h3>
-                <div className="flex flex-col gap-5">
-                  {DRAWER_CATEGORY_ITEMS.filter(item => item.section === "discover").map((item) => (
+
+                <div className="flex flex-col gap-[8px]">
+                  {DRAWER_CATEGORY_ITEMS.filter(
+                    (item) => item.section === "discover"
+                  ).map((item) => (
                     <button
                       key={item.id}
                       onClick={() => handleCategoryClick(item.id)}
-                      className="group flex items-center justify-between text-left transition-colors"
+                      className="flex items-center justify-between"
                     >
-                      <div className="flex items-center gap-4">
-                        <div className="relative w-[52px] h-[64px] rounded-lg overflow-hidden shrink-0 flex items-center justify-center bg-gray-100">
+                      <div className="flex items-center gap-2">
+                        <div className="relative w-[70px] h-[42px] rounded-md overflow-hidden bg-gray-100 shrink-0">
                           {item.image === "flame-icon" ? (
-                            <div className="w-full h-full bg-[#FFE5ED] flex items-center justify-center">
-                              <LocalFireDepartmentIcon style={{ color: SALE_RED, fontSize: 32 }} />
+                            <div className="w-full h-full flex items-center justify-center bg-[#FFE5ED]">
+                              <LocalFireDepartmentIcon
+                                style={{
+                                  color: SALE_RED,
+                                  fontSize: 18,
+                                }}
+                              />
                             </div>
                           ) : (
                             item.image && (
                               <Image
                                 src={item.image}
-                                alt={item.label || "Discover image"}
+                                alt={item.label}
                                 fill
                                 className="object-cover"
-                                sizes="52px"
                               />
                             )
                           )}
                         </div>
-                        <div className="flex flex-col">
-                          <span className="text-[16px] font-semibold transition-colors flex items-center" style={item.labelAccent === "hot" ? { color: SALE_RED } : { color: "#1F2937" }}>
-                            {item.label}
+
+                        <div className="text-left">
+                          <div className="flex items-center">
+                            <span className="text-[12px] font-normal text-gray-900 leading-none">
+                              {item.label}
+                            </span>
+
                             {item.labelAccent === "hot" && (
-                              <span className="ml-2 text-[11px] font-bold tracking-wider" style={{ color: SALE_RED }}>HOT</span>
+                              <span className="ml-1 text-[8px] text-red-500">
+                                HOT
+                              </span>
                             )}
-                          </span>
-                          <span className="text-[13px] text-gray-500 mt-0.5">{item.subtitle}</span>
+                          </div>
+
+                          <p className="text-[9px] text-gray-500 mt-1 leading-none">
+                            {item.subtitle}
+                          </p>
                         </div>
                       </div>
-                      <KeyboardArrowRightOutlinedIcon className="text-gray-300 group-hover:text-brand-pink transition-colors" />
+
+                      <KeyboardArrowRightOutlinedIcon
+                        sx={{
+                          fontSize: 16,
+                          color: "#C4C4C4",
+                        }}
+                      />
                     </button>
                   ))}
                 </div>
-              </div>
+
+                {/* SUPPORT */}
+                <h3 className="text-[9px] tracking-[0.2em] text-gray-400 mt-3 mb-1 uppercase">
+                  Support
+                </h3>
+
+                <div className="flex flex-col gap-[6px]">
+                  {SUPPORT_ITEMS.map((item) => (
+                    <Link
+                      key={item.name}
+                      href={item.link}
+                      onClick={onClose}
+                      className="flex items-center gap-2 text-[12px] font-normal text-gray-700"
+                    >
+                      <span className="text-gray-400 scale-75">
+                        {item.icon}
+                      </span>
+
+                      <span className="flex-1">{item.name}</span>
+
+                      <KeyboardArrowRightOutlinedIcon
+                        sx={{
+                          fontSize: 16,
+                          color: "#C4C4C4",
+                        }}
+                      />
+                    </Link>
+                  ))}
+
+                  {/* LOGOUT */}
+                  {user && (
+                    <button
+                      onClick={() => {
+                        logout();
+                        onClose();
+                      }}
+                      className="flex items-center gap-2 text-[12px] font-normal text-gray-700"
+                    >
+                      <PersonOutlineOutlinedIcon
+                        sx={{
+                          fontSize: 16,
+                          color: "#9CA3AF",
+                        }}
+                      />
+
+                      <span className="flex-1 text-left">
+                        Logout ({user.fullName?.split(" ")[0]})
+                      </span>
+
+                      <KeyboardArrowRightOutlinedIcon
+                        sx={{
+                          fontSize: 16,
+                          color: "#C4C4C4",
+                        }}
+                      />
+                    </button>
+                  )}
+                </div>
+              </>
             )}
           </div>
-
-          {/* Secondary Links Section */}
-          <div className="px-6 py-8">
-            <div className="flex flex-col gap-7">
-              {SECONDARY_ITEMS.map((item) => {
-                const href =
-                  item.link === "/profile" && !user ? "/auth?next=/profile" : item.link;
-                const active = pathname === item.link && item.link !== "#";
-                const isFaq = item.name === "FAQs";
-                return (
-                  <Link
-                    key={item.name}
-                    href={href}
-                    onClick={onClose}
-                    aria-current={active ? "page" : undefined}
-                    className={`flex items-center gap-4 text-[17px] font-medium transition-colors ${active || item.highlight ? "text-brand-pink" : "text-brand-dark"
-                      }`}
-                    style={isFaq ? { color: SALE_RED } : undefined}
-                  >
-                    <span
-                      className={active || item.highlight ? "text-brand-pink" : "text-gray-400"}
-                      style={isFaq ? { color: SALE_RED } : undefined}
-                    >
-                      {item.icon}
-                    </span>
-                    <span className="flex-1">{item.name}</span>
-                    {item.name === "Wishlist" ? (
-                      <span className="text-[13px] font-bold" style={{ color: SALE_RED }}>
-                        {wishlistCount}
-                      </span>
-                    ) : null}
-                    {item.name === "My Orders" ? null : null}
-                  </Link>
-                );
-              })}
-
-              {/* Authentication Actions */}
-              {user ? (
-                <button
-                  onClick={() => {
-                    logout();
-                    onClose();
-                  }}
-                  className="mt-4 flex items-center gap-4 text-left text-[17px] font-medium transition-colors"
-                  style={{ color: SALE_RED }}
-                >
-                  <span style={{ color: SALE_RED }}>
-                    <PersonOutlineOutlinedIcon />
-                  </span>
-                  Logout ({user.fullName?.split(" ")[0]})
-                </button>
-              ) : null}
-
-              {/* Start Selling Link for Mobile */}
-              {/* <Link
-                href="/seller/login"
-                onClick={onClose}
-                className="flex items-center gap-4 text-[17px] font-medium text-brand-purple hover:text-brand-pink transition-colors mt-2"
-              >
-                <span className="text-brand-purple">
-                  <StorefrontOutlinedIcon />
-                </span>
-                Start Selling
-              </Link> */}
-            </div>
-          </div>
-
         </nav>
       </aside>
     </>
