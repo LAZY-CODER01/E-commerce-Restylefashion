@@ -66,7 +66,7 @@ export default function DashboardMainPage() {
             <ArrowLeft className="h-6 w-6" strokeWidth={2} />
           </button>
 
-          <h1 className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-[18px] font-extrabold tracking-tight text-white md:text-[20px]">
+          <h1 className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-[21px] font-extrabold tracking-tight text-white md:text-[24px]">
             Dashboard
           </h1>
 

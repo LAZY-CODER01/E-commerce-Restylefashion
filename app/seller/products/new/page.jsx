@@ -765,9 +765,9 @@ export default function NewProductPage() {
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="px-6 py-6 flex flex-col gap-6">
-          <div id="field-photos" className="flex flex-col gap-1.5">
-            <div className="relative isolate space-y-2">
+        <form onSubmit={handleSubmit} className="px-6 py-6 flex flex-col gap-3">
+          <div id="field-photos" className="flex flex-col">
+            <div className="relative isolate flex flex-col gap-1">
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
@@ -790,58 +790,66 @@ export default function NewProductPage() {
                 className="hidden"
               />
 
-              <div className="flex items-center gap-3 overflow-x-auto pb-1">
-                {imagePreviews.map((img, index) => {
-                  const isUploading = Boolean(uploadingMap[img]);
-                  return (
-                    <div
-                      key={img}
-                      className="relative h-16 w-16 shrink-0 overflow-visible rounded-xl bg-gray-200"
-                    >
-                      <img
-                        src={img}
-                        alt={`Preview ${index + 1}`}
-                        className="h-full w-full rounded-xl object-cover"
-                      />
-                      {isUploading ? (
-                        <div className="absolute inset-0 flex flex-col items-center justify-center rounded-xl bg-black/55">
-                          <div className="flex h-8 w-8 items-center justify-center rounded-full border border-white/40">
-                            <Loader className="h-4 w-4 animate-spin text-white" />
-                          </div>
-                          <span className="absolute bottom-1 text-[8px] font-medium text-white">
-                            Uploading...
-                          </span>
-                        </div>
-                      ) : null}
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveImage(index)}
-                        className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 shadow-sm transition hover:text-black"
-                        aria-label="Remove photo"
+              <div className="mt-3 flex flex-col gap-1.5">
+                <div
+                  className={clsx(
+                    "items-center gap-3 overflow-x-auto",
+                    imagePreviews.length > 0 ? "flex pb-0.5" : "hidden"
+                  )}
+                >
+                  {imagePreviews.map((img, index) => {
+                    const isUploading = Boolean(uploadingMap[img]);
+                    return (
+                      <div
+                        key={img}
+                        className="relative h-16 w-16 shrink-0 overflow-visible rounded-xl bg-gray-200"
                       >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
+                        <img
+                          src={img}
+                          alt={`Preview ${index + 1}`}
+                          className="h-full w-full rounded-xl object-cover"
+                        />
+                        {isUploading ? (
+                          <div className="absolute inset-0 flex flex-col items-center justify-center rounded-xl bg-black/55">
+                            <div className="flex h-8 w-8 items-center justify-center rounded-full border border-white/40">
+                              <Loader className="h-4 w-4 animate-spin text-white" />
+                            </div>
+                            <span className="absolute bottom-1 text-[8px] font-medium text-white">
+                              Uploading...
+                            </span>
+                          </div>
+                        ) : null}
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveImage(index)}
+                          className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 shadow-sm transition hover:text-black"
+                          aria-label="Remove photo"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
 
-              <div className="min-h-[18px]">
-                {fieldErrors.photos ? (
-                  <span className="text-[12px] text-red-600 font-medium">{fieldErrors.photos}</span>
-                ) : null}
+                <button
+                  type="button"
+                  onClick={() => setGuidelinesOpen(true)}
+                  className="w-full text-left text-[13px] font-medium text-brand-pink underline underline-offset-2 hover:text-brand-pink/80"
+                >
+                  Read our Picture Guidelines
+                </button>
+
+                <div className={fieldErrors.photos ? "min-h-[18px]" : ""}>
+                  {fieldErrors.photos ? (
+                    <span className="text-[12px] text-red-600 font-medium">{fieldErrors.photos}</span>
+                  ) : null}
+                </div>
               </div>
             </div>
-            <button
-              type="button"
-              onClick={() => setGuidelinesOpen(true)}
-              className="w-full text-left text-[13px] font-medium text-brand-pink underline underline-offset-2 hover:text-brand-pink/80"
-            >
-              Read our Picture Guidelines
-            </button>
           </div>
 
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-3 pt-0">
             <h3 className="text-[14px] font-bold text-brand-dark uppercase tracking-widest pl-3 border-l-4 border-brand-pink">
               Product Detail
             </h3>

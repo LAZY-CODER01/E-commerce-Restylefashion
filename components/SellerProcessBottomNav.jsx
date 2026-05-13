@@ -4,10 +4,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
 import HomeIcon from "@mui/icons-material/Home";
-import DashboardIcon from "@mui/icons-material/Dashboard";
-import ShoppingBagIcon from "@mui/icons-material/ShoppingBag";
-import PersonIcon from "@mui/icons-material/Person";
-import TrendingUpIcon from "@mui/icons-material/TrendingUp";
+import BarChartOutlinedIcon from "@mui/icons-material/BarChartOutlined";
+import AddIcon from "@mui/icons-material/Add";
+import StorefrontIcon from "@mui/icons-material/Storefront";
+import AssignmentIcon from "@mui/icons-material/Assignment";
 
 function getActiveId(pathname) {
   if (pathname === "/") {
@@ -22,7 +22,7 @@ function getActiveId(pathname) {
   }
   if (pathname.startsWith("/seller/products")) return "products";
   if (pathname === "/seller/orders") return "orders";
-  if (pathname === "/seller/profile") return "profile";
+  if (pathname === "/seller/profile" || pathname === "/seller/store") return "profile";
   if (pathname.startsWith("/seller/boost")) {
     return "products";
   }
@@ -48,20 +48,35 @@ export default function SellerProcessBottomNav() {
         <span className="max-w-full truncate text-[9px] font-bold uppercase tracking-tight sm:text-[10px] sm:tracking-wider">Home</span>
       </Link>
       <Link href="/dashboard" className={itemClass("dashboard")}>
-        <DashboardIcon sx={{ fontSize: 24 }} />
+        <BarChartOutlinedIcon sx={{ fontSize: 24 }} />
         <span className="max-w-full truncate text-[9px] font-bold uppercase tracking-tight sm:text-[10px] sm:tracking-wider">Dashboard</span>
       </Link>
-      <Link href="/seller/products/new" className={itemClass("products")}>
-        <ShoppingBagIcon sx={{ fontSize: 24 }} />
-        <span className="max-w-full truncate text-[9px] font-bold uppercase tracking-tight sm:text-[10px] sm:tracking-wider">Products</span>
+      <Link
+        href="/seller/products/new"
+        className={clsx(
+          "flex min-w-0 flex-1 flex-col items-center justify-center gap-1 text-center transition-all",
+          active === "products"
+            ? "text-brand-pink"
+            : "text-gray-500"
+        )}
+        aria-label="Sell"
+      >
+        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-pink text-white shadow-[0_3px_8px_rgba(247,36,110,0.25)] transition hover:opacity-90 active:scale-[0.98]">
+          <AddIcon sx={{ fontSize: 18 }} />
+        </span>
+        <span className="max-w-full truncate text-[9px] font-bold uppercase tracking-tight sm:text-[10px] sm:tracking-wider">
+          Sell
+        </span>
       </Link>
       <Link href="/seller/orders" className={itemClass("orders")}>
-        <TrendingUpIcon sx={{ fontSize: 24 }} />
+        <AssignmentIcon sx={{ fontSize: 24 }} />
         <span className="max-w-full truncate text-[9px] font-bold uppercase tracking-tight sm:text-[10px] sm:tracking-wider">Orders</span>
       </Link>
-      <Link href="/seller/profile" className={itemClass("profile")}>
-        <PersonIcon sx={{ fontSize: 24 }} />
-        <span className="max-w-full truncate text-[9px] font-bold uppercase tracking-tight sm:text-[10px] sm:tracking-wider">Profile</span>
+      <Link href="/seller/profile" className={itemClass("profile")} aria-label="My Store">
+        <StorefrontIcon sx={{ fontSize: 24 }} />
+        <span className="max-w-full truncate text-[9px] font-bold uppercase tracking-tight sm:text-[10px] sm:tracking-wider">
+          My Store
+        </span>
       </Link>
     </nav>
   );
