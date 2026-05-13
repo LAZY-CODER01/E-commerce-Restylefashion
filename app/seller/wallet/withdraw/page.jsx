@@ -107,7 +107,7 @@ export default function SellerWithdrawPage() {
             <button
               type="button"
               onClick={() => router.back()}
-              className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-900 shadow-sm transition hover:bg-gray-50 md:h-11 md:w-11"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-gray-900 transition hover:bg-gray-100 lg:h-11 lg:w-11 lg:bg-white lg:shadow-sm"
               aria-label="Go back"
             >
               <ArrowLeft className="h-5 w-5" strokeWidth={2} />
