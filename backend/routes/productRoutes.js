@@ -252,7 +252,7 @@ router.get("/:id", async (req, res) => {
     try {
         const product = await Product.findById(req.params.id).populate(
             "seller",
-            "fullName avatar"
+            "fullName avatar followersCount"
         );
 
         if (!product) {
@@ -267,7 +267,16 @@ router.get("/:id", async (req, res) => {
             sellerVacationMode: { $ne: true },
         }).limit(4);
 
-        res.json({ ...product.toObject(), similarProducts });
+        // Get active listings count
+        const listingsCount = await Product.countDocuments({
+            seller: product.seller._id,
+            status: { $in: ["active", "approved"] },
+        });
+
+        const productObj = product.toObject();
+        productObj.seller.products = listingsCount;
+
+        res.json({ ...productObj, similarProducts });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

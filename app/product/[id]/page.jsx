@@ -108,16 +108,16 @@ function normalizeApiProductForPdp(data) {
     sellerId: sellerIdFromApi,
     name: sellerName,
     initials: sellerName.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase(),
-    followers: sellerDoc?.followers || "2.4k",
-    products: sellerDoc?.products || 68,
+    followers: sellerDoc?.followersCount ?? 0,
+    products: sellerDoc?.products ?? 0,
     avatar: (sellerDoc && typeof sellerDoc === "object" ? sellerDoc.avatar : null) || null,
   };
 
   const price = Number(p.price) || 0;
   const original = Number(p.originalPrice) || price;
   let discount = Number(p.discount);
-  if (!Number.isFinite(discount) || discount < 0) {
-    discount = original > 0 ? Math.max(0, Math.min(100, Math.round(((original - price) / original) * 100))) : 0;
+  if (!Number.isFinite(discount) || discount <= 0) {
+    discount = original > price ? Math.max(0, Math.min(100, Math.round(((original - price) / original) * 100))) : 0;
   }
 
   const related = mapRelatedForCards(p.similarProducts);
@@ -266,6 +266,7 @@ export default function ProductDetailsPage({ params }) {
       ? String(product.seller.sellerId)
       : "";
   const [followTick, setFollowTick] = useState(0);
+
   useEffect(() => {
     const on = () => setFollowTick((x) => x + 1);
     window.addEventListener(FOLLOWING_EVENT, on);
@@ -273,7 +274,9 @@ export default function ProductDetailsPage({ params }) {
   }, []);
 
   const isFollowingSeller = useMemo(
-    () => Boolean(buyerKey && sellerIdForFollow && isFollowing(buyerKey, sellerIdForFollow)),
+    () => {
+      return Boolean(buyerKey && sellerIdForFollow && isFollowing(buyerKey, sellerIdForFollow) && followTick >= 0);
+    },
     [buyerKey, sellerIdForFollow, followTick]
   );
 
@@ -345,6 +348,7 @@ export default function ProductDetailsPage({ params }) {
       followersLabel,
       listings,
     });
+    setFollowTick((x) => x + 1);
     toast.info(nowFollowing ? `You're following ${s.name}!` : `Unfollowed ${s.name}`);
   };
 
@@ -441,7 +445,7 @@ export default function ProductDetailsPage({ params }) {
 
         {/* Title + Bookmark */}
         <div className="flex items-start justify-between gap-2">
-          <h1 className="flex-1 text-[18px] font-bold leading-snug tracking-tight text-[#1C1C1E] uppercase">
+          <h1 className="flex-1 text-[18px] font-medium leading-snug tracking-tight text-[#1C1C1E] uppercase">
             {product.title}
           </h1>
           <button type="button" aria-label="Save product" className="mt-0.5 shrink-0">
@@ -453,14 +457,14 @@ export default function ProductDetailsPage({ params }) {
 
         {/* Price Row */}
         <div className="mt-2 flex items-center gap-2 flex-wrap">
-          <span className="text-[22px] font-bold text-[#1C1C1E] tracking-tight">
+          <span className="text-[18px] font-semibold text-[#1C1C1E] tracking-tight">
             ₹{product.price.toLocaleString("en-IN")}
           </span>
           <span className="text-[15px] font-medium text-[#888] line-through">
             ₹{product.originalPrice.toLocaleString("en-IN")}
           </span>
           {product.discount > 0 && (
-            <span className="text-[15px] font-bold text-[#22A44E]">
+            <span className="text-[14px] font-bold text-[#F7246E]">
               {product.discount}% OFF
             </span>
           )}
@@ -565,8 +569,8 @@ export default function ProductDetailsPage({ params }) {
         </div>
 
         {/* ── Seller Card ── */}
-        <div className="mt-5 flex items-center justify-between gap-3 border-t border-b border-gray-100 py-4">
-          <div className="flex items-center gap-3">
+        <div className="mt-5 flex items-center justify-between gap-3 border-t border-b border-gray-100 py-3">
+          <Link href={`/influencer/${product.seller?.sellerId}`} className="flex items-center gap-3">
             {/* Avatar */}
             <div className="flex h-[46px] w-[46px] shrink-0 items-center justify-center rounded-full bg-[#F7246E] text-white text-[16px] font-bold">
               {product.seller?.avatar ? (
@@ -580,10 +584,10 @@ export default function ProductDetailsPage({ params }) {
               <span className="text-[11px] font-medium text-[#888]">Seller Store</span>
               <span className="text-[15px] font-bold text-[#1C1C1E] leading-tight">{product.seller?.name || "Restyle Seller"}</span>
               <span className="text-[12px] text-[#888] mt-0.5">
-                {product.seller?.followers || "2.4k"} followers · {product.seller?.products || 68} listings
+                {product.seller?.followers || "0"} followers · {product.seller?.products || 0} listings
               </span>
             </div>
-          </div>
+          </Link>
           {/* Follow / View Store */}
           <button
             type="button"
@@ -601,18 +605,18 @@ export default function ProductDetailsPage({ params }) {
         </div>
 
         {/* ── Buy Now + Add to Bag ── */}
-        <div className="mt-4 flex gap-3">
+        <div className="fixed bottom-0 left-0 right-0 z-50 flex gap-2 bg-white px-4 py-3 border-t border-gray-100 shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
           <button
             type="button"
             onClick={handleBuyNow}
-            className="flex-1 h-[52px] rounded-2xl bg-[#F7246E] text-white text-[15px] font-bold tracking-wide shadow-[0_4px_14px_rgba(247,36,110,0.3)] transition active:scale-[0.97]"
+            className="flex-1 h-[42px] rounded-xl bg-[#F7246E] text-white text-[14px] font-bold tracking-wide shadow-[0_4px_14px_rgba(247,36,110,0.25)] transition active:scale-[0.97]"
           >
             Buy Now
           </button>
           <button
             type="button"
             onClick={handleAddToCart}
-            className="flex-1 h-[52px] rounded-2xl border-2 border-[#F7246E] bg-white text-[#F7246E] text-[15px] font-bold tracking-wide transition active:scale-[0.97]"
+            className="flex-1 h-[42px] rounded-xl border-2 border-[#F7246E] bg-white text-[#F7246E] text-[14px] font-bold tracking-wide transition active:scale-[0.97]"
           >
             Add to Bag
           </button>
